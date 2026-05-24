@@ -1,0 +1,389 @@
+/* ==========================================================================
+   1. VARIABLES Y CONFIGURACIÓN GENERAL
+   ========================================================================== */
+:root {
+    --bg-principal: #f4f6f9;
+    --color-texto: #2c3e50;
+    --chihuahua-brown: #d35400; /* Un color cálido para la temática perruna */
+    --chihuahua-light: #f39c12;
+    --color-libro: #27ae60;     /* Verde para libros */
+    --color-pelicula: #2980b9;  /* Azul para películas */
+    --blanco: #ffffff;
+    --sombra: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --sombra-hover: 0 10px 20px rgba(0, 0, 0, 0.15);
+    --radio-borde: 12px;
+    --transicion: all 0.3s ease;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: var(--bg-principal);
+    color: var(--color-texto);
+    line-height: 1.6;
+}
+
+/* ==========================================================================
+   2. HEADER (ENCABEZADO)
+   ========================================================================== */
+.header-app {
+    background: linear-gradient(135deg, var(--chihuahua-brown), var(--chihuahua-light));
+    color: var(--blanco);
+    padding: 2.5rem 1rem;
+    text-align: center;
+    box-shadow: var(--sombra);
+    margin-bottom: 2rem;
+}
+
+.header-contenido h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+}
+
+.header-contenido p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+/* ==========================================================================
+   3. BARRA DE CONTROLES (BÚSQUEDA Y FILTROS)
+   ========================================================================== */
+.contenedor-principal {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem 3rem 1.5rem;
+}
+
+.barra-controles {
+    background-color: var(--blanco);
+    padding: 1.2rem;
+    border-radius: var(--radio-borde);
+    box-shadow: var(--sombra);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+}
+
+.buscador-caja {
+    flex: 1;
+    min-width: 280px;
+}
+
+.buscador-caja input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: var(--transicion);
+}
+
+.buscador-caja input:focus {
+    border-color: var(--chihuahua-brown);
+    outline: none;
+}
+
+/* Botones de Filtro (Todos, Libros, Pelis) */
+.filtros-tipo {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-filtro {
+    padding: 0.6rem 1.2rem;
+    border: 2px solid #e0e0e0;
+    background-color: var(--blanco);
+    color: var(--color-texto);
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transicion);
+}
+
+.btn-filtro:hover {
+    background-color: #f0f0f0;
+}
+
+.btn-filtro.activo {
+    background-color: var(--color-texto);
+    color: var(--blanco);
+    border-color: var(--color-texto);
+}
+
+/* Botones CRUD */
+.acciones-crud {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-accion {
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--blanco);
+    transition: var(--transicion);
+}
+
+.btn-crear { background-color: var(--color-libro); }
+.btn-crear:hover { background-color: #1e8449; }
+
+.btn-modificar { background-color: #7f8c8d; }
+.btn-modificar:hover { background-color: #616a6b; }
+
+
+/* ==========================================================================
+   4. GRID DE TARJETAS (LA COLECCIÓN)
+   ========================================================================== */
+.grid-coleccion {
+    display: grid;
+    /* CSS Grid Responsivo: Mínimo 300px por tarjeta, se acomodan solas */
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.tarjeta-item {
+    background-color: var(--blanco);
+    border-radius: var(--radio-borde);
+    box-shadow: var(--sombra);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: var(--transicion);
+    border-top: 5px solid #ccc; /* Borde superior por defecto */
+}
+
+/* Diferenciación visual por tipo */
+.tarjeta-item.libro { border-top-color: var(--color-libro); }
+.tarjeta-item.pelicula { border-top-color: var(--color-pelicula); }
+
+.tarjeta-item:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--sombra-hover);
+}
+
+.tarjeta-badge {
+    align-self: flex-start;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: var(--blanco);
+    border-bottom-right-radius: 8px;
+}
+.tarjeta-badge.libro { background-color: var(--color-libro); }
+.tarjeta-badge.pelicula { background-color: var(--color-pelicula); }
+
+.tarjeta-cuerpo {
+    padding: 1.2rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.tarjeta-titulo {
+    font-size: 1.3rem;
+    color: #2c3e50;
+}
+
+.tarjeta-creador {
+    font-size: 0.9rem;
+    color: #7f8c8d;
+}
+
+.tarjeta-calificacion {
+    color: #f1c40f;
+    font-size: 1rem;
+}
+.numero-nota { color: var(--color-texto); font-size: 0.85rem; margin-left: 0.3rem;}
+
+.tarjeta-descripcion {
+    font-size: 0.95rem;
+    color: #555;
+    text-align: justify;
+}
+
+.tarjeta-opinion {
+    background-color: #f8f9fa;
+    padding: 0.8rem;
+    border-left: 3px solid var(--chihuahua-light);
+    border-radius: 4px;
+    margin-top: auto; /* Empuja la opinión al fondo si el texto es corto */
+}
+.tarjeta-opinion strong { font-size: 0.85rem; color: #7f8c8d; }
+.texto-opinion { font-style: italic; font-size: 0.9rem; color: #444; }
+
+.tarjeta-fechas {
+    padding: 0.8rem 1.2rem;
+    background-color: #fafbfc;
+    border-top: 1px solid #f0f0f0;
+    font-size: 0.75rem;
+    color: #95a5a6;
+}
+.txt-editado { color: var(--chihuahua-brown); font-weight: 500; }
+
+.coleccion-vacia {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem;
+    background-color: var(--blanco);
+    border-radius: var(--radio-borde);
+    color: #7f8c8d;
+}
+
+/* ==========================================================================
+   5. MODALES (VENTANAS EMERGENTES)
+   ========================================================================== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px); /* Difumina el fondo para un look moderno */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    
+    /* Oculto por defecto */
+    display: none; 
+}
+
+/* Clase que usará JS para mostrar el modal de forma limpia */
+.modal-overlay.mostrar {
+    display: flex;
+}
+
+.modal-ventana {
+    background-color: var(--blanco);
+    width: 90%;
+    max-width: 500px;
+    border-radius: var(--radio-borde);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+    overflow: hidden;
+    animation: aparecer 0.3s ease;
+}
+
+@keyframes aparecer {
+    from { transform: translateY(-30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-cabecera {
+    background-color: var(--color-texto);
+    color: var(--blanco);
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.btn-cerrar-modal {
+    background: none;
+    border: none;
+    color: var(--blanco);
+    font-size: 1.8rem;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.modal-formulario {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-height: 80vh;
+    overflow-y: auto; /* Permite scroll interno si la pantalla es muy pequeña */
+}
+
+/* Clase para deshabilitar visualmente el formulario de edición antes de elegir un item */
+.modal-formulario.deshabilitado {
+    opacity: 0.4;
+    pointer-events: none; /* Bloquea clics y escritura */
+    user-select: none;
+}
+
+.form-grupo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.form-grupo label {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.form-grupo input, 
+.form-grupo select, 
+.form-grupo textarea {
+    padding: 0.6rem 0.8rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 0.95rem;
+}
+
+.form-grupo input:focus, 
+.form-grupo select:focus, 
+.form-grupo textarea:focus {
+    border-color: var(--chihuahua-brown);
+    outline: none;
+}
+
+.select-selector-caja {
+    padding: 1rem 1.5rem 0rem 1.5rem;
+    background-color: #f8f9fa;
+    border-bottom: 2px dashed #e0e0e0;
+}
+
+.select-selector-caja select {
+    border: 2px solid var(--chihuahua-light);
+    font-weight: bold;
+}
+
+/* Botones de acción dentro del modal */
+.btn-guardar {
+    background-color: var(--chihuahua-brown);
+    color: var(--blanco);
+    border: none;
+    padding: 0.8rem;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: var(--transicion);
+    width: 100%;
+}
+.btn-guardar:hover { background-color: #b04300; }
+
+.botones-modal-acciones {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.btn-actualizar { flex: 2; }
+
+.btn-eliminar {
+    flex: 1;
+    background-color: #c0392b;
+    color: var(--blanco);
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: var(--transicion);
+}
+.btn-eliminar:hover { background-color: #962d22; }

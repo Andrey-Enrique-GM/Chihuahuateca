@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chihuahuateca 🐾</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <header class="header-app">
+        <div class="header-contenido">
+            <h1>🐾 Chihuahuateca 🐾</h1>
+            <p>El guardián intelectual de libros y películas</p>
+        </div>
+    </header>
+
+    <main class="contenedor-principal">
+        
+        <section class="barra-controles">
+            <div class="buscador-caja">
+                <input type="text" id="buscador" placeholder="Buscar por título, autor o director...">
+            </div>
+            
+            <div class="filtros-tipo">
+                <button id="btn-todos" class="btn-filtro activo">Todos 🐾</button>
+                <button id="btn-libros" class="btn-filtro">Libros 📚</button>
+                <button id="btn-peliculas" class="btn-filtro">Películas 🎬</button>
+            </div>
+
+            <div class="acciones-crud">
+                <button id="btn-abrir-agregar" class="btn-accion btn-crear">➕ Agregar Nuevo</button>
+                <button id="btn-abrir-editar" class="btn-accion btn-modificar">📝 Gestionar / Editar</button>
+            </div>
+        </section>
+
+        <section class="grid-coleccion" id="grid-coleccion">
+            {% for elemento in elementos %}
+                <div class="tarjeta-item {{ elemento.tipo }}" 
+                     data-tipo="{{ elemento.tipo }}" 
+                     data-titulo="{{ elemento.titulo.lower() }}" 
+                     data-autor="{{ elemento.autor_director.lower() }}">
+                    
+                    <div class="tarjeta-badge {{ elemento.tipo }}">
+                        {{ '📚 LIBRO' if elemento.tipo == 'libro' else '🎬 PELÍCULA' }}
+                    </div>
+                    
+                    <div class="tarjeta-cuerpo">
+                        <h3 class="tarjeta-titulo">{{ elemento.titulo }}</h3>
+                        <p class="tarjeta-creador">
+                            <strong>{{ 'Autor:' if elemento.tipo == 'libro' else 'Director:' }}</strong> 
+                            {{ elemento.autor_director }}
+                        </p>
+                        
+                        <div class="tarjeta-calificacion">
+                            {% for i in range(elemento.calificacion) %}⭐{% endfor %}
+                            <span class="numero-nota">({{ elemento.calificacion }}/5)</span>
+                        </div>
+
+                        <p class="tarjeta-descripcion">{{ elemento.descripcion }}</p>
+                        
+                        <div class="tarjeta-opinion">
+                            <strong>Opinión:</strong>
+                            <p class="texto-opinion">"{{ elemento.opinion }}"</p>
+                        </div>
+                    </div>
+
+                    <div class="tarjeta-fechas">
+                        <small>Registrado: {{ elemento.fecha_creacion }}</small>
+                        {% if elemento.fecha_actualizacion and elemento.fecha_actualizacion != elemento.fecha_creacion %}
+                            <br><small class="txt-editado">Editado: {{ elemento.fecha_actualizacion }}</small>
+                        {% endif %}
+                    </div>
+                </div>
+            {% else %}
+                <div class="coleccion-vacia">
+                    <p>La Chihuahuateca está vacía, empieza agregando elementos! 🐾</p>
+                </div>
+            {% endfor %}
+        </section>
+    </main>
+
+    <div id="modal-agregar" class="modal-overlay">
+        <div class="modal-ventana">
+            <div class="modal-cabecera">
+                <h2>🐾 Agregar a la Colección</h2>
+                <button class="btn-cerrar-modal" onclick="cerrarModal('modal-agregar')">&times;</button>
+            </div>
+            <form id="form-agregar" class="modal-formulario">
+                <div class="form-grupo">
+                    <label for="add-tipo">Tipo de Elemento:</label>
+                    <select id="add-tipo" required>
+                        <option value="libro">Libro 📚</option>
+                        <option value="pelicula">Película 🎬</option>
+                    </select>
+                </div>
+                <div class="form-grupo">
+                    <label for="add-titulo">Título:</label>
+                    <input type="text" id="add-titulo" placeholder="Ej: La Metamorfosis" required>
+                </div>
+                <div class="form-grupo">
+                    <label id="label-autor-director" for="add-autor">Autor / Director:</label>
+                    <input type="text" id="add-autor" placeholder="Ej: Franz Kafka">
+                </div>
+                <div class="form-grupo">
+                    <label for="add-calificacion">Calificación (1 a 5):</label>
+                    <input type="number" id="add-calificacion" min="1" max="5" value="5" required>
+                </div>
+                <div class="form-grupo">
+                    <label for="add-descripcion">Sinopsis:</label>
+                    <textarea id="add-descripcion" rows="3" placeholder="¿De qué trata?"></textarea>
+                </div>
+                <div class="form-grupo">
+                    <label for="add-opinion">Opinión Personal:</label>
+                    <textarea id="add-opinion" rows="3" placeholder="¿Qué te pareció?"></textarea>
+                </div>
+                <button type="submit" class="btn-guardar">💾 Guardar en la Chihuahuateca</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-editar" class="modal-overlay">
+        <div class="modal-ventana">
+            <div class="modal-cabecera">
+                <h2>📝 Administrar Chihuahuateca 🐾</h2>
+                <button class="btn-cerrar-modal" onclick="cerrarModal('modal-editar')">&times;</button>
+            </div>
+            
+            <div class="form-grupo select-selector-caja">
+                <label for="select-editar-elemento"><strong>Selecciona el elemento a modificar:</strong></label>
+                <select id="select-editar-elemento">
+                    <option value="">-- Elige un libro o película registrado --</option>
+                    {% for elemento in elementos %}
+                        <option value="{{ elemento.id }}">{{ '[📚]' if elemento.tipo == 'libro' else '[🎬]' }} {{ elemento.titulo }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <form id="form-editar" class="modal-formulario deshabilitado">
+                <input type="hidden" id="edit-id">
+
+                <div class="form-grupo">
+                    <label for="edit-tipo">Tipo:</label>
+                    <select id="edit-tipo" required>
+                        <option value="libro">Libro 📚</option>
+                        <option value="pelicula">Película 🎬</option>
+                    </select>
+                </div>
+                <div class="form-grupo">
+                    <label for="edit-titulo">Título:</label>
+                    <input type="text" id="edit-titulo" required>
+                </div>
+                <div class="form-grupo">
+                    <label for="edit-autor">Autor / Director:</label>
+                    <input type="text" id="edit-autor">
+                </div>
+                <div class="form-grupo">
+                    <label for="edit-calificacion">Calificación:</label>
+                    <input type="number" id="edit-calificacion" min="1" max="5" required>
+                </div>
+                <div class="form-grupo">
+                    <label for="edit-descripcion">Sinopsis:</label>
+                    <textarea id="edit-descripcion" rows="3"></textarea>
+                </div>
+                <div class="form-grupo">
+                    <label for="edit-opinion">Opinión Personal:</label>
+                    <textarea id="edit-opinion" rows="3"></textarea>
+                </div>
+
+                <div class="botones-modal-acciones">
+                    <button type="submit" class="btn-guardar btn-actualizar">🔄 Actualizar Cambios</button>
+                    <button type="button" id="btn-borrar-elemento" class="btn-eliminar">🗑️ Eliminar Registro</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
