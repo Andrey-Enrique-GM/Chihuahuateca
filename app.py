@@ -64,4 +64,4 @@ def api_obtener_elemento_por_id(elemento_id):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()

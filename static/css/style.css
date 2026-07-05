@@ -1,13 +1,13 @@
 /* ==========================================================================
-   1. VARIABLES Y CONFIGURACIÓN GENERAL
+   1. VARIABLES Y CONFIGURACION GENERAL
    ========================================================================== */
 :root {
     --bg-principal: #f4f6f9;
     --color-texto: #2c3e50;
-    --chihuahua-brown: #d35400; /* Un color cálido para la temática perruna */
+    --chihuahua-brown: #d35400;
     --chihuahua-light: #f39c12;
-    --color-libro: #27ae60;     /* Verde para libros */
-    --color-pelicula: #2980b9;  /* Azul para películas */
+    --color-libro: #27ae60;
+    --color-pelicula: #2980b9;
     --blanco: #ffffff;
     --sombra: 0 4px 6px rgba(0, 0, 0, 0.1);
     --sombra-hover: 0 10px 20px rgba(0, 0, 0, 0.15);
@@ -27,6 +27,8 @@ body {
     color: var(--color-texto);
     line-height: 1.6;
 }
+
+
 
 /* ==========================================================================
    2. HEADER (ENCABEZADO)
@@ -51,8 +53,10 @@ body {
     opacity: 0.9;
 }
 
+
+
 /* ==========================================================================
-   3. BARRA DE CONTROLES (BÚSQUEDA Y FILTROS)
+   3. BARRA DE CONTROLES (BUSQUEDA Y FILTROS)
    ========================================================================== */
 .contenedor-principal {
     max-width: 1200px;
@@ -92,7 +96,7 @@ body {
     outline: none;
 }
 
-/* Botones de Filtro (Todos, Libros, Pelis) */
+/* Botones de Filtro (Todos, Libros, Peliculas) */
 .filtros-tipo {
     display: flex;
     gap: 0.5rem;
@@ -142,12 +146,13 @@ body {
 .btn-modificar:hover { background-color: #616a6b; }
 
 
+
 /* ==========================================================================
-   4. GRID DE TARJETAS (LA COLECCIÓN)
+   4. GRID DE TARJETAS (LA COLECCION)
    ========================================================================== */
 .grid-coleccion {
     display: grid;
-    /* CSS Grid Responsivo: Mínimo 300px por tarjeta, se acomodan solas */
+    /* CSS Grid Responsivo: Minimo 300px por tarjeta, se acomodan solas */
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 1.5rem;
 }
@@ -163,7 +168,7 @@ body {
     border-top: 5px solid #ccc; /* Borde superior por defecto */
 }
 
-/* Diferenciación visual por tipo */
+/* Diferenciacion visual por tipo */
 .tarjeta-item.libro { border-top-color: var(--color-libro); }
 .tarjeta-item.pelicula { border-top-color: var(--color-pelicula); }
 
@@ -218,7 +223,7 @@ body {
     padding: 0.8rem;
     border-left: 3px solid var(--chihuahua-light);
     border-radius: 4px;
-    margin-top: auto; /* Empuja la opinión al fondo si el texto es corto */
+    margin-top: auto;
 }
 .tarjeta-opinion strong { font-size: 0.85rem; color: #7f8c8d; }
 .texto-opinion { font-style: italic; font-size: 0.9rem; color: #444; }
@@ -241,6 +246,8 @@ body {
     color: #7f8c8d;
 }
 
+
+
 /* ==========================================================================
    5. MODALES (VENTANAS EMERGENTES)
    ========================================================================== */
@@ -251,7 +258,7 @@ body {
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px); /* Difumina el fondo para un look moderno */
+    backdrop-filter: blur(4px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -261,7 +268,7 @@ body {
     display: none; 
 }
 
-/* Clase que usará JS para mostrar el modal de forma limpia */
+/* Clase que usara JS para mostrar el modal de forma limpia */
 .modal-overlay.mostrar {
     display: flex;
 }
@@ -308,7 +315,7 @@ body {
     overflow-y: auto; /* Permite scroll interno si la pantalla es muy pequeña */
 }
 
-/* Clase para deshabilitar visualmente el formulario de edición antes de elegir un item */
+/* Clase para deshabilitar visualmente el formulario de edicion antes de elegir un item */
 .modal-formulario.deshabilitado {
     opacity: 0.4;
     pointer-events: none; /* Bloquea clics y escritura */
@@ -353,7 +360,7 @@ body {
     font-weight: bold;
 }
 
-/* Botones de acción dentro del modal */
+/* Botones de accion dentro del modal */
 .btn-guardar {
     background-color: var(--chihuahua-brown);
     color: var(--blanco);
@@ -387,3 +394,66 @@ body {
     transition: var(--transicion);
 }
 .btn-eliminar:hover { background-color: #962d22; }
+
+
+
+/* ==========================================================================
+   MODO CELULAR (Media Query para pantallas menores a 768px)
+   ========================================================================== */
+@media (max-width: 768px) {
+    
+    /* Reducimos el espacio del contenedor principal */
+    .contenedor-principal {
+        padding: 10px;
+        margin: 0 auto;
+    }
+
+    /* La barra de controles se vuelve vertical */
+    .barra-controles {
+        display: flex;
+        flex-direction: column; /* Apila los elementos uno abajo del otro */
+        gap: 12px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+
+    /* El buscador y los contenedores ocupan todo el ancho disponible */
+    .buscador-caja, 
+    .filtros-tipo, 
+    .acciones-crud {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    #buscador {
+        width: 100%; /* El buscador se expande completo */
+    }
+
+    /* Los botones se dividen el espacio equitativamente */
+    .btn-filtro, .btn-accion {
+        flex: 1;
+        text-align: center;
+        padding: 10px 5px;
+        font-size: 0.9rem;
+    }
+
+    /* El Grid de tarjetas pasa a ser de 1 sola columna */
+    .grid-coleccion {
+        grid-template-columns: 1fr; /* Una tarjeta por fila */
+        gap: 15px;
+    }
+
+    /* Ajustes dentro de la tarjeta para celulares */
+    .tarjeta-item {
+        margin: 0;
+    }
+
+    /* Hacer que los modales ocupen casi toda la pantalla */
+    .modal-ventana {
+        width: 95%;
+        max-height: 90vh;
+        overflow-y: auto; /* Si el formulario es largo, permite hacer scroll dentro del modal */
+        padding: 20px 15px;
+    }
+}
