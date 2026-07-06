@@ -1,15 +1,23 @@
+import os
 from flask import Flask, render_template, jsonify, request
-from entities.elemento import Elemento 
+from dotenv import load_dotenv
+from entities.elemento import Elemento
 
+
+
+# Cargar las variables de entorno desde el archivo .env
+load_dotenv()
+
+# Configuración de la aplicación Flask
 app = Flask(__name__)
-
+app.secret_key = os.getenv("SECRET_KEY")
 
 
 # --- RUTAS DE NAVEGACION ---
 
 @app.route('/')
 def index():
-    # Mandamos llamar al metodo estatico que mapea tu tabla a objetos
+    # Manda a llamar al metodo estatico que mapea la tabla a objetos
     coleccion_completa = Elemento.obtener_todos() 
     return render_template('index.html', elementos=coleccion_completa)
 
@@ -63,5 +71,6 @@ def api_obtener_elemento_por_id(elemento_id):
 
 
 
+# Ejecutar la aplicación Flask
 if __name__ == '__main__':
     app.run()
