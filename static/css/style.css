@@ -398,6 +398,178 @@ body {
 
 
 /* ==========================================================================
+   VISTAS DE AUTENTICACIÓN (LOGIN Y SIGNUP)
+   ========================================================================== */
+
+.body-autenticacion {
+    background-color: var(--bg-principal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 1rem;
+}
+
+.contenedor-auth {
+    background-color: var(--blanco);
+    width: 100%;
+    max-width: 900px;
+    border-radius: var(--radio-borde);
+    box-shadow: var(--sombra);
+    display: flex;
+    overflow: hidden;
+}
+
+/* Panel Izquierdo */
+.panel-presentacion {
+    flex: 1;
+    background: linear-gradient(135deg, var(--chihuahua-brown), var(--chihuahua-light));
+    color: var(--blanco);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 2rem;
+    text-align: center;
+}
+
+.logo-circulo {
+    width: 120px;
+    height: 120px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+}
+
+.titulo-auth-app {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.subtitulo-auth-app {
+    font-size: 1rem;
+    opacity: 0.9;
+    max-width: 260px;
+}
+
+/* Panel Derecho (Formulario limpio) */
+.panel-formulario {
+    flex: 1.2;
+    background-color: var(--blanco);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 2.5rem;
+}
+
+.formulario-contenido {
+    width: 100%;
+    max-width: 340px;
+}
+
+.saludo-auth {
+    font-size: 1.6rem;
+    color: var(--color-texto);
+    margin-bottom: 0.3rem;
+}
+
+.instruccion-auth {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+}
+
+.grupo-input-auth {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-bottom: 1.2rem;
+}
+
+.grupo-input-auth label {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.grupo-input-auth input {
+    padding: 0.75rem 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: var(--transicion);
+}
+
+.grupo-input-auth input:focus {
+    border-color: var(--chihuahua-brown);
+    outline: none;
+}
+
+.btn-auth-enviar {
+    background-color: var(--color-texto);
+    color: var(--blanco);
+    border: none;
+    padding: 0.8rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transicion);
+    width: 100%;
+    margin-top: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.btn-auth-enviar:hover {
+    background-color: var(--chihuahua-brown);
+}
+
+.auth-enlace-cambio {
+    text-align: center;
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+}
+
+.auth-enlace-cambio p { color: #7f8c8d; }
+.auth-enlace-cambio a {
+    color: var(--chihuahua-brown);
+    text-decoration: none;
+    font-weight: bold;
+}
+.auth-enlace-cambio a:hover { text-decoration: underline; }
+
+.auth-footer {
+    text-align: center;
+    font-size: 0.8  rem;
+    color: #95a5a6;
+}
+
+/* Responsivo simple para móviles */
+@media (max-width: 768px) {
+    .contenedor-auth {
+        flex-direction: column;
+        max-width: 400px;
+    }
+    .panel-presentacion {
+        padding: 2rem 1rem;
+    }
+    .logo-circulo {
+        width: 90px;
+        height: 90px;
+        font-size: 2.5rem;
+    }
+    .panel-formulario {
+        padding: 2rem 1.5rem;
+    }
+}
+
+
+
+/* ==========================================================================
    MODO CELULAR (Media Query para pantallas menores a 768px)
    ========================================================================== */
 @media (max-width: 768px) {
