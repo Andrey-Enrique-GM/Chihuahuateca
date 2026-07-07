@@ -7,8 +7,7 @@ from persistence.db import get_connection
 Este archivo contiene funciones que interactúan directamente con la base de datos para realizar operaciones
 CRUD (Crear, Leer, Actualizar, Eliminar) sobre los elementos de la colección. Estas funciones son utilizadas
 por los métodos estáticos de la clase Elemento en entities/elemento.py para mantener una separación clara entre
-la lógica de negocio y la capa de acceso a datos. De esta forma, si en el futuro decidimos cambiar la base de
-datos o la forma en que accedemos a ella, solo tendríamos que modificar este archivo sin afectar el resto del código.
+la lógica de negocio y la capa de acceso a datos.
 """
 
 

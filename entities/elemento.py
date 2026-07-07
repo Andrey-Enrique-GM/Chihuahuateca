@@ -44,12 +44,6 @@ class Elemento:
             cursor.execute(sql)
             resultados = cursor.fetchall()
 
-
-            print("--- RESULTADOS REALES DE LA BD ---")
-            print(resultados)
-            print("---------------------------------")
-
-
             for r in resultados:
                 nuevo_elemento = Elemento(
                     id=r['id'], titulo=r['titulo'], tipo=r['tipo'],

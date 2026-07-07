@@ -1,5 +1,5 @@
 // ==========================================================================
-// 1. CONFIGURACION INICIAL Y SELECCION DE ELEMENTOS DOM
+// CONFIGURACION INICIAL Y SELECCION DE ELEMENTOS DOM
 // ==========================================================================
 
 
@@ -36,7 +36,7 @@ let filtroTipoActual = 'todos';
 
 
 // ==========================================================================
-// 2. CONTROL DE VENTANAS MODALES
+// CONTROL DE VENTANAS MODALES
 // ==========================================================================
 
 
@@ -65,7 +65,7 @@ function cerrarModal(idModal) {
 
 
 // ==========================================================================
-// 3. FILTRADO DINAMICO DE TARJETAS
+// FILTRADO DINAMICO DE TARJETAS
 // ==========================================================================
 
 
@@ -111,7 +111,7 @@ function filtrarColeccion() {
 
 
 // ==========================================================================
-// 4. OPERACIONES ASINCRONAS CON LA API DE PYTHON (FETCH CRUD)
+// OPERACIONES ASINCRONAS CON LA API DE PYTHON (FETCH CRUD)
 // ==========================================================================
 
 
