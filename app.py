@@ -2,7 +2,7 @@ import os
 import pymysql
 from flask import Flask, redirect, render_template, jsonify, request, session, url_for
 from dotenv import load_dotenv
-from werkzeug.security import check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 from entities.elemento import Elemento
 
 
@@ -81,6 +81,58 @@ def api_login():
 
     except Exception as ex:
         return f"Error en el servidor: {ex}", 500
+    finally:
+        if conexion and conexion.open:
+            cursor.close()
+            conexion.close()
+
+
+@app.route('/api/signup', methods=['POST'])
+def api_signup():
+    # Obtener los datos del formulario
+    nombre = request.form.get('name', '').strip()
+    username = request.form.get('username', '').strip()
+    password = request.form.get('password', '').strip()
+    confirm_password = request.form.get('confirm_password', '').strip()
+
+    # Validaciones básicas
+    if not nombre or not username or not password:
+        return "Todos los campos son obligatorios. <a href='/signup'>Volver</a>", 400
+
+    if password != confirm_password:
+        return "Las contraseñas no coinciden. <a href='/signup'>Volver</a>", 400
+
+    # Hashear la contraseña antes de guardarla
+    password_encriptada = generate_password_hash(password)
+
+    conexion = None
+    try:
+        conexion = pymysql.connect(
+            host=os.getenv("DB_HOST"),
+            port=int(os.getenv("DB_PORT", 24316)),
+            user=os.getenv("DB_USER"),
+            password=os.getenv("DB_PASSWORD"),
+            database=os.getenv("DB_NAME"),
+            ssl={'ssl': {}}
+        )
+        cursor = conexion.cursor()
+
+        # Insertar el nuevo usuario normal
+        sql = """
+            INSERT INTO usuarios (username, nombre, password) 
+            VALUES (%s, %s, %s)
+        """
+        cursor.execute(sql, (username, nombre, password_encriptada))
+        conexion.commit()
+
+        # Registro exitoso, lo mandamos directo al Login para que entre a su cuenta
+        return "Cuenta creada con éxito. Ahora puedes <a href='/'>Iniciar Sesión aquí</a>."
+
+    except pymysql.backends.mysqld.err.IntegrityError:
+        # Esto salta si el 'username' ya existe
+        return f"El nombre de usuario '{username}' ya está ocupado. <a href='/signup'>Intenta con otro</a>.", 409
+    except Exception as ex:
+        return f"Error en el servidor: {ex} <a href='/signup'>Volver</a>", 500
     finally:
         if conexion and conexion.open:
             cursor.close()
