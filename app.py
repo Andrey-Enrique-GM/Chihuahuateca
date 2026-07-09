@@ -142,13 +142,16 @@ def api_signup():
 @app.route('/api/guardar', methods=['POST'])
 def api_guardar_elemento():
     data = request.json
+    # Obtenemos el ID de quien tiene la sesión abierta
+    usuario_id = session.get('usuario_id')
     exito = Elemento.save(
         titulo=data['titulo'],
         tipo=data['tipo'],
         autor_director=data['autor_director'],
         descripcion=data['descripcion'],
         calificacion=int(data['calificacion']),
-        opinion=data['opinion']
+        opinion=data['opinion'],
+        usuario_id=usuario_id
     )
     return jsonify({'success': exito})
 

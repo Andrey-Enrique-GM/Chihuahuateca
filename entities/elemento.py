@@ -15,7 +15,7 @@ para mantener una separacion clara entre la logica de negocio y la capa de acces
 
 
 class Elemento:
-    def __init__(self, id: int, titulo: str, tipo: str, autor_director: str, descripcion: str, calificacion: int, opinion: str, fecha_creacion: str, fecha_actualizacion: str):
+    def __init__(self, id: int, titulo: str, tipo: str, autor_director: str, descripcion: str, calificacion: int, opinion: str, usuario_nombre: str, fecha_creacion: str, fecha_actualizacion: str):
         self.id = id
         self.titulo = titulo
         self.tipo = tipo
@@ -23,6 +23,7 @@ class Elemento:
         self.descripcion = descripcion
         self.calificacion = calificacion
         self.opinion = opinion
+        self.usuario_nombre = usuario_nombre
         self.fecha_creacion = fecha_creacion
         self.fecha_actualizacion = fecha_actualizacion
 
@@ -35,11 +36,13 @@ class Elemento:
             conexion = get_connection()
             cursor = conexion.cursor(DictCursor) 
             sql = """
-                SELECT id, titulo, tipo, autor_director, descripcion, calificacion, opinion, 
-                       DATE_FORMAT(fecha_creacion, '%Y-%m-%d %H:%i') as fecha_creacion,
-                       DATE_FORMAT(fecha_actualizacion, '%Y-%m-%d %H:%i') as fecha_actualizacion 
-                FROM coleccion 
-                ORDER BY id DESC
+                SELECT c.id, c.titulo, c.tipo, c.autor_director, c.descripcion, c.calificacion, c.opinion, 
+                       DATE_FORMAT(c.fecha_creacion, '%Y-%m-%d %H:%i') as fecha_creacion,
+                       DATE_FORMAT(c.fecha_actualizacion, '%Y-%m-%d %H:%i') as fecha_actualizacion,
+                       u.nombre as usuario_nombre
+                FROM coleccion c
+                LEFT JOIN usuarios u ON c.usuario_id = u.id
+                ORDER BY c.id DESC
             """
             cursor.execute(sql)
             resultados = cursor.fetchall()
@@ -48,7 +51,7 @@ class Elemento:
                 nuevo_elemento = Elemento(
                     id=r['id'], titulo=r['titulo'], tipo=r['tipo'],
                     autor_director=r['autor_director'], descripcion=r['descripcion'],
-                    calificacion=r['calificacion'], opinion=r['opinion'],
+                    calificacion=r['calificacion'], opinion=r['opinion'], usuario_nombre=r['usuario_nombre'],
                     fecha_creacion=r['fecha_creacion'], fecha_actualizacion=r['fecha_actualizacion']
                 )
                 elementos.append(nuevo_elemento)
@@ -87,17 +90,17 @@ class Elemento:
 
     # Metodo estatico para guardar un nuevo elemento en la base de datos
     @staticmethod
-    def save(titulo: str, tipo: str, autor_director: str, descripcion: str, calificacion: int, opinion: str) -> bool:
+    def save(titulo: str, tipo: str, autor_director: str, descripcion: str, calificacion: int, opinion: str, usuario_id: int) -> bool:
         try:
             conexion = get_connection()
             cursor = conexion.cursor(DictCursor)
             ahora = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             
             sql = """
-                INSERT INTO coleccion (titulo, tipo, autor_director, descripcion, calificacion, opinion, fecha_creacion, fecha_actualizacion) 
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO coleccion (titulo, tipo, autor_director, descripcion, calificacion, opinion, usuario_id, fecha_creacion, fecha_actualizacion) 
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
-            cursor.execute(sql, (titulo, tipo, autor_director, descripcion, calificacion, opinion, ahora, ahora))
+            cursor.execute(sql, (titulo, tipo, autor_director, descripcion, calificacion, opinion, usuario_id, ahora, ahora))
             conexion.commit()
 
             cursor.close()

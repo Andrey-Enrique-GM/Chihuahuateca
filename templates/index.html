@@ -66,11 +66,16 @@
                     </div>
 
                     <div class="tarjeta-fechas">
+                        {% if elemento.usuario_nombre %}
+                            <span class="autor-aporte">Subido por: <strong>{{ elemento.usuario_nombre }}</strong></span><br>
+                        {% endif %}
+                        
                         <small>Registrado: {{ elemento.fecha_creacion }}</small>
                         {% if elemento.fecha_actualizacion and elemento.fecha_actualizacion != elemento.fecha_creacion %}
                             <br><small class="txt-editado">Editado: {{ elemento.fecha_actualizacion }}</small>
                         {% endif %}
                     </div>
+
                 </div>
             {% else %}
                 <div class="coleccion-vacia">

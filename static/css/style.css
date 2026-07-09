@@ -228,6 +228,14 @@ body {
 .tarjeta-opinion strong { font-size: 0.85rem; color: #7f8c8d; }
 .texto-opinion { font-style: italic; font-size: 0.9rem; color: #444; }
 
+.autor-aporte {
+    display: inline-block;
+    color: var(--color-texto);
+    font-size: 0.8rem;
+    margin-bottom: 0.3rem;
+    opacity: 0.8;
+}
+
 .tarjeta-fechas {
     padding: 0.8rem 1.2rem;
     background-color: #fafbfc;
@@ -235,7 +243,10 @@ body {
     font-size: 0.75rem;
     color: #95a5a6;
 }
-.txt-editado { color: var(--chihuahua-brown); font-weight: 500; }
+.txt-editado {
+    color: #7d8c8d;
+    font-weight: 500;
+}
 
 .coleccion-vacia {
     grid-column: 1 / -1;
