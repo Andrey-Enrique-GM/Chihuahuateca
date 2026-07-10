@@ -15,7 +15,7 @@ para mantener una separacion clara entre la logica de negocio y la capa de acces
 
 
 class Elemento:
-    def __init__(self, id: int, titulo: str, tipo: str, autor_director: str, descripcion: str, calificacion: int, opinion: str, usuario_nombre: str, fecha_creacion: str, fecha_actualizacion: str):
+    def __init__(self, id: int, titulo: str, tipo: str, autor_director: str, descripcion: str, calificacion: int, opinion: str, usuario_id: int, usuario_nombre: str, fecha_creacion: str, fecha_actualizacion: str):
         self.id = id
         self.titulo = titulo
         self.tipo = tipo
@@ -23,6 +23,7 @@ class Elemento:
         self.descripcion = descripcion
         self.calificacion = calificacion
         self.opinion = opinion
+        self.usuario_id = usuario_id
         self.usuario_nombre = usuario_nombre
         self.fecha_creacion = fecha_creacion
         self.fecha_actualizacion = fecha_actualizacion
@@ -37,9 +38,9 @@ class Elemento:
             cursor = conexion.cursor(DictCursor) 
             sql = """
                 SELECT c.id, c.titulo, c.tipo, c.autor_director, c.descripcion, c.calificacion, c.opinion, 
-                       DATE_FORMAT(c.fecha_creacion, '%Y-%m-%d %H:%i') as fecha_creacion,
-                       DATE_FORMAT(c.fecha_actualizacion, '%Y-%m-%d %H:%i') as fecha_actualizacion,
-                       u.nombre as usuario_nombre
+                    DATE_FORMAT(c.fecha_creacion, '%Y-%m-%d %H:%i') as fecha_creacion,
+                    DATE_FORMAT(c.fecha_actualizacion, '%Y-%m-%d %H:%i') as fecha_actualizacion,
+                    c.usuario_id, u.nombre as usuario_nombre
                 FROM coleccion c
                 LEFT JOIN usuarios u ON c.usuario_id = u.id
                 ORDER BY c.id DESC
@@ -51,7 +52,8 @@ class Elemento:
                 nuevo_elemento = Elemento(
                     id=r['id'], titulo=r['titulo'], tipo=r['tipo'],
                     autor_director=r['autor_director'], descripcion=r['descripcion'],
-                    calificacion=r['calificacion'], opinion=r['opinion'], usuario_nombre=r['usuario_nombre'],
+                    calificacion=r['calificacion'], opinion=r['opinion'],
+                    usuario_id=r['usuario_id'], usuario_nombre=r['usuario_nombre'],
                     fecha_creacion=r['fecha_creacion'], fecha_actualizacion=r['fecha_actualizacion']
                 )
                 elementos.append(nuevo_elemento)
@@ -69,7 +71,15 @@ class Elemento:
         try:
             conexion = get_connection()
             cursor = conexion.cursor(DictCursor)
-            sql = "SELECT * FROM coleccion WHERE id = %s"
+            sql = """
+                SELECT c.id, c.titulo, c.tipo, c.autor_director, c.descripcion, c.calificacion, c.opinion,
+                    DATE_FORMAT(c.fecha_creacion, '%Y-%m-%d %H:%i') as fecha_creacion,
+                    DATE_FORMAT(c.fecha_actualizacion, '%Y-%m-%d %H:%i') as fecha_actualizacion,
+                    c.usuario_id, u.nombre as usuario_nombre
+                FROM coleccion c
+                LEFT JOIN usuarios u ON c.usuario_id = u.id
+                WHERE c.id = %s
+            """
             cursor.execute(sql, (elemento_id,))
             r = cursor.fetchone()
             
@@ -81,6 +91,7 @@ class Elemento:
                     id=r['id'], titulo=r['titulo'], tipo=r['tipo'],
                     autor_director=r['autor_director'], descripcion=r['descripcion'],
                     calificacion=r['calificacion'], opinion=r['opinion'],
+                    usuario_id=r['usuario_id'], usuario_nombre=r['usuario_nombre'],
                     fecha_creacion=str(r['fecha_creacion']), fecha_actualizacion=str(r['fecha_actualizacion'])
                 )
         except Exception as ex:

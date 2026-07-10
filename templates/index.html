@@ -136,7 +136,11 @@
                 <select id="select-editar-elemento">
                     <option value="">-- Elige un libro o película registrado --</option>
                     {% for elemento in elementos %}
-                        <option value="{{ elemento.id }}">{{ '[📚]' if elemento.tipo == 'libro' else '[🎬]' }} {{ elemento.titulo }}</option>
+                        {% if session.get('usuario_id') == elemento.usuario_id %}
+                            <option value="{{ elemento.id }}">
+                                {{ '[📚]' if elemento.tipo == 'libro' else '[🎬]' }} {{ elemento.titulo }}
+                            </option>
+                        {% endif %}
                     {% endfor %}
                 </select>
             </div>
