@@ -41,16 +41,16 @@ def index():
 
 @app.route('/api/login', methods=['POST'])
 def api_login():
-    # Recibir datos del formulario tradicional (POST)
-    username = request.form.get('username', '').strip()
-    password = request.form.get('password', '').strip()
+    data = request.get_json() or {}
+    username = data.get('username', '').strip()
+    password = data.get('password', '').strip()
 
     if not username or not password:
-        return "Faltan datos", 400
+        return jsonify({'success': False, 'message': 'Faltan datos'}), 400
 
     conexion = None
     try:
-        # Conexión rápida a la BD utilizando tus variables de entorno
+        # Conexión rápida a la BD utilizando variables de entorno
         conexion = pymysql.connect(
             host=os.getenv("DB_HOST"),
             port=int(os.getenv("DB_PORT", 24316)),
@@ -74,13 +74,13 @@ def api_login():
             session['rol'] = usuario['rol']
             
             # Login exitoso, redirigimos a la vista de la colección
-            return redirect(url_for('index'))
+            return jsonify({'success': True, 'redirect': url_for('index')})
         else:
             # Si los datos no coinciden, mandamos un mensaje simple por ahora
-            return "Usuario o contraseña incorrectos. <a href='/'>Volver a intentar</a>", 401
+            return jsonify({'success': False, 'message': 'Usuario o contraseña incorrectos'}), 401
 
     except Exception as ex:
-        return f"Error en el servidor: {ex}", 500
+        return jsonify({'success': False, 'message': f'Error en el servidor: {ex}'}), 500
     finally:
         if conexion and conexion.open:
             cursor.close()
@@ -89,18 +89,19 @@ def api_login():
 
 @app.route('/api/signup', methods=['POST'])
 def api_signup():
+    data = request.get_json() or {}
     # Obtener los datos del formulario
-    nombre = request.form.get('name', '').strip()
-    username = request.form.get('username', '').strip()
-    password = request.form.get('password', '').strip()
-    confirm_password = request.form.get('confirm_password', '').strip()
+    nombre = data.get('name', '').strip()
+    username = data.get('username', '').strip()
+    password = data.get('password', '').strip()
+    confirm_password = data.get('confirm_password', '').strip()
 
     # Validaciones básicas
     if not nombre or not username or not password:
-        return "Todos los campos son obligatorios. <a href='/signup'>Volver</a>", 400
+        return jsonify({'success': False, 'message': 'Todos los campos son obligatorios'}), 400
 
     if password != confirm_password:
-        return "Las contraseñas no coinciden. <a href='/signup'>Volver</a>", 400
+        return jsonify({'success': False, 'message': 'Las contraseñas no coinciden'}), 400
 
     # Hashear la contraseña antes de guardarla
     password_encriptada = generate_password_hash(password)
@@ -125,14 +126,13 @@ def api_signup():
         cursor.execute(sql, (username, nombre, password_encriptada))
         conexion.commit()
 
-        # Registro exitoso, lo mandamos directo al Login para que entre a su cuenta
-        return "Cuenta creada con éxito. Ahora puedes <a href='/'>Iniciar Sesión aquí</a>."
+        return jsonify({'success': True, 'message': '¡Cuenta creada con éxito! Ahora puedes iniciar sesión.'})
 
     except pymysql.backends.mysqld.err.IntegrityError:
         # Esto salta si el 'username' ya existe
-        return f"El nombre de usuario '{username}' ya está ocupado. <a href='/signup'>Intenta con otro</a>.", 409
+        return jsonify({'success': False, 'message': f"El nombre de usuario '{username}' ya está ocupado."}), 409
     except Exception as ex:
-        return f"Error en el servidor: {ex} <a href='/signup'>Volver</a>", 500
+        return jsonify({'success': False, 'message': f'Error en el servidor: {ex}'}), 500
     finally:
         if conexion and conexion.open:
             cursor.close()

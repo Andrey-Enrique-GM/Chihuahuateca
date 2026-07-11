@@ -47,5 +47,46 @@
         </div>
     </div>
 
+    <script>
+    document.getElementById('form-login')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
+
+        try {
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+
+            if (result.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Bienvenido 🐾',
+                    text: result.message || 'Inicio de sesión correcto.',
+                    confirmButtonColor: '#2c3e50',
+                    timer: 2000, // Se cierra solo en 2 segundos si no le dan clic
+                    timerProgressBar: true
+                }).then(() => {
+                    window.location.href = result.redirect;
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: result.message || 'Error al iniciar sesión',
+                    confirmButtonColor: '#d35400'
+                });
+            }
+        } catch (err) {
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Conexión fallida', confirmButtonColor: '#d35400' });
+        }
+    });
+    </script>
+
+    <script src="{{ url_for('static', filename='libs/sweetalert2/sweetalert2.js') }} "></script>
+
 </body>
 </html>

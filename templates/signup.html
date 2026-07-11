@@ -57,5 +57,44 @@
         </div>
     </div>
 
+    <script>
+    document.getElementById('form-signup')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
+
+        try {
+            const res = await fetch('/api/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+
+            if (result.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Buen trabajo! 🐾',
+                    text: result.message,
+                    confirmButtonColor: '#2c3e50'
+                }).then(() => {
+                    window.location.href = '/'; // Redirige al login tras cerrar la alerta
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de registro',
+                    text: result.message || 'No se pudo crear la cuenta',
+                    confirmButtonColor: '#d35400'
+                });
+            }
+        } catch (err) {
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Conexión fallida', confirmButtonColor: '#d35400' });
+        }
+    });
+    </script>
+
+    <script src="{{ url_for('static', filename='libs/sweetalert2/sweetalert2.js') }} "></script>
+
 </body>
 </html>
