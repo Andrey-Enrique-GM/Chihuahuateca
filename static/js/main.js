@@ -137,10 +137,23 @@ function guardarNuevoElemento(e) {
     .then(res => res.json())
     .then(resultado => {
         if (resultado.success) {
-            alert('Agregado con exito a la Chihuahuateca! 🐾');
-            window.location.reload(); // Recargamos para ver la nueva tarjeta pintada por Python
+            Swal.fire({
+            icon: 'success',
+            title: 'Registro Exitoso',
+            text: 'El elemento se guardó correctamente en la Chihuahuateca.',
+            confirmButtonColor: '#2c3e50',
+            timer: 1500,
+            timerProgressBar: true
+        }).then(() => {
+            location.reload(); // Recarga la colección para ver el nuevo item
+        });
         } else {
-            alert('Hubo un error al guardar.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Error al guardar',
+                text: 'No se pudo guardar el elemento en la Chihuahuateca.',
+                confirmButtonColor: '#2c3e50'
+            });
         }
     })
     .catch(err => console.error('Error:', err));
@@ -204,10 +217,23 @@ function actualizarElemento(e) {
     .then(res => res.json())
     .then(resultado => {
         if (resultado.success) {
-            alert('Chihuahuateca actualizada! 🐾');
-            window.location.reload();
+            Swal.fire({
+                icon: 'success',
+                title: 'Actualización Exitosa',
+                text: 'Los cambios se guardaron correctamente.',
+                confirmButtonColor: '#2c3e50',
+                timer: 1500,
+                timerProgressBar: true
+            }).then(() => {
+                location.reload();
+            });
         } else {
-            alert('Error al actualizar.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Error al actualizar',
+                text: 'No se pudieron guardar los cambios.',
+                confirmButtonColor: '#2c3e50'
+            });
         }
     })
     .catch(err => console.error('Error:', err));
@@ -222,20 +248,42 @@ function borrarElemento() {
 
     if (!idElemento) return;
 
-    // Confirmacion clasica antes de destruir un dato
-    if (confirm(`Estas seguro de que quieres eliminar permanentemente "${titulo}" de tu coleccion?`)) {
-        fetch(`/api/borrar/${idElemento}`, {
-            method: 'DELETE'
-        })
-        .then(res => res.json())
-        .then(resultado => {
-            if (resultado.success) {
-                alert('Registro eliminado para siempre 🐾💔');
-                window.location.reload();
-            } else {
-                alert('No se pudo borrar el registro');
-            }
-        })
-        .catch(err => console.error('Error:', err));
-    }
+    // Confirmacion antes de destruir un dato
+    Swal.fire({
+        title: '¿Estás seguro?',
+        text: "¡No podrás revertir este cambio!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d35400',
+        cancelButtonColor: '#7f8c8d',
+        confirmButtonText: 'Sí, borrar de la colección',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/api/borrar/${idElemento}`, {
+                method: 'DELETE'
+            })
+            .then(res => res.json())
+            .then(resultado => {
+                if (resultado.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Elemento Borrado Permanentemente',
+                        text: 'El elemento fue eliminado de tu colección.',
+                        confirmButtonColor: '#2c3e50'
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error al borrar',
+                        text: 'No se pudo eliminar el elemento.',
+                        confirmButtonColor: '#2c3e50'
+                    });
+                }
+            })
+            .catch(err => console.error('Error:', err));
+        }
+    });
 }

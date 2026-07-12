@@ -72,10 +72,8 @@ class Elemento:
             conexion = get_connection()
             cursor = conexion.cursor(DictCursor)
             sql = """
-                SELECT c.id, c.titulo, c.tipo, c.autor_director, c.descripcion, c.calificacion, c.opinion,
-                    DATE_FORMAT(c.fecha_creacion, '%Y-%m-%d %H:%i') as fecha_creacion,
-                    DATE_FORMAT(c.fecha_actualizacion, '%Y-%m-%d %H:%i') as fecha_actualizacion,
-                    c.usuario_id, u.nombre as usuario_nombre
+                SELECT c.id, c.titulo, c.tipo, c.autor_director, c.descripcion, c.calificacion, c.opinion, 
+                   c.fecha_creacion, c.fecha_actualizacion, c.usuario_id, u.nombre as usuario_nombre
                 FROM coleccion c
                 LEFT JOIN usuarios u ON c.usuario_id = u.id
                 WHERE c.id = %s
@@ -88,11 +86,17 @@ class Elemento:
 
             if r:
                 return Elemento(
-                    id=r['id'], titulo=r['titulo'], tipo=r['tipo'],
-                    autor_director=r['autor_director'], descripcion=r['descripcion'],
-                    calificacion=r['calificacion'], opinion=r['opinion'],
-                    usuario_id=r['usuario_id'], usuario_nombre=r['usuario_nombre'],
-                    fecha_creacion=str(r['fecha_creacion']), fecha_actualizacion=str(r['fecha_actualizacion'])
+                    id=r['id'],
+                    titulo=r['titulo'],
+                    tipo=r['tipo'],
+                    autor_director=r['autor_director'],
+                    descripcion=r['descripcion'],
+                    calificacion=r['calificacion'],
+                    opinion=r['opinion'],
+                    usuario_id=r['usuario_id'],
+                    usuario_nombre=r['usuario_nombre'],
+                    fecha_creacion=str(r['fecha_creacion']),
+                    fecha_actualizacion=str(r['fecha_actualizacion'])
                 )
         except Exception as ex:
             print(f"Error al obtener elemento por ID: {ex}")

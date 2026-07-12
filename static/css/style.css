@@ -409,6 +409,156 @@ body {
 
 
 /* ==========================================================================
+   BOTONES FLOTANTES
+   ========================================================================== */
+
+/* Botón GitHub - Esquina Inferior Izquierda */
+.link-github-flotante {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background-color: var(--chihuahua-light);
+    color: var(--blanco);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 2000;
+    border: none;
+    outline: none;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s ease;
+}
+
+.link-github-flotante:hover {
+    background-color: var(--chihuahua-brown);
+    transform: translateY(-3px) scale(1.05);
+}
+
+/* Botón Info (?) - Esquina Inferior Derecha */
+.btn-ayuda-flotante {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 42px;
+    height: 42px;
+    background-color: var(--chihuahua-light);
+    color: var(--blanco);
+    border-radius: 50%;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 2000;
+    border: none;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s ease;
+}
+
+.btn-ayuda-flotante:hover {
+    background-color: var(--chihuahua-brown);
+    transform: translateY(-3px) scale(1.05);
+}
+
+#modal-info .modal-ventana {
+    background-color: var(--blanco);
+    max-height: 90vh; /* Evita que se salga de pantallas pequeñas */
+    display: flex;
+    flex-direction: column;
+}
+
+#modal-info .modal-cabecera {
+    background: linear-gradient(135deg, var(--chihuahua-brown), var(--chihuahua-light));
+    color: var(--blanco);
+}
+
+/* Estilos de scrollbar y contenedor interno */
+.modal-info-cuerpo-contenido {
+    padding: 1.5rem;
+    overflow-y: auto;
+    text-align: left;
+    flex: 1;
+}
+
+.info-seccion {
+    margin-bottom: 20px;
+}
+
+.info-seccion h3 {
+    font-size: 0.95rem;
+    color: var(--chihuahua-brown);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+    font-weight: 700;
+}
+
+.info-seccion p {
+    font-size: 0.9rem;
+    color: var(--color-texto);
+    line-height: 1.5;
+}
+
+/* Etiquetas de tecnologías */
+.tech-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 5px;
+}
+
+.tag-tech {
+    background-color: var(--bg-principal);
+    border: 1px solid #e0e0e0;
+    color: var(--color-texto);
+    font-size: 0.8rem;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+/* Tabla de Créditos */
+.tabla-creditos {
+    width: 100%;
+    margin-top: 8px;
+    font-size: 0.9rem;
+}
+
+.tabla-creditos td {
+    padding: 4px 0;
+    color: var(--color-texto);
+}
+
+/* Pie del modal */
+.modal-info-pie {
+    background-color: var(--bg-principal);
+    padding: 0.8rem 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+    border-top: 1px solid #e0e0e0;
+}
+
+/* Ocultar texto en móviles para que no se superpongan */
+@media (max-width: 480px) {
+    .link-github-flotante span {
+        display: none;
+    }
+    .link-github-flotante {
+        padding: 10px;
+    }
+}
+
+
+
+/* ==========================================================================
    VISTAS DE AUTENTICACIÓN (LOGIN Y SIGNUP)
    ========================================================================== */
 

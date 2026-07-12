@@ -1,41 +1,68 @@
 <!-- Modal de Información y Créditos -->
-    <div id="modal-info-proyecto" class="modal-overlay" onclick="cerrarModalInfoExterno(event)">
-        <div class="modal-contenido modal-info-ancho">
-            <header class="modal-info-header">
-                <h2>Sobre el Proyecto</h2>
-                <span class="version-tag">v1.0</span>
-            </header>
-            
-            <div class="modal-info-cuerpo">
-                <section class="info-seccion">
-                    <h3>¿Qué es la "Chihuahuateca"?</h3>
-                    <p>"Chihuahuateca" es una aplicación web..</p>
-                </section>
-
-                <section class="info-seccion">
-                    <h3>Tecnologías Utilizadas</h3>
-                    <div class="tech-tags">
-                        <span class="tag-tech">Python</span>
-                        <span class="tag-tech">Flask</span>
-                        <span class="tag-tech">HTML5 & CSS3</span>
-                        <span class="tag-tech">JavaScript</span>
-                    </div>
-                </section>
-
-                <section class="info-seccion">
-                    <h3>Servicios y Créditos</h3>
-                    <p style="margin-bottom: 12px;">Para que este proyecto funcione de forma fluida y gratuita, se hace uso de los siguientes servicios externos:</p>
-                    <ul class="lista-info">
-                        <li>
-                            <a href="https://chihuahua/" target="_blank" class="enlace-credito">CHIHUAHUA</a>: 
-                            Chihuahua
-                        </li>
-                    </ul>
-                </section>
+<div id="modal-info" class="modal-overlay">
+    <div class="modal-ventana">
+        <div class="modal-cabecera">
+            <h2>🐾 Sobre el Proyecto</h2>
+            <button class="btn-cerrar-modal" onclick="cerrarModal('modal-info')">&times;</button>
+        </div>
+        
+        <div class="modal-info-cuerpo-contenido">
+            <div class="info-seccion">
+                <h3>¿Qué es la "Chihuahuateca"?</h3>
+                <p>"Chihuahuateca" es una aplicación web funcional y minimalista orientada a ser el guardián ideal de tus colecciones personales de libros y películas.</p>
             </div>
 
-            <footer class="modal-info-pie">
-                <button class="btn-cerrar-modal" onclick="cerrarModalInfo()">Cerrar</button>
-            </footer>
+            <div class="info-seccion">
+                <h3>Tecnologías Utilizadas</h3>
+                <div class="tech-tags">
+                    <span class="tag-tech">Python</span>
+                    <span class="tag-tech">Flask</span>
+                    <span class="tag-tech">MySql</span>
+                    <span class="tag-tech">HTML5 & CSS3</span>
+                    <span class="tag-tech">JavaScript</span>
+                </div>
+            </div>
+
+            <div class="info-seccion">
+                <h3>Servicios e Infraestructura</h3>
+                <p>Para asegurar un rendimiento fluido, gratuito y en la nube, el sistema está integrado con los siguientes servicios externos:</p>
+                <ul class="lista-info" style="margin-top: 8px;">
+                    <li>
+                        <a href="https://aiven.io/" target="_blank" class="enlace-credito">Base de Datos en la nube</a>: 
+                        Hospedada de forma remota en la nube gratuita de <strong>Aiven MySQL</strong>.
+                    </li>
+                    <li>
+                        <a href="https://render.com/" target="_blank" class="enlace-credito">Despliegue y Hosting</a>: 
+                        Servidores web administrados a través de la plataforma <strong>Render</strong>.
+                    </li>
+                </ul>
+            </div>
+            
+            <p style="text-align: center; margin-top: 20px; font-size: 0.9rem; color: #7f8c8d;">
+                Desarrollado con ❤ por <strong>Andrey</strong>🎴
+            </p>
+        </div>
+        
+        <div class="modal-info-pie">
+            <button type="button" class="btn-guardar" style="margin: 0; width: auto; padding: 0.5rem 1.5rem;" onclick="cerrarModalInfo()">Cerrar</button>
         </div>
     </div>
+</div>
+
+
+
+<script>
+function abrirModalInfo() {
+    abrirModal('modal-info');
+}
+
+function cerrarModalInfo() {
+    cerrarModal('modal-info');
+}
+
+function cerrarModalInfoExterno(event) {
+    if (event.target.id === 'modal-info') {
+        cerrarModalInfo();
+    }
+}
+</script>
