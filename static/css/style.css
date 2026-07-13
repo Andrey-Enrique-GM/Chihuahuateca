@@ -56,6 +56,155 @@ body {
 
 
 /* ==========================================================================
+   MENÚ DE USUARIO
+   ========================================================================== */
+.user-menu-container {
+    position: absolute;
+    top: 15px;
+    left: 20px;
+    z-index: 1005;
+    display: inline-block;
+}
+
+/* Disparador del menú (Avatar + Nombre) */
+.user-profile-trigger {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 14px;
+    background-color: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(4px);
+    border-radius: 30px;
+    color: var(--blanco);
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: var(--transicion);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.user-profile-trigger:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+    transform: translateY(-1px);
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    background-color: var(--blanco);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.user-arrow {
+    font-size: 0.7rem;
+    opacity: 0.8;
+    transition: transform 0.2s ease;
+}
+
+/* El menú desplegable oculto por defecto */
+.user-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    background-color: var(--blanco);
+    min-width: 220px;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    padding: 6px 0;
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+}
+
+/* Mostrar menú al hacer Hover sobre el contenedor */
+.user-menu-container:hover .user-dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.user-menu-container:hover .user-arrow {
+    transform: rotate(180deg);
+}
+
+/* Elementos del menú */
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    color: var(--color-texto);
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: background-color 0.15s ease;
+    text-align: left;
+}
+
+.dropdown-item:hover {
+    background-color: var(--bg-principal);
+}
+
+.item-icon {
+    font-size: 1.1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    flex-shrink: 0;
+}
+
+.dropdown-divider {
+    border: 0;
+    border-top: 1px solid #eee;
+    margin: 6px 0;
+}
+
+/* Estilo especial para Cerrar Sesión */
+.dropdown-item.item-logout {
+    color: #e74c3c;
+}
+
+.dropdown-item.item-logout:hover {
+    background-color: #fde8e7;
+}
+
+/* Adaptación para pantallas de celulares */
+@media (max-width: 768px) {
+    .user-menu-container {
+        position: relative;
+        top: 0;
+        left: 0;
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        padding: 10px 0;
+        background: rgba(0, 0, 0, 0.05);
+        margin-bottom: -10px;
+    }
+    
+    .user-profile-trigger {
+        background-color: rgba(0, 0, 0, 0.05);
+        color: var(--color-texto);
+    }
+    
+    .user-dropdown-menu {
+        left: 50%;
+        transform: translateX(-50%) translateY(-10px);
+    }
+    
+    .user-menu-container:hover .user-dropdown-menu {
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+
+
+/* ==========================================================================
    BARRA DE CONTROLES (BUSQUEDA Y FILTROS)
    ========================================================================== */
 .contenedor-principal {

@@ -62,7 +62,7 @@ def api_login():
         cursor = conexion.cursor(pymysql.cursors.DictCursor)
         
         # Buscamos al usuario por su username
-        sql = "SELECT id, username, password, rol FROM usuarios WHERE username = %s"
+        sql = "SELECT id, username, nombre, password, rol FROM usuarios WHERE username = %s"
         cursor.execute(sql, (username,))
         usuario = cursor.fetchone()
 
@@ -71,6 +71,7 @@ def api_login():
             # Guardamos los datos clave en la sesión de Flask
             session['usuario_id'] = usuario['id']
             session['username'] = usuario['username']
+            session['nombre'] = usuario['nombre']
             session['rol'] = usuario['rol']
             
             # Login exitoso, redirigimos a la vista de la colección
