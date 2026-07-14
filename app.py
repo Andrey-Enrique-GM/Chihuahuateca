@@ -1,9 +1,10 @@
 import os
-import pymysql
 from flask import Flask, redirect, render_template, jsonify, request, session, url_for
 from dotenv import load_dotenv
-from werkzeug.security import check_password_hash, generate_password_hash
 from entities.elemento import Elemento
+from entities.log import Log
+from entities.usuario import User
+from enums.log_type import LogType
 
 
 
@@ -13,6 +14,7 @@ load_dotenv()
 # Configuración de la aplicación Flask
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY")
+
 
 
 # --- RUTAS DE NAVEGACION ---
@@ -48,50 +50,23 @@ def api_login():
     if not username or not password:
         return jsonify({'success': False, 'message': 'Faltan datos'}), 400
 
-    conexion = None
-    try:
-        # Conexión rápida a la BD utilizando variables de entorno
-        conexion = pymysql.connect(
-            host=os.getenv("DB_HOST"),
-            port=int(os.getenv("DB_PORT", 24316)),
-            user=os.getenv("DB_USER"),
-            password=os.getenv("DB_PASSWORD"),
-            database=os.getenv("DB_NAME"),
-            ssl={'ssl': {}}
-        )
-        cursor = conexion.cursor(pymysql.cursors.DictCursor)
-        
-        # Buscamos al usuario por su username
-        sql = "SELECT id, username, nombre, password, rol FROM usuarios WHERE username = %s"
-        cursor.execute(sql, (username,))
-        usuario = cursor.fetchone()
+    usuario = User.authenticate(username, password)
 
-        # Si el usuario existe y la contraseña coincide con el hash encriptado
-        if usuario and check_password_hash(usuario['password'], password):
-            # Guardamos los datos clave en la sesión de Flask
-            session['usuario_id'] = usuario['id']
-            session['username'] = usuario['username']
-            session['nombre'] = usuario['nombre']
-            session['rol'] = usuario['rol']
-            
-            # Login exitoso, redirigimos a la vista de la colección
-            return jsonify({'success': True, 'redirect': url_for('index')})
-        else:
-            # Si los datos no coinciden, mandamos un mensaje simple por ahora
-            return jsonify({'success': False, 'message': 'Usuario o contraseña incorrectos'}), 401
+    if usuario:
+        session['usuario_id'] = usuario.id
+        session['username'] = usuario.username
+        session['nombre'] = usuario.nombre
+        session['rol'] = usuario.rol
 
-    except Exception as ex:
-        return jsonify({'success': False, 'message': f'Error en el servidor: {ex}'}), 500
-    finally:
-        if conexion and conexion.open:
-            cursor.close()
-            conexion.close()
+        Log.save_log(usuario, "Inicio de sesion", LogType.LOGIN)
+        return jsonify({'success': True, 'redirect': url_for('index')})
+
+    return jsonify({'success': False, 'message': 'Usuario o contraseña incorrectos'}), 401
 
 
 @app.route('/api/signup', methods=['POST'])
 def api_signup():
     data = request.get_json() or {}
-    # Obtener los datos del formulario
     nombre = data.get('name', '').strip()
     username = data.get('username', '').strip()
     password = data.get('password', '').strip()
@@ -104,40 +79,15 @@ def api_signup():
     if password != confirm_password:
         return jsonify({'success': False, 'message': 'Las contraseñas no coinciden'}), 400
 
-    # Hashear la contraseña antes de guardarla
-    password_encriptada = generate_password_hash(password)
+    exito, mensaje = User.create(nombre, username, password)
 
-    conexion = None
-    try:
-        conexion = pymysql.connect(
-            host=os.getenv("DB_HOST"),
-            port=int(os.getenv("DB_PORT", 24316)),
-            user=os.getenv("DB_USER"),
-            password=os.getenv("DB_PASSWORD"),
-            database=os.getenv("DB_NAME"),
-            ssl={'ssl': {}}
-        )
-        cursor = conexion.cursor()
-
-        # Insertar el nuevo usuario normal
-        sql = """
-            INSERT INTO usuarios (username, nombre, password) 
-            VALUES (%s, %s, %s)
-        """
-        cursor.execute(sql, (username, nombre, password_encriptada))
-        conexion.commit()
-
+    if exito:
         return jsonify({'success': True, 'message': '¡Cuenta creada con éxito! Ahora puedes iniciar sesión.'})
 
-    except pymysql.backends.mysqld.err.IntegrityError:
-        # Esto salta si el 'username' ya existe
-        return jsonify({'success': False, 'message': f"El nombre de usuario '{username}' ya está ocupado."}), 409
-    except Exception as ex:
-        return jsonify({'success': False, 'message': f'Error en el servidor: {ex}'}), 500
-    finally:
-        if conexion and conexion.open:
-            cursor.close()
-            conexion.close()
+    if mensaje and 'ocupado' in mensaje.lower():
+        return jsonify({'success': False, 'message': mensaje}), 409
+
+    return jsonify({'success': False, 'message': mensaje or 'Error al crear la cuenta'}), 500
 
 
 @app.route('/api/guardar', methods=['POST'])
