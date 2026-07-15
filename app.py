@@ -64,6 +64,12 @@ def api_login():
     return jsonify({'success': False, 'message': 'Usuario o contraseña incorrectos'}), 401
 
 
+@app.route("/logout")
+def api_logout():
+    session.clear()
+    return redirect(url_for("login_view"))
+
+
 @app.route('/api/signup', methods=['POST'])
 def api_signup():
     data = request.get_json() or {}
