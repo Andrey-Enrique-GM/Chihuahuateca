@@ -19,7 +19,7 @@
             <a href="#" class="dropdown-item">
                 <span class="item-icon">👤</span> Mi perfil
             </a>
-            <a href="#" class="dropdown-item">
+            <a href="#" class="dropdown-item" id="btn-cambiar-pass">
                 <span class="item-icon">🔑</span> Cambiar mi contraseña
             </a>
             <hr class="dropdown-divider">
@@ -29,12 +29,16 @@
         </div>
     </div>
 
+
+
     <header class="header-app">
         <div class="header-contenido">
             <h1>🐾 Chihuahuateca 🐾</h1>
             <p>El guardián ideal de libros y películas</p>
         </div>
     </header>
+
+
 
     <main class="contenedor-principal">
         
@@ -54,6 +58,8 @@
                 <button id="btn-abrir-editar" class="btn-accion btn-modificar">📝 Editar</button>
             </div>
         </section>
+
+
 
         <section class="grid-coleccion" id="grid-coleccion">
             {% for elemento in elementos %}
@@ -158,10 +164,12 @@
                     <label for="add-opinion">Opinión Personal:</label>
                     <textarea id="add-opinion" rows="3" placeholder="¿Qué te pareció?"></textarea>
                 </div>
-                <button type="submit" class="btn-guardar">💾 Guardar en la Chihuahuateca</button>
+                <button type="submit" class="btn-guardar">Guardar en la Chihuahuateca</button>
             </form>
         </div>
     </div>
+
+
 
     <div id="modal-editar" class="modal-overlay">
         <div class="modal-ventana">
@@ -216,12 +224,40 @@
                 </div>
 
                 <div class="botones-modal-acciones">
-                    <button type="submit" class="btn-guardar btn-actualizar">🔄 Actualizar Cambios</button>
-                    <button type="button" id="btn-borrar-elemento" class="btn-eliminar">🗑️ Eliminar Registro</button>
+                    <button type="submit" class="btn-guardar btn-actualizar">Actualizar Cambios</button>
+                    <button type="button" id="btn-borrar-elemento" class="btn-eliminar">Eliminar Registro</button>
                 </div>
             </form>
         </div>
     </div>
+
+
+
+    <div id="modal-password" class="modal-overlay">
+        <div class="modal-ventana">
+            <div class="modal-cabecera">
+                <h2>🔑 Cambiar Contraseña</h2>
+                <button class="btn-cerrar-modal" onclick="cerrarModal('modal-password')">&times;</button>
+            </div>
+            <form id="form-cambiar-password" class="modal-formulario">
+                <div class="form-grupo">
+                    <label for="pass-actual">Contraseña Actual:</label>
+                    <input type="password" id="pass-actual" required>
+                </div>
+                <div class="form-grupo">
+                    <label for="pass-nueva">Nueva Contraseña:</label>
+                    <input type="password" id="pass-nueva" minlength="4" required>
+                </div>
+                <div class="form-grupo">
+                    <label for="pass-confirmar">Confirmar Nueva Contraseña:</label>
+                    <input type="password" id="pass-confirmar" minlength="4" required>
+                </div>
+                <button type="submit" class="btn-guardar">Actualizar Contraseña</button>
+            </form>
+        </div>
+    </div>
+
+
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script src="{{ url_for('static', filename='libs/sweetalert2/sweetalert2.js') }} "></script>

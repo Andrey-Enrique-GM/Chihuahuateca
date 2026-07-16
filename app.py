@@ -163,6 +163,38 @@ def api_obtener_elemento_por_id(elemento_id):
     return jsonify({"error": "No encontrado"}), 404
 
 
+@app.route('/api/usuario/cambiar-password', methods=['POST'])
+def api_cambiar_password():
+    # Asegurar que el usuario tiene sesión activa
+    usuario_id = session.get('usuario_id')
+    if not usuario_id:
+        return jsonify({'success': False, 'message': 'Sesión no válida o expirada.'}), 401
+
+    data = request.get_json() or {}
+    pass_actual = data.get('pass_actual', '').strip()
+    pass_nueva = data.get('pass_nueva', '').strip()
+
+    if not pass_actual or not pass_nueva:
+        return jsonify({'success': False, 'message': 'Todos los campos son obligatorios.'}), 400
+
+    # Usamos el username en sesión para validar que conozca su contraseña actual
+    username_actual = session.get('username')
+    usuario_validado = User.authenticate(username_actual, pass_actual)
+
+    if not usuario_validado:
+        return jsonify({'success': False, 'message': 'La contraseña actual es incorrecta.'}), 401
+
+    # Guardar la nueva contraseña. 
+    exito, mensaje = User.update_password(usuario_id, pass_nueva)
+
+    if exito:
+        usuario = User(id=usuario_id, username=username_actual, nombre=session.get('nombre', ''), password='', rol=session.get('rol', 'usuario'))
+        Log.save_log(usuario, "El usuario cambió su contraseña de seguridad", LogType.EDIT)
+        return jsonify({'success': True, 'message': 'Tu contraseña ha sido actualizada con éxito.'})
+    
+    return jsonify({'success': False, 'message': mensaje or 'Error interno al actualizar la contraseña.'}), 500
+
+
 
 # Ejecutar la aplicación Flask
 if __name__ == '__main__':

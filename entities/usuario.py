@@ -78,3 +78,26 @@ class User:
 
             print(f"Error al crear usuario: {ex}")
             return False, f"Error en el servidor: {ex}"
+
+
+    # Metodo estatico para actualizar la contraseña del usuario
+    @staticmethod
+    def update_password(usuario_id: int, password_nueva: str):
+        if not usuario_id or not password_nueva:
+            return False, 'Datos incompletos para actualizar la contraseña'
+
+        password_encriptada = generate_password_hash(password_nueva)
+
+        try:
+            conexion = get_connection()
+            cursor = conexion.cursor()
+            sql = "UPDATE usuarios SET password = %s WHERE id = %s"
+            cursor.execute(sql, (password_encriptada, usuario_id))
+            conexion.commit()
+
+            cursor.close()
+            conexion.close()
+            return True, None
+        except Exception as ex:
+            print(f"Error al actualizar la contraseña: {ex}")
+            return False, f"Error en el servidor: {ex}"

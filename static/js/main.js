@@ -287,3 +287,79 @@ function borrarElemento() {
         }
     });
 }
+
+
+
+// Clic sobre la opción del menú desplegable
+document.getElementById('btn-cambiar-pass').addEventListener('click', function(e) {
+    e.preventDefault();
+    if (typeof abrirModal === "function") {
+        abrirModal('modal-password');
+    } else {
+        document.getElementById('modal-password').classList.add('activo');
+    }
+});
+
+
+
+// Procesar el formulario de cambio de credenciales
+document.getElementById('form-cambiar-password').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const passActual = document.getElementById('pass-actual').value;
+    const passNueva = document.getElementById('pass-nueva').value;
+    const passConfirmar = document.getElementById('pass-confirmar').value;
+
+    if (passNueva !== passConfirmar) {
+        Swal.fire({
+            icon: 'error',
+            title: '¡Oops!',
+            text: 'La nueva contraseña y su confirmación no coinciden.'
+        });
+        return;
+    }
+
+    // Petición asíncrona a la API de Flask
+    fetch('/api/usuario/cambiar-password', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            pass_actual: passActual,
+            pass_nueva: passNueva
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+                icon: 'success',
+                title: '¡Excelente!',
+                text: data.message
+            }).then(() => {
+                // Limpiar inputs del formulario y cerrar
+                document.getElementById('form-cambiar-password').reset();
+                if (typeof cerrarModal === "function") {
+                    cerrarModal('modal-password');
+                } else {
+                    document.getElementById('modal-password').classList.remove('activo');
+                }
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: data.message || 'No se pudo realizar la actualización.'
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error de servidor',
+            text: 'Hubo un problema al conectar con el servidor.'
+        });
+    });
+});
