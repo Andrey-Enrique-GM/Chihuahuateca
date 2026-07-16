@@ -99,7 +99,6 @@ def api_signup():
 @app.route('/api/guardar', methods=['POST'])
 def api_guardar_elemento():
     data = request.json
-    # Obtenemos el ID de quien tiene la sesión abierta
     usuario_id = session.get('usuario_id')
     exito = Elemento.save(
         titulo=data['titulo'],
@@ -110,12 +109,18 @@ def api_guardar_elemento():
         opinion=data['opinion'],
         usuario_id=usuario_id
     )
+
+    if exito and usuario_id:
+        usuario = User(id=usuario_id, username=session.get('username', ''), nombre=session.get('nombre', ''), password='', rol=session.get('rol', 'usuario'))
+        Log.save_log(usuario, f"Guardó el elemento '{data['titulo']}'", LogType.SAVE)
+
     return jsonify({'success': exito})
 
 
 @app.route('/api/editar', methods=['POST'])
 def api_editar_elemento():
     data = request.json
+    usuario_id = session.get('usuario_id')
     exito = Elemento.update(
         id_elemento=int(data['id']),
         titulo=data['titulo'],
@@ -125,12 +130,23 @@ def api_editar_elemento():
         calificacion=int(data['calificacion']),
         opinion=data['opinion']
     )
+
+    if exito and usuario_id:
+        usuario = User(id=usuario_id, username=session.get('username', ''), nombre=session.get('nombre', ''), password='', rol=session.get('rol', 'usuario'))
+        Log.save_log(usuario, f"Editó el elemento '{data['titulo']}'", LogType.EDIT)
+
     return jsonify({'success': exito})
 
 
 @app.route('/api/borrar/<int:elemento_id>', methods=['DELETE'])
 def api_borrar_elemento(elemento_id):
+    usuario_id = session.get('usuario_id')
     exito = Elemento.delete(elemento_id)
+
+    if exito and usuario_id:
+        usuario = User(id=usuario_id, username=session.get('username', ''), nombre=session.get('nombre', ''), password='', rol=session.get('rol', 'usuario'))
+        Log.save_log(usuario, f"Eliminó el elemento con ID {elemento_id}", LogType.DELETE)
+
     return jsonify({'success': exito})
 
 
