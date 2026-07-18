@@ -8,6 +8,7 @@
     --chihuahua-light: #f39c12;
     --color-libro: #27ae60;
     --color-pelicula: #2980b9;
+    --color-serie: #8e44ad;
     --blanco: #ffffff;
     --sombra: 0 4px 6px rgba(0, 0, 0, 0.1);
     --sombra-hover: 0 10px 20px rgba(0, 0, 0, 0.15);
@@ -320,6 +321,7 @@ body {
 /* Diferenciacion visual por tipo */
 .tarjeta-item.libro { border-top-color: var(--color-libro); }
 .tarjeta-item.pelicula { border-top-color: var(--color-pelicula); }
+.tarjeta-item.serie { border-top-color: var(--color-serie); }
 
 .tarjeta-item:hover {
     transform: translateY(-5px);
@@ -336,6 +338,7 @@ body {
 }
 .tarjeta-badge.libro { background-color: var(--color-libro); }
 .tarjeta-badge.pelicula { background-color: var(--color-pelicula); }
+.tarjeta-badge.serie { background-color: var(--color-serie); }
 
 .tarjeta-cuerpo {
     padding: 1.2rem;

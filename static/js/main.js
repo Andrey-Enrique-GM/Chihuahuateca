@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-todos').addEventListener('click', (e) => cambiarFiltroTipo('todos', e.target));
     document.getElementById('btn-libros').addEventListener('click', (e) => cambiarFiltroTipo('libro', e.target));
     document.getElementById('btn-peliculas').addEventListener('click', (e) => cambiarFiltroTipo('pelicula', e.target));
+    document.getElementById('btn-series').addEventListener('click', (e) => cambiarFiltroTipo('serie', e.target));
 
     // Formularios y Eventos CRUD
     document.getElementById('form-agregar').addEventListener('submit', guardarNuevoElemento);
@@ -28,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-borrar-elemento').addEventListener('click', borrarElemento);
 });
 
-// Variable global para mantener el estado del filtro de tipo activo ('todos', 'libro', 'pelicula')
+// Variable global para mantener el estado del filtro de tipo activo ('todos', 'libro', 'pelicula', 'serie')
 let filtroTipoActual = 'todos';
 
 

@@ -36,7 +36,7 @@
     <header class="header-app">
         <div class="header-contenido">
             <h1>🐾 Chihuahuateca 🐾</h1>
-            <p>El guardián ideal de libros y películas</p>
+            <p>El guardián ideal de libros, películas y series</p>
         </div>
     </header>
 
@@ -53,6 +53,7 @@
                 <button id="btn-todos" class="btn-filtro activo">Todos 🐾</button>
                 <button id="btn-libros" class="btn-filtro">Libros 📚</button>
                 <button id="btn-peliculas" class="btn-filtro">Películas 🎬</button>
+                <button id="btn-series" class="btn-filtro">Series 📺</button>
             </div>
 
             <div class="acciones-crud">
@@ -71,13 +72,27 @@
                      data-autor="{{ elemento.autor_director.lower() }}">
                     
                     <div class="tarjeta-badge {{ elemento.tipo }}">
-                        {{ '📚 LIBRO' if elemento.tipo == 'libro' else '🎬 PELÍCULA' }}
+                        {% if elemento.tipo == 'libro' %}
+                            📚 LIBRO
+                        {% elif elemento.tipo == 'pelicula' %}
+                            🎬 PELÍCULA
+                        {% else %}
+                            📺 SERIE
+                        {% endif %}
                     </div>
                     
                     <div class="tarjeta-cuerpo">
                         <h3 class="tarjeta-titulo">{{ elemento.titulo }}</h3>
                         <p class="tarjeta-creador">
-                            <strong>{{ 'Autor:' if elemento.tipo == 'libro' else 'Director:' }}</strong> 
+                            <strong>
+                                {% if elemento.tipo == 'libro' %}
+                                    Autor:
+                                {% elif elemento.tipo == 'pelicula' %}
+                                    Director:
+                                {% else %}
+                                    Creador:
+                                {% endif %}
+                            </strong>
                             {{ elemento.autor_director }}
                         </p>
                         
@@ -144,6 +159,7 @@
                     <select id="add-tipo" required>
                         <option value="libro">Libro 📚</option>
                         <option value="pelicula">Película 🎬</option>
+                        <option value="serie">Serie 📺</option>
                     </select>
                 </div>
                 <div class="form-grupo">
@@ -151,7 +167,7 @@
                     <input type="text" id="add-titulo" required>
                 </div>
                 <div class="form-grupo">
-                    <label id="label-autor-director" for="add-autor">Autor / Director:</label>
+                    <label id="label-autor-director" for="add-autor">Autor / Director / Creador:</label>
                     <input type="text" id="add-autor" required>
                 </div>
                 <div class="form-grupo">
@@ -183,11 +199,18 @@
             <div class="form-grupo select-selector-caja">
                 <label for="select-editar-elemento"><strong>Selecciona el elemento a modificar:</strong></label>
                 <select id="select-editar-elemento">
-                    <option value="">-- Elige un libro o película registrado --</option>
+                    <option value="">-- Elige un libro, película o serie registrado --</option>
                     {% for elemento in elementos %}
                         {% if session.get('usuario_id') == elemento.usuario_id %}
                             <option value="{{ elemento.id }}">
-                                {{ '[📚]' if elemento.tipo == 'libro' else '[🎬]' }} {{ elemento.titulo }}
+                                {% if elemento.tipo == 'libro' %}
+                                    [📚]
+                                {% elif elemento.tipo == 'pelicula' %}
+                                    [🎬]
+                                {% else %}
+                                    [📺]
+                                {% endif %}
+                                {{ elemento.titulo }}
                             </option>
                         {% endif %}
                     {% endfor %}
@@ -202,6 +225,7 @@
                     <select id="edit-tipo" required>
                         <option value="libro">Libro 📚</option>
                         <option value="pelicula">Película 🎬</option>
+                        <option value="serie">Serie 📺</option>
                     </select>
                 </div>
                 <div class="form-grupo">
@@ -209,7 +233,7 @@
                     <input type="text" id="edit-titulo" required>
                 </div>
                 <div class="form-grupo">
-                    <label for="edit-autor">Autor / Director:</label>
+                    <label for="edit-autor">Autor / Director / Creador:</label>
                     <input type="text" id="edit-autor">
                 </div>
                 <div class="form-grupo">
