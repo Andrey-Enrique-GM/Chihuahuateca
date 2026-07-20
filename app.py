@@ -38,6 +38,19 @@ def index():
     return render_template('index.html', elementos=coleccion_completa)
 
 
+@app.route('/profile', endpoint='profile')
+def ruta_perfil():
+    usuario_id = session.get('usuario_id')
+    if not usuario_id:
+        return redirect(url_for('login_view'))
+    
+    usuario = User.get_by_id(usuario_id)
+    # Obtenemos sus logs recientes para mostrar actividad
+    actividad = Log.get_by_user(usuario_id)
+    
+    return render_template('profile.html', usuario=usuario, logs=actividad)
+
+
 
 # --- RUTAS DE API ---
 

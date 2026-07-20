@@ -1,11 +1,11 @@
 # Chihuahuateca 🐾
 
-El guardián ideal de libros y películas. Una aplicación web dinámica y responsiva diseñada para gestionar colecciones de entretenimiento en tiempo real con un toque único.
+El guardián ideal de libros, películas y series. Una aplicación web dinámica y responsiva diseñada para gestionar colecciones de entretenimiento en tiempo real con un toque único.
 
 ## ✨ Características Principales
 * **CRUD Completo en Tiempo Real:** Permite agregar, visualizar, editar y eliminar libros o películas de forma asíncrona mediante peticiones HTTP `fetch` sin recargar la página.
 * **Sistema de Autenticación Dinámico:** Registro e inicio de sesión seguro para múltiples usuarios con sesiones cifradas. Cada usuario administra de forma exclusiva sus propios elementos guardados.
-* **Filtrado y Búsqueda Instantánea:** Barra de búsqueda integrada por coincidencia de texto (título, autor o director) y filtros rápidos por categorías (Libros 📚, Películas 🎬 o Todos 🐾).
+* **Filtrado y Búsqueda Instantánea:** Barra de búsqueda integrada por coincidencia de texto (título, autor o director) y filtros rápidos por categorías (Libros 📚, Películas 🎬, Series 📺 o Todos 🐾).
 * **Auditoría del Sistema (Logs):** Registro histórico automático de la actividad de los usuarios en la base de datos (inicios de sesión, actualizaciones, modificaciones, etc.).
 * **Interfaz Pulida y Moderna:** Menú desplegable de perfil, modales interactivos para la gestión de elementos y alertas estéticas mediante **SweetAlert2**.
 
@@ -16,7 +16,7 @@ El guardián ideal de libros y películas. Una aplicación web dinámica y respo
 * **Frontend:** HTML5, CSS3 (Diseño responsivo y variables nativas), JavaScript (Vanilla ES6)
 * **Plantillas:** Jinja2 (Renderizado dinámico de componentes en el servidor)
 * **Base de Datos:** MySQL (Alojado en la nube con la plataforma **Aiven**)
-* **Aplicación:** Alojada en la nube con la plataforma **Render**)
+* **Aplicación:** Alojada en la nube con la plataforma **Render**
 * **Componentes de Terceros:** SweetAlert2 (Notificaciones de interfaz)
 
 ---
@@ -38,7 +38,7 @@ Almacena las credenciales y perfiles de los usuarios que acceden al sistema.
 Guarda los libros y películas agregados por la comunidad, vinculados a su respectivo creador.
 * `id` (INT, Primary Key, Auto-increment)
 * `titulo` (VARCHAR): Nombre de la obra.
-* `tipo` (VARCHAR): Define si el elemento es `'libro'` o `'pelicula'`.
+* `tipo` (VARCHAR): Define si el elemento es `'libro'`, `'pelicula'` o `'serie'`.
 * `autor_director` (VARCHAR): Creador del material.
 * `descripcion` (TEXT): Sinopsis o resumen corto.
 * `calificacion` (INT): Puntuación personal de la escala del 1 al 5 representada con estrellas (⭐).

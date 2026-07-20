@@ -50,6 +50,35 @@ class User:
         return None
 
 
+    @staticmethod
+    def get_by_id(usuario_id: int):
+        if not usuario_id:
+            return None
+
+        try:
+            conexion = get_connection()
+            cursor = conexion.cursor(DictCursor)
+            sql = "SELECT id, username, nombre, password, rol FROM usuarios WHERE id = %s"
+            cursor.execute(sql, (usuario_id,))
+            usuario = cursor.fetchone()
+
+            cursor.close()
+            conexion.close()
+
+            if usuario:
+                return User(
+                    id=usuario['id'],
+                    username=usuario['username'],
+                    nombre=usuario['nombre'],
+                    password=usuario['password'],
+                    rol=usuario['rol']
+                )
+        except Exception as ex:
+            print(f"Error al obtener usuario por ID: {ex}")
+
+        return None
+
+
     # Metodo estatico para crear un nuevo usuario
     @staticmethod
     def create(nombre: str, username: str, password: str, rol: str = 'usuario'):

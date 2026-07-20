@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Chihuahuateca - Mi perfil</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/site/favicon.ico') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/site/favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="pagina-perfil">
+
+    <header class="header-perfil">
+        <a href="{{ url_for('index') }}" class="btn-volver">← Volver</a>
+        <h1>👤 Mi Perfil</h1>
+    </header>
+
+    <main class="contenedor-perfil">
+        <section class="info-usuario">
+            <img src="{{ url_for('static', filename='images/users/default.png') }}" class="user-avatar-grande">
+            <h2>{{ usuario.nombre }}</h2>
+            <p><strong>Username:</strong> @{{ usuario.username }}</p>
+            <p><strong>Rol:</strong> {{ usuario.rol }}</p>
+        </section>
+
+
+
+        <section class="historial-actividad">
+            <h3>📜 Historial de Actividad</h3>
+            <div class="lista-logs">
+                {% for log in logs %}
+                <div class="log-item">
+                    <span>{{ log.fecha_hora }}</span>
+                    <p>{{ log.accion }}</p>
+                </div>
+                {% else %}
+                <p>No hay actividad reciente.</p>
+                {% endfor %}
+            </div>
+        </section>
+    </main>
+
+</body>
+</html>

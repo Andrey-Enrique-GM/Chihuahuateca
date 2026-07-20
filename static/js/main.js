@@ -13,6 +13,14 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-abrir-agregar').addEventListener('click', () => abrirModal('modal-agregar'));
     document.getElementById('btn-abrir-editar').addEventListener('click', () => abrirModal('modal-editar'));
 
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', function (event) {
+            if (event.target === this) {
+                cerrarModal(this.id);
+            }
+        });
+    });
+
     // Buscador y Filtros de Tarjetas
     const buscador = document.getElementById('buscador');
     buscador.addEventListener('input', filtrarColeccion);
@@ -49,8 +57,11 @@ function abrirModal(idModal) {
 
 
 function cerrarModal(idModal) {
-    document.getElementById(idModal).classList.remove('mostrar');
-    
+    const modal = document.getElementById(idModal);
+    if (!modal) return;
+
+    modal.classList.remove('mostrar');
+
     // Limpieza al cerrar
     if (idModal === 'modal-agregar') {
         document.getElementById('form-agregar').reset();
@@ -58,6 +69,8 @@ function cerrarModal(idModal) {
         document.getElementById('form-editar').reset();
         document.getElementById('select-editar-elemento').value = "";
         document.getElementById('form-editar').classList.add('deshabilitado');
+    } else if (idModal === 'modal-password') {
+        document.getElementById('form-cambiar-password').reset();
     }
 }
 
