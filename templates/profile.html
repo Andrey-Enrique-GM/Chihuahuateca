@@ -10,35 +10,86 @@
 </head>
 <body class="pagina-perfil">
 
-    <header class="header-perfil">
-        <a href="{{ url_for('index') }}" class="btn-volver">← Volver</a>
-        <h1>👤 Mi Perfil</h1>
+    <!-- Encabezado -->
+    <header class="header-app header-perfil-contenedor">
+        <a href="{{ url_for('index') }}" class="btn-volver-app">
+            <span>←</span> Volver
+        </a>
+        <div class="header-contenido">
+            <h1>👤 Mi Perfil</h1>
+            <p>Información de usuario e historial de actividad</p>
+        </div>
     </header>
 
-    <main class="contenedor-perfil">
-        <section class="info-usuario">
-            <img src="{{ url_for('static', filename='images/users/default.png') }}" class="user-avatar-grande">
-            <h2>{{ usuario.nombre }}</h2>
-            <p><strong>Username:</strong> @{{ usuario.username }}</p>
-            <p><strong>Rol:</strong> {{ usuario.rol }}</p>
-        </section>
+    <main class="contenedor-principal grid-perfil-layout">
+        
 
 
+        <!-- Tarjeta Lateral: Perfil del Usuario -->
+        <aside class="tarjeta-perfil-usuario">
+            <div class="avatar-perfil-caja">
+                <img src="{{ url_for('static', filename='images/users/default.png') }}" alt="Avatar" class="avatar-perfil-img">
+            </div>
+            
+            <h2 class="perfil-nombre-usuario">{{ usuario.nombre }}</h2>
+            <span class="badge-rol {{ usuario.rol.lower() }}">{{ usuario.rol }}</span>
 
-        <section class="historial-actividad">
-            <h3>📜 Historial de Actividad</h3>
-            <div class="lista-logs">
-                {% for log in logs %}
-                <div class="log-item">
-                    <span>{{ log.fecha_hora }}</span>
-                    <p>{{ log.accion }}</p>
+            <div class="perfil-detalles-lista">
+                <div class="detalle-item">
+                    <span class="detalle-etiqueta">Username</span>
+                    <span class="detalle-valor">@{{ usuario.username }}</span>
                 </div>
+                <div class="detalle-item">
+                    <span class="detalle-etiqueta">ID de Cuenta</span>
+                    <span class="detalle-valor">#{{ usuario.id }}</span>
+                </div>
+            </div>
+        </aside>
+
+
+
+        <!-- Tarjeta Principal: Historial de Actividad (Logs) -->
+        <section class="tarjeta-perfil-historial">
+            <div class="historial-cabecera">
+                <h3>📜 Historial de Actividad</h3>
+                <span class="contador-logs">{{ logs|length }} eventos</span>
+            </div>
+
+            <div class="contenedor-logs-scroll">
+                {% for log in logs %}
+                    <div class="log-tarjeta-item">
+                        <div class="log-icono">⚡</div>
+                        <div class="log-contenido">
+                            <p class="log-accion">{{ log.accion }}</p>
+                            {% if log.detalles %}
+                                <p class="log-detalles-texto">{{ log.detalles }}</p>
+                            {% endif %}
+                            <span class="log-fecha">🕒 {{ log.fecha_hora }}</span>
+                        </div>
+                    </div>
                 {% else %}
-                <p>No hay actividad reciente.</p>
+                    <div class="coleccion-vacia">
+                        <p>No se registraron movimientos recientes en tu cuenta. 🐾</p>
+                    </div>
                 {% endfor %}
             </div>
         </section>
+
     </main>
+
+    <!-- Botón Flotante de mi repositorio en GitHub -->
+    <a href="https://github.com/Andrey-Enrique-GM/Chihuahuateca" target="_blank" class="link-github-flotante" title="Ver repositorio en GitHub">
+        <svg viewBox="0 0 16 16" width="22" height="22" fill="currentColor">
+            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+        <span>GitHub</span>
+    </a>
+
+    <!-- Botón Flotante de Información ( ? ) -->
+    <button id="btn-info-proyecto" class="btn-ayuda-flotante" title="Ver información del proyecto" onclick="abrirModalInfo()">?</button>
+
+    <!-- Modal de Información y Créditos -->
+    {% include 'modal_info.html' %}
 
 </body>
 </html>

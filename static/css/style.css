@@ -1,6 +1,7 @@
 /* ==========================================================================
    VARIABLES Y CONFIGURACION GENERAL
    ========================================================================== */
+   
 :root {
     --bg-principal: #f4f6f9;
     --color-texto: #2c3e50;
@@ -34,6 +35,7 @@ body {
 /* ==========================================================================
    HEADER (ENCABEZADO)
    ========================================================================== */
+
 .header-app {
     background: linear-gradient(135deg, var(--chihuahua-brown), var(--chihuahua-light));
     color: var(--blanco);
@@ -59,6 +61,7 @@ body {
 /* ==========================================================================
    MENÚ DE USUARIO
    ========================================================================== */
+
 .user-menu-container {
     position: absolute;
     top: 15px;
@@ -208,6 +211,7 @@ body {
 /* ==========================================================================
    BARRA DE CONTROLES (BUSQUEDA Y FILTROS)
    ========================================================================== */
+
 .contenedor-principal {
     max-width: 1200px;
     margin: 0 auto;
@@ -300,6 +304,7 @@ body {
 /* ==========================================================================
    GRID DE TARJETAS (LA COLECCION)
    ========================================================================== */
+
 .grid-coleccion {
     display: grid;
     /* CSS Grid Responsivo: Minimo 300px por tarjeta, se acomodan solas */
@@ -414,6 +419,7 @@ body {
 /* ==========================================================================
    MODALES (VENTANAS EMERGENTES)
    ========================================================================== */
+
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -883,8 +889,251 @@ body {
 
 
 /* ==========================================================================
-   MODO CELULAR (Media Query para pantallas menores a 768px)
+   VISTA DE PERFIL DE USUARIO
    ========================================================================== */
+
+/* Cabecera adaptada */
+.header-perfil-contenedor {
+    position: relative;
+    padding-top: 3.5rem;
+}
+
+.btn-volver-app {
+    position: absolute;
+    top: 15px;
+    left: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(4px);
+    color: var(--blanco);
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 30px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: var(--transicion);
+}
+
+.btn-volver-app:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+    transform: translateX(-3px);
+}
+
+/* Layout en grid de 2 columnas */
+.grid-perfil-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+/* Tarjeta Lateral de Usuario */
+.tarjeta-perfil-usuario {
+    background-color: var(--blanco);
+    border-radius: var(--radio-borde);
+    box-shadow: var(--sombra);
+    padding: 2rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.avatar-perfil-caja {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    padding: 4px;
+    background: linear-gradient(135deg, var(--chihuahua-brown), var(--chihuahua-light));
+    margin-bottom: 1rem;
+    box-shadow: var(--sombra);
+}
+
+.avatar-perfil-img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    background-color: var(--blanco);
+}
+
+.perfil-nombre-usuario {
+    font-size: 1.5rem;
+    color: var(--color-texto);
+    margin-bottom: 0.3rem;
+}
+
+/* Badge del Rol */
+.badge-rol {
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background-color: #e0e0e0;
+    color: var(--color-texto);
+    margin-bottom: 1.5rem;
+}
+
+.badge-rol.admin {
+    background-color: var(--chihuahua-brown);
+    color: var(--blanco);
+}
+
+/* Lista de detalles */
+.perfil-detalles-lista {
+    width: 100%;
+    border-top: 1px solid #f0f0f0;
+    padding-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.detalle-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+.detalle-etiqueta {
+    color: #7f8c8d;
+    font-weight: 500;
+}
+
+.detalle-valor {
+    color: var(--color-texto);
+    font-weight: bold;
+}
+
+/* Historial */
+.tarjeta-perfil-historial {
+    background-color: var(--blanco);
+    border-radius: var(--radio-borde);
+    box-shadow: var(--sombra);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    min-height: 480px;
+}
+
+.historial-cabecera {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #f4f6f9;
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+}
+
+.historial-cabecera h3 {
+    color: var(--color-texto);
+    font-size: 1.2rem;
+}
+
+.contador-logs {
+    background-color: var(--bg-principal);
+    color: #7f8c8d;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+/* Scroll interno de Logs */
+.contenedor-logs-scroll {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    max-height: 520px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+/* Scrollbar personalizado */
+.contenedor-logs-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+.contenedor-logs-scroll::-webkit-scrollbar-thumb {
+    background-color: #ddd;
+    border-radius: 4px;
+}
+
+/* Item individual del Log */
+.log-tarjeta-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 0.9rem 1rem;
+    background-color: #fafbfc;
+    border-left: 4px solid var(--chihuahua-light);
+    border-radius: 6px;
+    transition: var(--transicion);
+}
+
+.log-tarjeta-item:hover {
+    background-color: #f0f4f8;
+    transform: translateX(3px);
+}
+
+.log-icono {
+    font-size: 1.1rem;
+    line-height: 1;
+    margin-top: 2px;
+}
+
+.log-contenido {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.log-accion {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-texto);
+}
+
+.log-detalles-texto {
+    font-size: 0.85rem;
+    color: #555;
+}
+
+.log-fecha {
+    font-size: 0.75rem;
+    color: #95a5a6;
+    margin-top: 3px;
+}
+
+/* Responsividad para la vista Perfil */
+@media (max-width: 850px) {
+    .grid-perfil-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .btn-volver-app {
+        position: relative;
+        top: 0;
+        left: 0;
+        margin-bottom: 1rem;
+    }
+
+    .header-perfil-contenedor {
+        padding-top: 2rem;
+    }
+}
+
+
+
+/* ==========================================================================
+   MODO CELULAR (Media Query para pantallas pequeñas)
+   ========================================================================== */
+
 @media (max-width: 768px) {
     
     /* Reduce el espacio del contenedor principal */
