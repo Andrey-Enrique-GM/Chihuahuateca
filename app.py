@@ -5,6 +5,7 @@ from entities.elemento import Elemento
 from entities.log import Log
 from entities.usuario import User
 from enums.log_type import LogType
+from datetime import datetime
 
 
 
@@ -206,6 +207,24 @@ def api_cambiar_password():
         return jsonify({'success': True, 'message': 'Tu contraseña ha sido actualizada con éxito.'})
     
     return jsonify({'success': False, 'message': mensaje or 'Error interno al actualizar la contraseña.'}), 500
+
+
+@app.template_filter('formato_fecha')
+def formato_fecha_filter(val):
+    if not val:
+        return ""
+    
+    # Si la fecha viene como string desde la BD, la convierte a objeto datetime
+    if isinstance(val, str):
+        try:
+            val = datetime.strptime(val, "%Y-%m-%d %H:%M:%S")
+        except ValueError:
+            try:
+                val = datetime.strptime(val, "%Y-%m-%d")
+            except ValueError:
+                return val
+
+    return val.strftime("%d/%m/%Y a las %I:%M %p")
 
 
 

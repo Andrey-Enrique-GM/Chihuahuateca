@@ -1,4 +1,5 @@
-from datetime import datetime
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 from types import SimpleNamespace
 
 from pymysql.cursors import DictCursor
@@ -23,11 +24,22 @@ class Log:
 
     def __init__(self, id: int, fecha: datetime, user: User, descripcion: str, type: LogType):
         self.id = id
-        self.fecha = fecha
+
+        # Asegurar que la fecha tenga informacion de zona horaria UTC si viene sin ella
+        if fecha and fecha.tzinfo is None:
+            self.fecha = fecha.replace(tzinfo=timezone.utc)
+        else:
+            self.fecha = fecha
+        
         self.user = user
         self.descripcion = descripcion
         self.type = type
 
+
+    # ISO Format para que JavaScript lea la fecha con offset Z (UTC)
+    @property
+    def fecha_iso(self):
+        return self.fecha.isoformat() if self.fecha else ''
 
     # Metodo para guardar un nuevo log en la base de datos
     @property
@@ -45,7 +57,7 @@ class Log:
             cursor = connection.cursor()
 
             sql = "INSERT INTO `log` (fecha, id_user, descripcion, type) VALUES (%s, %s, %s, %s)"
-            cursor.execute(sql, (datetime.now(), user.id, description, type.value))
+            cursor.execute(sql, (datetime.now(timezone.utc), user.id, description, type.value))
             connection.commit()
 
             cursor.close()

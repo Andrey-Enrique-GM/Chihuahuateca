@@ -114,9 +114,9 @@
                             <span class="autor-aporte">Subido por: <strong>{{ elemento.usuario_nombre }}</strong></span><br>
                         {% endif %}
                         
-                        <small>Registrado: {{ elemento.fecha_creacion }}</small>
+                        <small>Registrado: {{ elemento.fecha_creacion | formato_fecha }}</small>
                         {% if elemento.fecha_actualizacion and elemento.fecha_actualizacion != elemento.fecha_creacion %}
-                            <br><small class="txt-editado">Editado: {{ elemento.fecha_actualizacion }}</small>
+                            <br><small class="txt-editado">Editado: {{ elemento.fecha_actualizacion | formato_fecha }}</small>
                         {% endif %}
                     </div>
 
