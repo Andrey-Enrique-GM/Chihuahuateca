@@ -42,25 +42,66 @@
 
 
 
-    <main class="contenedor-principal">
-        
-        <section class="barra-controles">
-            <div class="buscador-caja">
-                <input type="text" id="buscador" placeholder="Buscar por título, autor o director...">
-            </div>
-            
-            <div class="filtros-tipo">
-                <button id="btn-todos" class="btn-filtro activo">Todos 🐾</button>
-                <button id="btn-libros" class="btn-filtro">Libros 📚</button>
-                <button id="btn-peliculas" class="btn-filtro">Películas 🎬</button>
-                <button id="btn-series" class="btn-filtro">Series 📺</button>
+    <section class="barra-controles">
+            <!-- Fila superior: Buscador + Controles de Orden y Calificación -->
+            <div class="controles-superiores">
+                <div class="buscador-caja">
+                    <input type="text" id="buscador" placeholder="🔍 Buscar por título, autor o director...">
+                </div>
+
+                <div class="selects-filtros">
+                    <!-- Selector de Ordenamiento -->
+                    <div class="filtro-select-caja">
+                        <label for="select-orden">Ordenar por:</label>
+                        <select id="select-orden">
+                            <option value="reciente">Más recientes primero</option>
+                            <option value="antiguo">Más antiguos primero</option>
+                            <option value="nota-desc">Mejor calificados (5-1 ⭐)</option>
+                            <option value="nota-asc">Peor calificación (1-5 ⭐)</option>
+                            <option value="titulo-asc">Título (A - Z)</option>
+                            <option value="titulo-desc">Título (Z - A)</option>
+                        </select>
+                    </div>
+
+                    <!-- Selector por Estrellas -->
+                    <div class="filtro-select-caja">
+                        <label for="select-estrellas">Calificación:</label>
+                        <select id="select-estrellas">
+                            <option value="todas">Todas ⭐</option>
+                            <option value="5">⭐⭐⭐⭐⭐</option>
+                            <option value="4">⭐⭐⭐⭐</option>
+                            <option value="3">⭐⭐⭐</option>
+                            <option value="2">⭐⭐</option>
+                            <option value="1">⭐</option>
+                        </select>
+                    </div>
+                </div>
             </div>
 
-            <div class="acciones-crud">
-                <button id="btn-abrir-agregar" class="btn-accion btn-crear">➕ Agregar Nuevo</button>
-                <button id="btn-abrir-editar" class="btn-accion btn-modificar">📝 Editar</button>
+
+
+            <!-- Fila inferior: Filtros de Categoría y Botones de Acción -->
+            <div class="controles-inferiores">
+                <div class="filtros-tipo">
+                    <button id="btn-todos" class="btn-filtro activo">Todos 🐾</button>
+                    <button id="btn-libros" class="btn-filtro">Libros 📚</button>
+                    <button id="btn-peliculas" class="btn-filtro">Películas 🎬</button>
+                    <button id="btn-series" class="btn-filtro">Series 📺</button>
+                </div>
+
+                <div class="acciones-crud">
+                    <button id="btn-abrir-agregar" class="btn-accion btn-crear">➕ Agregar Nuevo</button>
+                    <button id="btn-abrir-editar" class="btn-accion btn-modificar">📝 Editar</button>
+                </div>
             </div>
         </section>
+
+
+        
+        <!-- BARRA DE INFORMACIÓN Y CONTADOR DE RESULTADOS -->
+        <div class="barra-info-resultados">
+            <span id="contador-resultados" class="badge-contador">Cargando colección...</span>
+        </div>
 
 
 
@@ -69,7 +110,9 @@
                 <div class="tarjeta-item {{ elemento.tipo }}" 
                      data-tipo="{{ elemento.tipo }}" 
                      data-titulo="{{ elemento.titulo.lower() }}" 
-                     data-autor="{{ elemento.autor_director.lower() }}">
+                     data-autor="{{ elemento.autor_director.lower() }}"
+                     data-calificacion="{{ elemento.calificacion }}"
+                     data-id="{{ elemento.id }}">
                     
                     <div class="tarjeta-badge {{ elemento.tipo }}">
                         {% if elemento.tipo == 'libro' %}

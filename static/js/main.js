@@ -2,7 +2,7 @@
 // CONFIGURACION INICIAL Y SELECCION DE ELEMENTOS DOM
 // ==========================================================================
 
-
+let filtroTipoActual = 'todos';
 
 document.addEventListener('DOMContentLoaded', () => {
     // Modales
@@ -21,9 +21,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Buscador y Filtros de Tarjetas
+    // Buscador y Filtros Avanzados
     const buscador = document.getElementById('buscador');
-    buscador.addEventListener('input', filtrarColeccion);
+    const selectOrden = document.getElementById('select-orden');
+    const selectEstrellas = document.getElementById('select-estrellas');
+
+    buscador.addEventListener('input', filtrarYOrdenarColeccion);
+    selectOrden.addEventListener('change', filtrarYOrdenarColeccion);
+    selectEstrellas.addEventListener('change', filtrarYOrdenarColeccion);
 
     document.getElementById('btn-todos').addEventListener('click', (e) => cambiarFiltroTipo('todos', e.target));
     document.getElementById('btn-libros').addEventListener('click', (e) => cambiarFiltroTipo('libro', e.target));
@@ -35,12 +40,10 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('select-editar-elemento').addEventListener('change', cargarDatosParaEditar);
     document.getElementById('form-editar').addEventListener('submit', actualizarElemento);
     document.getElementById('btn-borrar-elemento').addEventListener('click', borrarElemento);
+
+    // Ejecutar filtrado inicial para ordenar y actualizar contador al cargar la pagina
+    filtrarYOrdenarColeccion();
 });
-
-// Variable global para mantener el estado del filtro de tipo activo ('todos', 'libro', 'pelicula', 'serie')
-let filtroTipoActual = 'todos';
-
-
 
 
 
@@ -48,13 +51,9 @@ let filtroTipoActual = 'todos';
 // CONTROL DE VENTANAS MODALES
 // ==========================================================================
 
-
-
 function abrirModal(idModal) {
     document.getElementById(idModal).classList.add('mostrar');
 }
-
-
 
 function cerrarModal(idModal) {
     const modal = document.getElementById(idModal);
@@ -62,7 +61,6 @@ function cerrarModal(idModal) {
 
     modal.classList.remove('mostrar');
 
-    // Limpieza al cerrar
     if (idModal === 'modal-agregar') {
         document.getElementById('form-agregar').reset();
     } else if (idModal === 'modal-editar') {
@@ -76,51 +74,88 @@ function cerrarModal(idModal) {
 
 
 
-
-
 // ==========================================================================
-// FILTRADO DINAMICO DE TARJETAS
+// FILTRADO, REORDENAMIENTO Y CONTADOR DE TARJETAS
 // ==========================================================================
-
-
 
 function cambiarFiltroTipo(tipo, botonClickeado) {
-    // Cambiar clase activa visual en los botones
     document.querySelectorAll('.btn-filtro').forEach(btn => btn.classList.remove('activo'));
     botonClickeado.classList.add('activo');
 
     filtroTipoActual = tipo;
-    filtrarColeccion(); // Re-ejecutamos el filtro combinado
+    filtrarYOrdenarColeccion();
 }
 
+function filtrarYOrdenarColeccion() {
+    const textoBusqueda = document.getElementById('buscador').value.toLowerCase().trim();
+    const ordenSeleccionado = document.getElementById('select-orden').value;
+    const estrellasSeleccionadas = document.getElementById('select-estrellas').value;
+    
+    const contenedorGrid = document.getElementById('grid-coleccion');
+    const tarjetasArray = Array.from(document.querySelectorAll('.tarjeta-item'));
+    const totalElementos = tarjetasArray.length;
 
+    let elementosVisibles = 0;
 
-function filtrarColeccion() {
-    const textoBusqueda = buscador.value.toLowerCase().trim();
-    const tarjetas = document.querySelectorAll('.tarjeta-item');
-
-    tarjetas.forEach(tarjeta => {
-        // Leemos los atributos personalizados que se configuraron en el HTML
+    // Filtrar visibilidad
+    tarjetasArray.forEach(tarjeta => {
         const tipoTarjeta = tarjeta.getAttribute('data-tipo');
         const tituloTarjeta = tarjeta.getAttribute('data-titulo');
         const autorTarjeta = tarjeta.getAttribute('data-autor');
+        const calificacionTarjeta = tarjeta.getAttribute('data-calificacion');
 
-        // Condicion 1: Coincide con el boton de filtro seleccionado?
-        const pasaFiltroTipo = (filtroTipoActual === 'todos' || tipoTarjeta === filtroTipoActual);
-
-        // Condicion 2: Coincide con lo que se escribio en el buscador?
+        const pasaTipo = (filtroTipoActual === 'todos' || tipoTarjeta === filtroTipoActual);
         const pasaBuscador = (tituloTarjeta.includes(textoBusqueda) || autorTarjeta.includes(textoBusqueda));
+        const pasaEstrellas = (estrellasSeleccionadas === 'todas' || calificacionTarjeta === estrellasSeleccionadas);
 
-        // Si cumple ambas condiciones, JavaScript la muestra, si no, la oculta al instante
-        if (pasaFiltroTipo && pasaBuscador) {
+        if (pasaTipo && pasaBuscador && pasaEstrellas) {
             tarjeta.style.display = 'flex';
+            elementosVisibles++;
         } else {
             tarjeta.style.display = 'none';
         }
     });
+
+    // Reordenar las tarjetas en el DOM
+    tarjetasArray.sort((a, b) => {
+        const idA = parseInt(a.getAttribute('data-id')) || 0;
+        const idB = parseInt(b.getAttribute('data-id')) || 0;
+        const tituloA = a.getAttribute('data-titulo');
+        const tituloB = b.getAttribute('data-titulo');
+        const califA = parseInt(a.getAttribute('data-calificacion')) || 0;
+        const califB = parseInt(b.getAttribute('data-calificacion')) || 0;
+
+        switch (ordenSeleccionado) {
+            case 'reciente':
+                return idB - idA; // ID autonumerico ascendente
+            case 'antiguo':
+                return idA - idB;
+            case 'nota-desc':
+                return califB - califA;
+            case 'nota-asc':
+                return califA - califB;
+            case 'titulo-asc':
+                return tituloA.localeCompare(tituloB);
+            case 'titulo-desc':
+                return tituloB.localeCompare(tituloA);
+            default:
+                return idB - idA;
+        }
+    });
+
+    // Reinsertar las tarjetas ordenadas en el contenedor
+    tarjetasArray.forEach(tarjeta => contenedorGrid.appendChild(tarjeta));
+
+    // Actualizar el contador
+    const contadorBadge = document.getElementById('contador-resultados');
+    if (contadorBadge) {
+        if (totalElementos === 0) {
+            contadorBadge.textContent = "Sin elementos en la colección 🐾";
+        } else {
+            contadorBadge.textContent = `Mostrando ${elementosVisibles} de ${totalElementos} elementos`;
+        }
+    }
 }
-
-
 
 
 
@@ -128,11 +163,8 @@ function filtrarColeccion() {
 // OPERACIONES ASINCRONAS CON LA API DE PYTHON (FETCH CRUD)
 // ==========================================================================
 
-
-
-// --- CREATE (Guardar) ---
 function guardarNuevoElemento(e) {
-    e.preventDefault(); // Evita que la página se recargue por el submit tradicional
+    e.preventDefault();
 
     const datos = {
         tipo: document.getElementById('add-tipo').value,
@@ -152,15 +184,15 @@ function guardarNuevoElemento(e) {
     .then(resultado => {
         if (resultado.success) {
             Swal.fire({
-            icon: 'success',
-            title: 'Registro Exitoso',
-            text: 'El elemento se guardó correctamente en la Chihuahuateca.',
-            confirmButtonColor: '#2c3e50',
-            timer: 1500,
-            timerProgressBar: true
-        }).then(() => {
-            location.reload(); // Recarga la colección para ver el nuevo item
-        });
+                icon: 'success',
+                title: 'Registro Exitoso',
+                text: 'El elemento se guardó correctamente en la Chihuahuateca.',
+                confirmButtonColor: '#2c3e50',
+                timer: 1500,
+                timerProgressBar: true
+            }).then(() => {
+                location.reload();
+            });
         } else {
             Swal.fire({
                 icon: 'error',
@@ -173,9 +205,6 @@ function guardarNuevoElemento(e) {
     .catch(err => console.error('Error:', err));
 }
 
-
-
-// --- READ SINGLE (Cargar datos en el formulario de edicion) ---
 function cargarDatosParaEditar() {
     const idElemento = this.value;
     const formularioEditar = document.getElementById('form-editar');
@@ -186,12 +215,10 @@ function cargarDatosParaEditar() {
         return;
     }
 
-    // Peticion a Python para traer los datos actuales de ese ID
     fetch(`/api/elemento/${idElemento}`)
     .then(res => res.json())
     .then(data => {
         if (!data.error) {
-            // Rellenamos los inputs
             document.getElementById('edit-id').value = data.id;
             document.getElementById('edit-tipo').value = data.tipo;
             document.getElementById('edit-titulo').value = data.titulo;
@@ -200,16 +227,12 @@ function cargarDatosParaEditar() {
             document.getElementById('edit-descripcion').value = data.descripcion;
             document.getElementById('edit-opinion').value = data.opinion;
 
-            // Activamos visualmente el formulario quitando la clase deshabilitada
             formularioEditar.classList.remove('deshabilitado');
         }
     })
     .catch(err => console.error('Error:', err));
 }
 
-
-
-// --- UPDATE (Actualizar) ---
 function actualizarElemento(e) {
     e.preventDefault();
 
@@ -253,16 +276,11 @@ function actualizarElemento(e) {
     .catch(err => console.error('Error:', err));
 }
 
-
-
-// --- DELETE (Borrar) ---
 function borrarElemento() {
     const idElemento = document.getElementById('edit-id').value;
-    const titulo = document.getElementById('edit-titulo').value;
 
     if (!idElemento) return;
 
-    // Confirmacion antes de destruir un dato
     Swal.fire({
         title: '¿Estás seguro?',
         text: "¡No podrás revertir este cambio!",
@@ -302,9 +320,7 @@ function borrarElemento() {
     });
 }
 
-
-
-// Clic sobre la opción del menú desplegable
+// Clic sobre la opcion del menu desplegable
 document.getElementById('btn-cambiar-pass').addEventListener('click', function(e) {
     e.preventDefault();
     if (typeof abrirModal === "function") {
@@ -313,8 +329,6 @@ document.getElementById('btn-cambiar-pass').addEventListener('click', function(e
         document.getElementById('modal-password').classList.add('activo');
     }
 });
-
-
 
 // Procesar el formulario de cambio de credenciales
 document.getElementById('form-cambiar-password').addEventListener('submit', function(e) {
@@ -333,7 +347,6 @@ document.getElementById('form-cambiar-password').addEventListener('submit', func
         return;
     }
 
-    // Petición asíncrona a la API de Flask
     fetch('/api/usuario/cambiar-password', {
         method: 'POST',
         headers: {
@@ -352,7 +365,6 @@ document.getElementById('form-cambiar-password').addEventListener('submit', func
                 title: '¡Excelente!',
                 text: data.message
             }).then(() => {
-                // Limpiar inputs del formulario y cerrar
                 document.getElementById('form-cambiar-password').reset();
                 if (typeof cerrarModal === "function") {
                     cerrarModal('modal-password');
