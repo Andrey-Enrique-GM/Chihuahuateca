@@ -17,7 +17,7 @@
         </a>
         <div class="header-contenido">
             <h1>👤 Mi Perfil</h1>
-            <p>Información de usuario e historial de actividad</p>
+            <p>Información de tu cuenta</p>
         </div>
     </header>
 
@@ -48,32 +48,71 @@
 
 
 
-        <!-- Tarjeta Principal: Historial de Actividad (Logs) -->
-        <section class="tarjeta-perfil-historial">
-            <div class="historial-cabecera">
-                <h3>📜 Historial de Actividad</h3>
-                <span class="contador-logs">{{ logs|length }} eventos</span>
-            </div>
+        <!-- Columna Principal: Estadisticas e Historial -->
+        <div class="columna-perfil-principal">
 
-            <div class="contenedor-logs-scroll">
-                {% for log in logs %}
-                    <div class="log-tarjeta-item">
-                        <div class="log-icono">⚡</div>
-                        <div class="log-contenido">
-                            <p class="log-accion">{{ log.accion }}</p>
-                            {% if log.detalles %}
-                                <p class="log-detalles-texto">{{ log.detalles }}</p>
-                            {% endif %}
-                            <span class="log-fecha">🕒 {{ log.fecha_hora | formato_fecha }}</span>
+            <!-- TARJETA DE ESTADISTICAS DEL USUARIO -->
+            <section class="tarjeta-perfil-seccion tarjeta-estadisticas">
+                <div class="historial-cabecera">
+                    <h3>Mis Estadísticas</h3>
+                </div>
+                
+                <div class="grid-stats-perfil">
+                    <div class="stat-box stat-total">
+                        <span class="stat-numero">{{ stats.total }}</span>
+                        <span class="stat-label">Aportes Totales</span>
+                    </div>
+
+                    <div class="stat-box stat-promedio">
+                        <span class="stat-numero">⭐ {{ stats.promedio_nota }}</span>
+                        <span class="stat-label">Promedio Nota</span>
+                    </div>
+
+                    <div class="stat-box stat-tipo libro">
+                        <span class="stat-numero">📚 {{ stats.libros }}</span>
+                        <span class="stat-label">Libros</span>
+                    </div>
+
+                    <div class="stat-box stat-tipo pelicula">
+                        <span class="stat-numero">🎬 {{ stats.peliculas }}</span>
+                        <span class="stat-label">Películas</span>
+                    </div>
+
+                    <div class="stat-box stat-tipo serie">
+                        <span class="stat-numero">📺 {{ stats.series }}</span>
+                        <span class="stat-label">Series</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tarjeta Principal: Historial de Actividad (Logs) -->
+            <section class="tarjeta-perfil-historial">
+                <div class="historial-cabecera">
+                    <h3>📜 Historial de Actividad</h3>
+                    <span class="contador-logs">{{ logs|length }} eventos</span>
+                </div>
+
+                <div class="contenedor-logs-scroll">
+                    {% for log in logs %}
+                        <div class="log-tarjeta-item">
+                            <div class="log-icono">⚡</div>
+                            <div class="log-contenido">
+                                <p class="log-accion">{{ log.accion }}</p>
+                                {% if log.detalles %}
+                                    <p class="log-detalles-texto">{{ log.detalles }}</p>
+                                {% endif %}
+                                <span class="log-fecha">🕒 {{ log.fecha_hora | formato_fecha }}</span>
+                            </div>
                         </div>
-                    </div>
-                {% else %}
-                    <div class="coleccion-vacia">
-                        <p>No se registraron movimientos recientes en tu cuenta. 🐾</p>
-                    </div>
-                {% endfor %}
-            </div>
-        </section>
+                    {% else %}
+                        <div class="coleccion-vacia">
+                            <p>No se registraron movimientos recientes. 🐾</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+
+        </div>
 
     </main>
 

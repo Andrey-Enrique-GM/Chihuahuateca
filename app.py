@@ -49,7 +49,31 @@ def ruta_perfil():
     # Obtenemos sus logs recientes para mostrar actividad
     actividad = Log.get_by_user(usuario_id)
     
-    return render_template('profile.html', usuario=usuario, logs=actividad)
+    # Calculo de estadisticas del usuario
+    todos_elementos = Elemento.obtener_todos()
+    # Filtrar solo los aportes creados por el usuario actual
+    mis_elementos = [e for e in todos_elementos if getattr(e, 'usuario_id', None) == usuario_id]
+    
+    total_aportes = len(mis_elementos)
+    total_libros = sum(1 for e in mis_elementos if e.tipo == 'libro')
+    total_peliculas = sum(1 for e in mis_elementos if e.tipo == 'pelicula')
+    total_series = sum(1 for e in mis_elementos if e.tipo == 'serie')
+    
+    # Promedio de calificacion dada por el usuario
+    if total_aportes > 0:
+        promedio_calificacion = round(sum(e.calificacion for e in mis_elementos) / total_aportes, 1)
+    else:
+        promedio_calificacion = 0.0
+
+    estadisticas = {
+        'total': total_aportes,
+        'libros': total_libros,
+        'peliculas': total_peliculas,
+        'series': total_series,
+        'promedio_nota': promedio_calificacion
+    }
+    
+    return render_template('profile.html', usuario=usuario, logs=actividad, stats=estadisticas)
 
 
 

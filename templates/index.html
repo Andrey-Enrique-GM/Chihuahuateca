@@ -42,134 +42,137 @@
 
 
 
-    <section class="barra-controles">
-            <!-- Fila superior: Buscador + Controles de Orden y Calificación -->
-            <div class="controles-superiores">
-                <div class="buscador-caja">
-                    <input type="text" id="buscador" placeholder="🔍 Buscar por título, autor o director...">
-                </div>
+    <main class="contenedor-principal">
 
-                <div class="selects-filtros">
-                    <!-- Selector de Ordenamiento -->
-                    <div class="filtro-select-caja">
-                        <label for="select-orden">Ordenar por:</label>
-                        <select id="select-orden">
-                            <option value="reciente">Más recientes primero</option>
-                            <option value="antiguo">Más antiguos primero</option>
-                            <option value="nota-desc">Mejor calificados (5-1 ⭐)</option>
-                            <option value="nota-asc">Peor calificación (1-5 ⭐)</option>
-                            <option value="titulo-asc">Título (A - Z)</option>
-                            <option value="titulo-desc">Título (Z - A)</option>
-                        </select>
+        <section class="barra-controles">
+                <!-- Fila superior: Buscador + Controles de Orden y Calificación -->
+                <div class="controles-superiores">
+                    <div class="buscador-caja">
+                        <input type="text" id="buscador" placeholder="🔍 Buscar por título, autor o director...">
                     </div>
 
-                    <!-- Selector por Estrellas -->
-                    <div class="filtro-select-caja">
-                        <label for="select-estrellas">Calificación:</label>
-                        <select id="select-estrellas">
-                            <option value="todas">Todas ⭐</option>
-                            <option value="5">⭐⭐⭐⭐⭐</option>
-                            <option value="4">⭐⭐⭐⭐</option>
-                            <option value="3">⭐⭐⭐</option>
-                            <option value="2">⭐⭐</option>
-                            <option value="1">⭐</option>
-                        </select>
+                    <div class="selects-filtros">
+                        <!-- Selector de Ordenamiento -->
+                        <div class="filtro-select-caja">
+                            <label for="select-orden">Ordenar por:</label>
+                            <select id="select-orden">
+                                <option value="reciente">Más recientes primero</option>
+                                <option value="antiguo">Más antiguos primero</option>
+                                <option value="nota-desc">Mejor calificados (5-1 ⭐)</option>
+                                <option value="nota-asc">Peor calificación (1-5 ⭐)</option>
+                                <option value="titulo-asc">Título (A - Z)</option>
+                                <option value="titulo-desc">Título (Z - A)</option>
+                            </select>
+                        </div>
+
+                        <!-- Selector por Estrellas -->
+                        <div class="filtro-select-caja">
+                            <label for="select-estrellas">Calificación:</label>
+                            <select id="select-estrellas">
+                                <option value="todas">Todas ⭐</option>
+                                <option value="5">⭐⭐⭐⭐⭐</option>
+                                <option value="4">⭐⭐⭐⭐</option>
+                                <option value="3">⭐⭐⭐</option>
+                                <option value="2">⭐⭐</option>
+                                <option value="1">⭐</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
+
+
+
+                <!-- Fila inferior: Filtros de Categoría y Botones de Acción -->
+                <div class="controles-inferiores">
+                    <div class="filtros-tipo">
+                        <button id="btn-todos" class="btn-filtro activo">Todos 🐾</button>
+                        <button id="btn-libros" class="btn-filtro">Libros 📚</button>
+                        <button id="btn-peliculas" class="btn-filtro">Películas 🎬</button>
+                        <button id="btn-series" class="btn-filtro">Series 📺</button>
+                    </div>
+
+                    <div class="acciones-crud">
+                        <button id="btn-abrir-agregar" class="btn-accion btn-crear">➕ Agregar Nuevo</button>
+                        <button id="btn-abrir-editar" class="btn-accion btn-modificar">📝 Editar</button>
+                    </div>
+                </div>
+            </section>
+
+
+            
+            <!-- BARRA DE INFORMACIÓN Y CONTADOR DE RESULTADOS -->
+            <div class="barra-info-resultados">
+                <span id="contador-resultados" class="badge-contador">Cargando colección...</span>
             </div>
 
 
 
-            <!-- Fila inferior: Filtros de Categoría y Botones de Acción -->
-            <div class="controles-inferiores">
-                <div class="filtros-tipo">
-                    <button id="btn-todos" class="btn-filtro activo">Todos 🐾</button>
-                    <button id="btn-libros" class="btn-filtro">Libros 📚</button>
-                    <button id="btn-peliculas" class="btn-filtro">Películas 🎬</button>
-                    <button id="btn-series" class="btn-filtro">Series 📺</button>
-                </div>
-
-                <div class="acciones-crud">
-                    <button id="btn-abrir-agregar" class="btn-accion btn-crear">➕ Agregar Nuevo</button>
-                    <button id="btn-abrir-editar" class="btn-accion btn-modificar">📝 Editar</button>
-                </div>
-            </div>
-        </section>
-
-
-        
-        <!-- BARRA DE INFORMACIÓN Y CONTADOR DE RESULTADOS -->
-        <div class="barra-info-resultados">
-            <span id="contador-resultados" class="badge-contador">Cargando colección...</span>
-        </div>
-
-
-
-        <section class="grid-coleccion" id="grid-coleccion">
-            {% for elemento in elementos %}
-                <div class="tarjeta-item {{ elemento.tipo }}" 
-                     data-tipo="{{ elemento.tipo }}" 
-                     data-titulo="{{ elemento.titulo.lower() }}" 
-                     data-autor="{{ elemento.autor_director.lower() }}"
-                     data-calificacion="{{ elemento.calificacion }}"
-                     data-id="{{ elemento.id }}">
-                    
-                    <div class="tarjeta-badge {{ elemento.tipo }}">
-                        {% if elemento.tipo == 'libro' %}
-                            📚 LIBRO
-                        {% elif elemento.tipo == 'pelicula' %}
-                            🎬 PELÍCULA
-                        {% else %}
-                            📺 SERIE
-                        {% endif %}
-                    </div>
-                    
-                    <div class="tarjeta-cuerpo">
-                        <h3 class="tarjeta-titulo">{{ elemento.titulo }}</h3>
-                        <p class="tarjeta-creador">
-                            <strong>
-                                {% if elemento.tipo == 'libro' %}
-                                    Autor:
-                                {% elif elemento.tipo == 'pelicula' %}
-                                    Director:
-                                {% else %}
-                                    Creador:
-                                {% endif %}
-                            </strong>
-                            {{ elemento.autor_director }}
-                        </p>
+            <section class="grid-coleccion" id="grid-coleccion">
+                {% for elemento in elementos %}
+                    <div class="tarjeta-item {{ elemento.tipo }}" 
+                        data-tipo="{{ elemento.tipo }}" 
+                        data-titulo="{{ elemento.titulo.lower() }}" 
+                        data-autor="{{ elemento.autor_director.lower() }}"
+                        data-calificacion="{{ elemento.calificacion }}"
+                        data-id="{{ elemento.id }}">
                         
-                        <div class="tarjeta-calificacion">
-                            {% for i in range(elemento.calificacion) %}⭐{% endfor %}
-                            <span class="numero-nota">({{ elemento.calificacion }}/5)</span>
+                        <div class="tarjeta-badge {{ elemento.tipo }}">
+                            {% if elemento.tipo == 'libro' %}
+                                📚 LIBRO
+                            {% elif elemento.tipo == 'pelicula' %}
+                                🎬 PELÍCULA
+                            {% else %}
+                                📺 SERIE
+                            {% endif %}
+                        </div>
+                        
+                        <div class="tarjeta-cuerpo">
+                            <h3 class="tarjeta-titulo">{{ elemento.titulo }}</h3>
+                            <p class="tarjeta-creador">
+                                <strong>
+                                    {% if elemento.tipo == 'libro' %}
+                                        Autor:
+                                    {% elif elemento.tipo == 'pelicula' %}
+                                        Director:
+                                    {% else %}
+                                        Creador:
+                                    {% endif %}
+                                </strong>
+                                {{ elemento.autor_director }}
+                            </p>
+                            
+                            <div class="tarjeta-calificacion">
+                                {% for i in range(elemento.calificacion) %}⭐{% endfor %}
+                                <span class="numero-nota">({{ elemento.calificacion }}/5)</span>
+                            </div>
+
+                            <p class="tarjeta-descripcion">{{ elemento.descripcion }}</p>
+                            
+                            <div class="tarjeta-opinion">
+                                <strong>Opinión:</strong>
+                                <p class="texto-opinion">"{{ elemento.opinion }}"</p>
+                            </div>
                         </div>
 
-                        <p class="tarjeta-descripcion">{{ elemento.descripcion }}</p>
-                        
-                        <div class="tarjeta-opinion">
-                            <strong>Opinión:</strong>
-                            <p class="texto-opinion">"{{ elemento.opinion }}"</p>
+                        <div class="tarjeta-fechas">
+                            {% if elemento.usuario_nombre %}
+                                <span class="autor-aporte">Subido por: <strong>{{ elemento.usuario_nombre }}</strong></span><br>
+                            {% endif %}
+                            
+                            <small>Registrado: {{ elemento.fecha_creacion | formato_fecha }}</small>
+                            {% if elemento.fecha_actualizacion and elemento.fecha_actualizacion != elemento.fecha_creacion %}
+                                <br><small class="txt-editado">Editado: {{ elemento.fecha_actualizacion | formato_fecha }}</small>
+                            {% endif %}
                         </div>
-                    </div>
 
-                    <div class="tarjeta-fechas">
-                        {% if elemento.usuario_nombre %}
-                            <span class="autor-aporte">Subido por: <strong>{{ elemento.usuario_nombre }}</strong></span><br>
-                        {% endif %}
-                        
-                        <small>Registrado: {{ elemento.fecha_creacion | formato_fecha }}</small>
-                        {% if elemento.fecha_actualizacion and elemento.fecha_actualizacion != elemento.fecha_creacion %}
-                            <br><small class="txt-editado">Editado: {{ elemento.fecha_actualizacion | formato_fecha }}</small>
-                        {% endif %}
                     </div>
-
-                </div>
-            {% else %}
-                <div class="coleccion-vacia">
-                    <p>La Chihuahuateca está vacía, empieza agregando elementos! 🐾</p>
-                </div>
-            {% endfor %}
-        </section>
+                {% else %}
+                    <div class="coleccion-vacia">
+                        <p>La Chihuahuateca está vacía, empieza agregando elementos! 🐾</p>
+                    </div>
+                {% endfor %}
+            </section>
+        </main>
     </main>
 
 
