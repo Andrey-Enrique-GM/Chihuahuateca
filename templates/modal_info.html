@@ -52,6 +52,24 @@
 
 
 <script>
+if (typeof abrirModal !== 'function') {
+    window.abrirModal = function(idModal) {
+        const modal = document.getElementById(idModal);
+        if (modal) {
+            modal.classList.add('mostrar');
+        }
+    };
+}
+
+if (typeof cerrarModal !== 'function') {
+    window.cerrarModal = function(idModal) {
+        const modal = document.getElementById(idModal);
+        if (modal) {
+            modal.classList.remove('mostrar');
+        }
+    };
+}
+
 function abrirModalInfo() {
     abrirModal('modal-info');
 }
@@ -61,8 +79,13 @@ function cerrarModalInfo() {
 }
 
 function cerrarModalInfoExterno(event) {
-    if (event.target.id === 'modal-info') {
+    if (event.target && event.target.id === 'modal-info') {
         cerrarModalInfo();
     }
+}
+
+const modalInfoElement = document.getElementById('modal-info');
+if (modalInfoElement) {
+    modalInfoElement.addEventListener('click', cerrarModalInfoExterno);
 }
 </script>

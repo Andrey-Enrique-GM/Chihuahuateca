@@ -128,7 +128,7 @@ class Elemento:
 
     # Metodo estatico para actualizar un elemento existente en la base de datos
     @staticmethod
-    def update(id_elemento: int, titulo: str, tipo: str, autor_director: str, descripcion: str, calificacion: int, opinion: str) -> bool:
+    def update(id_elemento: int, titulo: str, tipo: str, autor_director: str, descripcion: str, calificacion: int, opinion: str, usuario_id: int, user_role: str = 'usuario') -> bool:
         try:
             conexion = get_connection()
             cursor = conexion.cursor(DictCursor)
@@ -138,14 +138,15 @@ class Elemento:
                 UPDATE coleccion 
                 SET titulo = %s, tipo = %s, autor_director = %s, descripcion = %s, 
                     calificacion = %s, opinion = %s, fecha_actualizacion = %s
-                WHERE id = %s
+                WHERE id = %s AND (usuario_id = %s OR %s = 'admin')
             """
-            cursor.execute(sql, (titulo, tipo, autor_director, descripcion, calificacion, opinion, ahora, id_elemento))
+            cursor.execute(sql, (titulo, tipo, autor_director, descripcion, calificacion, opinion, ahora, id_elemento, usuario_id, user_role))
             conexion.commit()
 
+            updated_rows = cursor.rowcount
             cursor.close()
             conexion.close()
-            return True
+            return updated_rows > 0
         except Exception as ex:
             print(f"Error al actualizar en la Chihuahuateca: {ex}")
             return False
@@ -153,17 +154,18 @@ class Elemento:
 
     # Metodo estatico para eliminar un elemento de la base de datos por su ID
     @staticmethod
-    def delete(id_elemento: int) -> bool:
+    def delete(id_elemento: int, usuario_id: int, user_role: str = 'usuario') -> bool:
         try:
             conexion = get_connection()
             cursor = conexion.cursor(DictCursor)
-            sql = "DELETE FROM coleccion WHERE id = %s"
-            cursor.execute(sql, (id_elemento,))
+            sql = "DELETE FROM coleccion WHERE id = %s AND (usuario_id = %s OR %s = 'admin')"
+            cursor.execute(sql, (id_elemento, usuario_id, user_role))
             conexion.commit()
 
+            deleted_rows = cursor.rowcount
             cursor.close()
             conexion.close()
-            return True
+            return deleted_rows > 0
         except Exception as ex:
             print(f"Error al eliminar de la Chihuahuateca: {ex}")
             return False

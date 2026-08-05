@@ -175,6 +175,17 @@ function guardarNuevoElemento(e) {
         opinion: document.getElementById('add-opinion').value
     };
 
+    const errorMensaje = validarPayloadElemento(datos);
+    if (errorMensaje) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Validación inválida',
+            text: errorMensaje,
+            confirmButtonColor: '#2c3e50'
+        });
+        return;
+    }
+
     fetch('/api/guardar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -197,12 +208,20 @@ function guardarNuevoElemento(e) {
             Swal.fire({
                 icon: 'error',
                 title: 'Error al guardar',
-                text: 'No se pudo guardar el elemento en la Chihuahuateca.',
+                text: resultado.message || 'No se pudo guardar el elemento en la Chihuahuateca.',
                 confirmButtonColor: '#2c3e50'
             });
         }
     })
-    .catch(err => console.error('Error:', err));
+    .catch(err => {
+        console.error('Error:', err);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error de servidor',
+            text: 'No se pudo conectar con el servidor. Intenta de nuevo más tarde.',
+            confirmButtonColor: '#2c3e50'
+        });
+    });
 }
 
 function cargarDatosParaEditar() {
@@ -233,6 +252,27 @@ function cargarDatosParaEditar() {
     .catch(err => console.error('Error:', err));
 }
 
+function validarPayloadElemento(datos) {
+    const titulo = (datos.titulo || '').trim();
+    const tipo = (datos.tipo || '').trim();
+    const autor_director = (datos.autor_director || '').trim();
+    const calificacion = Number(datos.calificacion);
+
+    if (!titulo) {
+        return 'El título es obligatorio.';
+    }
+    if (!['libro', 'pelicula', 'serie'].includes(tipo)) {
+        return 'Selecciona un tipo válido: libro, película o serie.';
+    }
+    if (!autor_director) {
+        return 'El autor / director / creador es obligatorio.';
+    }
+    if (!Number.isInteger(calificacion) || calificacion < 1 || calificacion > 5) {
+        return 'La calificación debe ser un número entero entre 1 y 5.';
+    }
+    return '';
+}
+
 function actualizarElemento(e) {
     e.preventDefault();
 
@@ -245,6 +285,17 @@ function actualizarElemento(e) {
         descripcion: document.getElementById('edit-descripcion').value,
         opinion: document.getElementById('edit-opinion').value
     };
+
+    const errorMensaje = validarPayloadElemento(datos);
+    if (errorMensaje) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Validación inválida',
+            text: errorMensaje,
+            confirmButtonColor: '#2c3e50'
+        });
+        return;
+    }
 
     fetch('/api/editar', {
         method: 'POST',
@@ -268,12 +319,20 @@ function actualizarElemento(e) {
             Swal.fire({
                 icon: 'error',
                 title: 'Error al actualizar',
-                text: 'No se pudieron guardar los cambios.',
+                text: resultado.message || 'No se pudieron guardar los cambios.',
                 confirmButtonColor: '#2c3e50'
             });
         }
     })
-    .catch(err => console.error('Error:', err));
+    .catch(err => {
+        console.error('Error:', err);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error de servidor',
+            text: 'No se pudo conectar con el servidor. Intenta de nuevo más tarde.',
+            confirmButtonColor: '#2c3e50'
+        });
+    });
 }
 
 function borrarElemento() {

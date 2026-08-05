@@ -134,58 +134,137 @@ def api_signup():
     return jsonify({'success': False, 'message': mensaje or 'Error al crear la cuenta'}), 500
 
 
+def _sanitize_text(value, required=False, max_length=255):
+    if value is None:
+        value = ''
+    if not isinstance(value, str):
+        value = str(value)
+    value = value.strip()
+    if required and not value:
+        return None
+    if len(value) > max_length:
+        return value[:max_length]
+    return value
+
+
+def _validate_elemento_payload(data, require_id=False):
+    if not isinstance(data, dict):
+        return False, 'Datos inválidos', None
+
+    titulo = _sanitize_text(data.get('titulo'), required=True, max_length=200)
+    tipo = _sanitize_text(data.get('tipo'), required=True, max_length=20)
+    autor_director = _sanitize_text(data.get('autor_director'), required=True, max_length=150)
+    descripcion = _sanitize_text(data.get('descripcion'), required=False, max_length=1000)
+    opinion = _sanitize_text(data.get('opinion'), required=False, max_length=1000)
+
+    if titulo is None:
+        return False, 'El título es obligatorio', None
+    if tipo not in ('libro', 'pelicula', 'serie'):
+        return False, 'El tipo debe ser libro, pelicula o serie', None
+    if autor_director is None:
+        return False, 'Autor / Director / Creador es obligatorio', None
+
+    calificacion_raw = data.get('calificacion')
+    try:
+        calificacion = int(calificacion_raw)
+    except (TypeError, ValueError):
+        return False, 'La calificación debe ser un número entre 1 y 5', None
+
+    if calificacion < 1 or calificacion > 5:
+        return False, 'La calificación debe estar entre 1 y 5', None
+
+    elemento_id = None
+    if require_id:
+        try:
+            elemento_id = int(data.get('id'))
+        except (TypeError, ValueError):
+            return False, 'ID de elemento inválido', None
+
+    return True, None, {
+        'titulo': titulo,
+        'tipo': tipo,
+        'autor_director': autor_director,
+        'descripcion': descripcion,
+        'opinion': opinion,
+        'calificacion': calificacion,
+        'id': elemento_id
+    }
+
+
 @app.route('/api/guardar', methods=['POST'])
 def api_guardar_elemento():
-    data = request.json
     usuario_id = session.get('usuario_id')
+    if not usuario_id:
+        return jsonify({'success': False, 'message': 'No hay sesión activa'}), 401
+
+    success, message, payload = _validate_elemento_payload(request.json or {})
+    if not success:
+        return jsonify({'success': False, 'message': message}), 400
+
     exito = Elemento.save(
-        titulo=data['titulo'],
-        tipo=data['tipo'],
-        autor_director=data['autor_director'],
-        descripcion=data['descripcion'],
-        calificacion=int(data['calificacion']),
-        opinion=data['opinion'],
+        titulo=payload['titulo'],
+        tipo=payload['tipo'],
+        autor_director=payload['autor_director'],
+        descripcion=payload['descripcion'],
+        calificacion=payload['calificacion'],
+        opinion=payload['opinion'],
         usuario_id=usuario_id
     )
 
-    if exito and usuario_id:
+    if exito:
         usuario = User(id=usuario_id, username=session.get('username', ''), nombre=session.get('nombre', ''), password='', rol=session.get('rol', 'usuario'))
-        Log.save_log(usuario, f"Guardó el elemento '{data['titulo']}'", LogType.SAVE)
+        Log.save_log(usuario, f"Guardó el elemento '{payload['titulo']}'", LogType.SAVE)
+        return jsonify({'success': True})
 
-    return jsonify({'success': exito})
+    return jsonify({'success': False, 'message': 'Error interno al guardar el elemento'}), 500
 
 
 @app.route('/api/editar', methods=['POST'])
 def api_editar_elemento():
-    data = request.json
-    usuario_id = session.get('usuario_id')
+    if 'usuario_id' not in session:
+        return jsonify({'success': False, 'message': 'No hay sesión activa'}), 401
+
+    success, message, payload = _validate_elemento_payload(request.json or {}, require_id=True)
+    if not success:
+        return jsonify({'success': False, 'message': message}), 400
+
     exito = Elemento.update(
-        id_elemento=int(data['id']),
-        titulo=data['titulo'],
-        tipo=data['tipo'],
-        autor_director=data['autor_director'],
-        descripcion=data['descripcion'],
-        calificacion=int(data['calificacion']),
-        opinion=data['opinion']
+        id_elemento=payload['id'],
+        titulo=payload['titulo'],
+        tipo=payload['tipo'],
+        autor_director=payload['autor_director'],
+        descripcion=payload['descripcion'],
+        calificacion=payload['calificacion'],
+        opinion=payload['opinion'],
+        usuario_id=session['usuario_id'],
+        user_role=session.get('rol', 'usuario')
     )
 
-    if exito and usuario_id:
-        usuario = User(id=usuario_id, username=session.get('username', ''), nombre=session.get('nombre', ''), password='', rol=session.get('rol', 'usuario'))
-        Log.save_log(usuario, f"Editó el elemento '{data['titulo']}'", LogType.EDIT)
+    if exito:
+        usuario = User(id=session['usuario_id'], username=session.get('username', ''), nombre=session.get('nombre', ''), password='', rol=session.get('rol', 'usuario'))
+        Log.save_log(usuario, f"Editó el elemento '{payload['titulo']}'", LogType.EDIT)
+        return jsonify({'success': True})
 
-    return jsonify({'success': exito})
+    return jsonify({'success': False, 'message': 'No autorizado o no se encontró el elemento'}), 403
 
 
 @app.route('/api/borrar/<int:elemento_id>', methods=['DELETE'])
 def api_borrar_elemento(elemento_id):
-    usuario_id = session.get('usuario_id')
-    exito = Elemento.delete(elemento_id)
+    if 'usuario_id' not in session:
+        return jsonify({'success': False, 'message': 'No hay sesión activa'}), 401
 
-    if exito and usuario_id:
-        usuario = User(id=usuario_id, username=session.get('username', ''), nombre=session.get('nombre', ''), password='', rol=session.get('rol', 'usuario'))
+    exito = Elemento.delete(
+        id_elemento=elemento_id,
+        usuario_id=session['usuario_id'],
+        user_role=session.get('rol', 'usuario')
+    )
+
+    if exito:
+        usuario = User(id=session['usuario_id'], username=session.get('username', ''), nombre=session.get('nombre', ''), password='', rol=session.get('rol', 'usuario'))
         Log.save_log(usuario, f"Eliminó el elemento con ID {elemento_id}", LogType.DELETE)
+        return jsonify({'success': True})
 
-    return jsonify({'success': exito})
+    return jsonify({'success': False, 'message': 'No autorizado o no se encontró el elemento'}), 403
 
 
 @app.route('/api/elemento/<int:elemento_id>')
