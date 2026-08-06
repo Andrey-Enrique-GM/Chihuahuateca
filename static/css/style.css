@@ -272,6 +272,27 @@ body {
     background-color: #f0f0f0;
 }
 
+.filtro-select-caja {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-width: 160px;
+}
+
+.filtro-select-caja label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #5d6d7e;
+}
+
+.filtro-select-caja select {
+    padding: 0.65rem 0.8rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: var(--blanco);
+    color: var(--color-texto);
+}
+
 .btn-filtro.activo {
     background-color: var(--color-texto);
     color: var(--blanco);
@@ -362,6 +383,31 @@ body {
 .tarjeta-creador {
     font-size: 0.9rem;
     color: #7f8c8d;
+}
+
+.badge-genero {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+    background-color: #fef5e7;
+    color: #8a4b00;
+    border: 1px solid #f2c38b;
+    font-size: 0.78rem;
+    font-weight: 700;
+    margin-bottom: 0.2rem;
+    cursor: pointer;
+    transition: var(--transicion);
+}
+
+.badge-genero:hover {
+    transform: translateY(-1px);
+    background-color: #ffe6c2;
+}
+
+.tag-filtro {
+    text-transform: capitalize;
 }
 
 .tarjeta-calificacion {

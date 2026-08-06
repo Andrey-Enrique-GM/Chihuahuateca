@@ -154,6 +154,7 @@ def _validate_elemento_payload(data, require_id=False):
     titulo = _sanitize_text(data.get('titulo'), required=True, max_length=200)
     tipo = _sanitize_text(data.get('tipo'), required=True, max_length=20)
     autor_director = _sanitize_text(data.get('autor_director'), required=True, max_length=150)
+    genero = _sanitize_text(data.get('genero'), required=False, max_length=50) or ''
     descripcion = _sanitize_text(data.get('descripcion'), required=False, max_length=1000)
     opinion = _sanitize_text(data.get('opinion'), required=False, max_length=1000)
 
@@ -184,6 +185,7 @@ def _validate_elemento_payload(data, require_id=False):
         'titulo': titulo,
         'tipo': tipo,
         'autor_director': autor_director,
+        'genero': genero,
         'descripcion': descripcion,
         'opinion': opinion,
         'calificacion': calificacion,
@@ -205,6 +207,7 @@ def api_guardar_elemento():
         titulo=payload['titulo'],
         tipo=payload['tipo'],
         autor_director=payload['autor_director'],
+        genero=payload['genero'],
         descripcion=payload['descripcion'],
         calificacion=payload['calificacion'],
         opinion=payload['opinion'],
@@ -233,6 +236,7 @@ def api_editar_elemento():
         titulo=payload['titulo'],
         tipo=payload['tipo'],
         autor_director=payload['autor_director'],
+        genero=payload['genero'],
         descripcion=payload['descripcion'],
         calificacion=payload['calificacion'],
         opinion=payload['opinion'],
@@ -274,7 +278,7 @@ def api_obtener_elemento_por_id(elemento_id):
         # Retornamos las propiedades como JSON para rellenar los inputs al editar
         return jsonify({
             'id': el.id, 'titulo': el.titulo, 'tipo': el.tipo,
-            'autor_director': el.autor_director, 'descripcion': el.descripcion,
+            'autor_director': el.autor_director, 'genero': getattr(el, 'genero', ''), 'descripcion': el.descripcion,
             'calificacion': el.calificacion, 'opinion': el.opinion
         })
     return jsonify({"error": "No encontrado"}), 404

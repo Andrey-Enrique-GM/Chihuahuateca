@@ -19,7 +19,7 @@ def obtener_toda_la_coleccion():
     
     # Traemos las fechas formateadas para que en el HTML se vean limpias (Ej: 2026-05-23 22:40)
     cursor.execute("""
-        SELECT id, titulo, tipo, autor_director, descripcion, calificacion, opinion, 
+        SELECT id, titulo, tipo, autor_director, genero, descripcion, calificacion, opinion, 
                DATE_FORMAT(fecha_creacion, '%Y-%m-%d %H:%i') as fecha_creacion,
                DATE_FORMAT(fecha_actualizacion, '%Y-%m-%d %H:%i') as fecha_actualizacion 
         FROM coleccion 
@@ -37,7 +37,7 @@ def obtener_elemento_por_id(elemento_id):
     conexion = get_connection()
     cursor = conexion.cursor(dictionary=True)
     
-    cursor.execute("SELECT * FROM coleccion WHERE id = %s", (elemento_id,))
+    cursor.execute("SELECT id, titulo, tipo, autor_director, genero, descripcion, calificacion, opinion, fecha_creacion, fecha_actualizacion, usuario_id FROM coleccion WHERE id = %s", (elemento_id,))
     resultado = cursor.fetchone()
     
     cursor.close()
@@ -46,7 +46,7 @@ def obtener_elemento_por_id(elemento_id):
 
 
 # Metodo para insertar un nuevo elemento en la base de datos
-def insertar_elemento(titulo, tipo, autor_director, descripcion, calificacion, opinion):
+def insertar_elemento(titulo, tipo, autor_director, genero, descripcion, calificacion, opinion):
     try:
         conexion = get_connection()
         cursor = conexion.cursor()
@@ -54,10 +54,10 @@ def insertar_elemento(titulo, tipo, autor_director, descripcion, calificacion, o
         
         # Al crear por primera vez, ambas fechas llevan el mismo valor
         query = """
-            INSERT INTO coleccion (titulo, tipo, autor_director, descripcion, calificacion, opinion, fecha_creacion, fecha_actualizacion)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO coleccion (titulo, tipo, autor_director, genero, descripcion, calificacion, opinion, fecha_creacion, fecha_actualizacion)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
-        cursor.execute(query, (titulo, tipo, autor_director, descripcion, calificacion, opinion, ahora, ahora))
+        cursor.execute(query, (titulo, tipo, autor_director, genero, descripcion, calificacion, opinion, ahora, ahora))
         conexion.commit()
         
         cursor.close()
@@ -68,7 +68,7 @@ def insertar_elemento(titulo, tipo, autor_director, descripcion, calificacion, o
 
 
 # Metodo para actualizar un elemento existente en la base de datos
-def actualizar_elemento(id_elemento, titulo, tipo, autor_director, descripcion, calificacion, opinion):
+def actualizar_elemento(id_elemento, titulo, tipo, autor_director, genero, descripcion, calificacion, opinion):
     try:
         conexion = get_connection()
         cursor = conexion.cursor()
@@ -77,11 +77,11 @@ def actualizar_elemento(id_elemento, titulo, tipo, autor_director, descripcion, 
         # Aquí SOLO actualizamos la fecha_actualizacion, la de creación se queda intacta
         query = """
             UPDATE coleccion 
-            SET titulo = %s, tipo = %s, autor_director = %s, descripcion = %s, 
+            SET titulo = %s, tipo = %s, autor_director = %s, genero = %s, descripcion = %s, 
                 calificacion = %s, opinion = %s, fecha_actualizacion = %s
             WHERE id = %s
         """
-        cursor.execute(query, (titulo, tipo, autor_director, descripcion, calificacion, opinion, ahora, id_elemento))
+        cursor.execute(query, (titulo, tipo, autor_director, genero, descripcion, calificacion, opinion, ahora, id_elemento))
         conexion.commit()
         
         cursor.close()

@@ -77,6 +77,23 @@
                                 <option value="1">⭐</option>
                             </select>
                         </div>
+
+                        <!-- Selector por Género -->
+                        <div class="filtro-select-caja">
+                            <label for="filtro-genero">Género:</label>
+                            <select id="filtro-genero">
+                                <option value="todos">Todos los géneros</option>
+                                <option value="sin-genero">Sin género</option>
+                                <option value="fantasia">Fantasía</option>
+                                <option value="terror">Terror</option>
+                                <option value="cifi">Ciencia ficción</option>
+                                <option value="comedia">Comedia</option>
+                                <option value="drama">Drama</option>
+                                <option value="romance">Romance</option>
+                                <option value="accion">Acción</option>
+                                <option value="documental">Documental</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
@@ -114,6 +131,7 @@
                         data-titulo="{{ elemento.titulo.lower() }}" 
                         data-autor="{{ elemento.autor_director.lower() }}"
                         data-calificacion="{{ elemento.calificacion }}"
+                        data-genero="{{ (elemento.genero or '')|lower }}"
                         data-id="{{ elemento.id }}">
                         
                         <div class="tarjeta-badge {{ elemento.tipo }}">
@@ -140,6 +158,10 @@
                                 </strong>
                                 {{ elemento.autor_director }}
                             </p>
+
+                            <button type="button" class="badge-genero tag-filtro" data-genero="{{ (elemento.genero or '')|lower }}">
+                                {{ elemento.genero or 'Sin género' }}
+                            </button>
                             
                             <div class="tarjeta-calificacion">
                                 {% for i in range(elemento.calificacion) %}⭐{% endfor %}
@@ -217,6 +239,20 @@
                     <input type="text" id="add-autor" required>
                 </div>
                 <div class="form-grupo">
+                    <label for="add-genero">Género / Categoría:</label>
+                    <select id="add-genero" name="genero">
+                        <option value="">Sin género</option>
+                        <option value="fantasia">Fantasía</option>
+                        <option value="terror">Terror</option>
+                        <option value="cifi">Ciencia ficción</option>
+                        <option value="comedia">Comedia</option>
+                        <option value="drama">Drama</option>
+                        <option value="romance">Romance</option>
+                        <option value="accion">Acción</option>
+                        <option value="documental">Documental</option>
+                    </select>
+                </div>
+                <div class="form-grupo">
                     <label for="add-calificacion">Calificación (1 a 5):</label>
                     <input type="number" id="add-calificacion" min="1" max="5" value="5" required>
                 </div>
@@ -281,6 +317,20 @@
                 <div class="form-grupo">
                     <label for="edit-autor">Autor / Director / Creador:</label>
                     <input type="text" id="edit-autor">
+                </div>
+                <div class="form-grupo">
+                    <label for="edit-genero">Género / Categoría:</label>
+                    <select id="edit-genero" name="genero">
+                        <option value="">Sin género</option>
+                        <option value="fantasia">Fantasía</option>
+                        <option value="terror">Terror</option>
+                        <option value="cifi">Ciencia ficción</option>
+                        <option value="comedia">Comedia</option>
+                        <option value="drama">Drama</option>
+                        <option value="romance">Romance</option>
+                        <option value="accion">Acción</option>
+                        <option value="documental">Documental</option>
+                    </select>
                 </div>
                 <div class="form-grupo">
                     <label for="edit-calificacion">Calificación:</label>

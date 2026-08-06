@@ -3,6 +3,7 @@
 // ==========================================================================
 
 let filtroTipoActual = 'todos';
+let filtroGeneroActual = 'todos';
 
 document.addEventListener('DOMContentLoaded', () => {
     // Modales
@@ -25,10 +26,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const buscador = document.getElementById('buscador');
     const selectOrden = document.getElementById('select-orden');
     const selectEstrellas = document.getElementById('select-estrellas');
+    const selectGenero = document.getElementById('filtro-genero');
 
     buscador.addEventListener('input', filtrarYOrdenarColeccion);
     selectOrden.addEventListener('change', filtrarYOrdenarColeccion);
     selectEstrellas.addEventListener('change', filtrarYOrdenarColeccion);
+    selectGenero.addEventListener('change', () => {
+        filtroGeneroActual = selectGenero.value;
+        filtrarYOrdenarColeccion();
+    });
 
     document.getElementById('btn-todos').addEventListener('click', (e) => cambiarFiltroTipo('todos', e.target));
     document.getElementById('btn-libros').addEventListener('click', (e) => cambiarFiltroTipo('libro', e.target));
@@ -40,6 +46,17 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('select-editar-elemento').addEventListener('change', cargarDatosParaEditar);
     document.getElementById('form-editar').addEventListener('submit', actualizarElemento);
     document.getElementById('btn-borrar-elemento').addEventListener('click', borrarElemento);
+
+    document.getElementById('grid-coleccion').addEventListener('click', (event) => {
+        const tagFiltro = event.target.closest('.tag-filtro');
+        if (!tagFiltro) return;
+
+        const generoSeleccionado = tagFiltro.getAttribute('data-genero') || 'sin-genero';
+        const selectGenero = document.getElementById('filtro-genero');
+        selectGenero.value = generoSeleccionado || 'sin-genero';
+        filtroGeneroActual = selectGenero.value;
+        filtrarYOrdenarColeccion();
+    });
 
     // Ejecutar filtrado inicial para ordenar y actualizar contador al cargar la pagina
     filtrarYOrdenarColeccion();
@@ -90,6 +107,7 @@ function filtrarYOrdenarColeccion() {
     const textoBusqueda = document.getElementById('buscador').value.toLowerCase().trim();
     const ordenSeleccionado = document.getElementById('select-orden').value;
     const estrellasSeleccionadas = document.getElementById('select-estrellas').value;
+    const generoSeleccionado = filtroGeneroActual || 'todos';
     
     const contenedorGrid = document.getElementById('grid-coleccion');
     const tarjetasArray = Array.from(document.querySelectorAll('.tarjeta-item'));
@@ -103,12 +121,16 @@ function filtrarYOrdenarColeccion() {
         const tituloTarjeta = tarjeta.getAttribute('data-titulo');
         const autorTarjeta = tarjeta.getAttribute('data-autor');
         const calificacionTarjeta = tarjeta.getAttribute('data-calificacion');
+        const generoTarjeta = (tarjeta.getAttribute('data-genero') || '').toLowerCase().trim();
 
         const pasaTipo = (filtroTipoActual === 'todos' || tipoTarjeta === filtroTipoActual);
         const pasaBuscador = (tituloTarjeta.includes(textoBusqueda) || autorTarjeta.includes(textoBusqueda));
         const pasaEstrellas = (estrellasSeleccionadas === 'todas' || calificacionTarjeta === estrellasSeleccionadas);
+        const generoFiltro = generoSeleccionado === 'todos' ? 'todos' : generoSeleccionado;
+        const generoComparado = generoFiltro === 'sin-genero' ? '' : generoFiltro;
+        const pasaGenero = generoFiltro === 'todos' || generoTarjeta === generoComparado;
 
-        if (pasaTipo && pasaBuscador && pasaEstrellas) {
+        if (pasaTipo && pasaBuscador && pasaEstrellas && pasaGenero) {
             tarjeta.style.display = 'flex';
             elementosVisibles++;
         } else {
@@ -170,6 +192,7 @@ function guardarNuevoElemento(e) {
         tipo: document.getElementById('add-tipo').value,
         titulo: document.getElementById('add-titulo').value,
         autor_director: document.getElementById('add-autor').value,
+        genero: document.getElementById('add-genero').value,
         calificacion: document.getElementById('add-calificacion').value,
         descripcion: document.getElementById('add-descripcion').value,
         opinion: document.getElementById('add-opinion').value
@@ -242,6 +265,7 @@ function cargarDatosParaEditar() {
             document.getElementById('edit-tipo').value = data.tipo;
             document.getElementById('edit-titulo').value = data.titulo;
             document.getElementById('edit-autor').value = data.autor_director;
+            document.getElementById('edit-genero').value = data.genero || '';
             document.getElementById('edit-calificacion').value = data.calificacion;
             document.getElementById('edit-descripcion').value = data.descripcion;
             document.getElementById('edit-opinion').value = data.opinion;
@@ -281,6 +305,7 @@ function actualizarElemento(e) {
         tipo: document.getElementById('edit-tipo').value,
         titulo: document.getElementById('edit-titulo').value,
         autor_director: document.getElementById('edit-autor').value,
+        genero: document.getElementById('edit-genero').value,
         calificacion: document.getElementById('edit-calificacion').value,
         descripcion: document.getElementById('edit-descripcion').value,
         opinion: document.getElementById('edit-opinion').value
