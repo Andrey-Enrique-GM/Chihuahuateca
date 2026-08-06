@@ -220,16 +220,23 @@ body {
 }
 
 .barra-controles {
+    position: relative;
     background-color: var(--blanco);
     padding: 1.2rem;
     border-radius: var(--radio-borde);
     box-shadow: var(--sombra);
     display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    margin-bottom: 1.5rem;
+}
+
+.controles-principales {
+    display: flex;
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: 0.75rem;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 1.5rem;
 }
 
 .buscador-caja {
@@ -254,6 +261,7 @@ body {
 /* Botones de Filtro (Todos, Libros, Peliculas) */
 .filtros-tipo {
     display: flex;
+    flex-wrap: wrap;
     gap: 0.5rem;
 }
 
@@ -300,9 +308,46 @@ body {
 }
 
 /* Botones CRUD */
-.acciones-crud {
+.acciones-barra {
     display: flex;
+    flex-wrap: wrap;
     gap: 0.5rem;
+    align-items: center;
+}
+
+.btn-secundario {
+    padding: 0.6rem 1.2rem;
+    border: 1px solid #d9dce1;
+    background-color: #f8f9fb;
+    color: var(--color-texto);
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transicion);
+    position: relative;
+}
+
+.btn-secundario:hover {
+    background-color: #f0f2f5;
+}
+
+.btn-secundario.con-filtros {
+    border-color: var(--chihuahua-light);
+    color: var(--chihuahua-brown);
+}
+
+.indicador-filtros {
+    display: none;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--chihuahua-brown);
+    margin-left: 0.5rem;
+    vertical-align: middle;
+}
+
+.btn-secundario.con-filtros .indicador-filtros {
+    display: inline-block;
 }
 
 .btn-accion {
@@ -321,6 +366,63 @@ body {
 .btn-modificar { background-color: #7f8c8d; }
 .btn-modificar:hover { background-color: #616a6b; }
 
+.popover-filtros {
+    display: none;
+    position: absolute;
+    top: calc(100% + 0.7rem);
+    right: 1.2rem;
+    z-index: 1100;
+    width: min(320px, calc(100% - 2.4rem));
+    background-color: var(--blanco);
+    border: 1px solid #e7e9ec;
+    border-radius: 14px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.14);
+    overflow: hidden;
+}
+
+.popover-filtros.mostrar {
+    display: block;
+}
+
+.popover-cabecera {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1rem;
+    background-color: #f8f9fb;
+    border-bottom: 1px solid #eceff3;
+}
+
+.btn-cerrar-popover {
+    border: none;
+    background: transparent;
+    color: #7b8794;
+    font-size: 1.3rem;
+    cursor: pointer;
+}
+
+.popover-cuerpo {
+    display: grid;
+    gap: 0.75rem;
+    padding: 1rem;
+}
+
+.popover-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.6rem;
+    padding: 0.85rem 1rem 1rem;
+    background-color: #fcfdff;
+    border-top: 1px solid #eceff3;
+}
+
+.btn-limpiar-filtros {
+    background-color: #f4f6f9;
+}
+
+.btn-aplicar-filtros {
+    padding-inline: 1rem;
+}
 
 
 /* ==========================================================================
@@ -752,6 +854,23 @@ body {
 }
 
 /* Ocultar texto en móviles para que no se superpongan */
+@media (max-width: 768px) {
+    .controles-principales {
+        align-items: stretch;
+    }
+
+    .acciones-barra {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .popover-filtros {
+        left: 0;
+        right: 0;
+        width: auto;
+    }
+}
+
 @media (max-width: 480px) {
     .link-github-flotante span {
         display: none;

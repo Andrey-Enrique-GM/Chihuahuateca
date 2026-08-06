@@ -45,75 +45,82 @@
     <main class="contenedor-principal">
 
         <section class="barra-controles">
-                <!-- Fila superior: Buscador + Controles de Orden y Calificación -->
-                <div class="controles-superiores">
-                    <div class="buscador-caja">
-                        <input type="text" id="buscador" placeholder="🔍 Buscar por título, autor o director...">
+            <div class="controles-principales">
+                <div class="buscador-caja">
+                    <input type="text" id="input-busqueda" placeholder="🔍 Buscar por título, autor o director...">
+                </div>
+
+                <div class="filtros-tipo">
+                    <button id="btn-todos" class="btn-filtro activo">Todos 🐾</button>
+                    <button id="btn-libros" class="btn-filtro">Libros 📚</button>
+                    <button id="btn-peliculas" class="btn-filtro">Películas 🎬</button>
+                    <button id="btn-series" class="btn-filtro">Series 📺</button>
+                </div>
+
+                <div class="acciones-barra">
+                    <button id="btn-filtros-avanzados" class="btn-secundario" type="button" aria-expanded="false">
+                        🎛️ Filtros
+                        <span class="indicador-filtros" aria-hidden="true"></span>
+                    </button>
+                    <button id="btn-abrir-agregar" class="btn-accion btn-crear">➕ Agregar Nuevo</button>
+                    <button id="btn-abrir-editar" class="btn-accion btn-modificar">📝 Editar</button>
+                </div>
+            </div>
+
+            <div id="popover-filtros" class="popover-filtros" role="dialog" aria-label="Filtros avanzados">
+                <div class="popover-cabecera">
+                    <strong>Filtros avanzados</strong>
+                    <button type="button" class="btn-cerrar-popover" id="btn-cerrar-filtros" aria-label="Cerrar filtros">&times;</button>
+                </div>
+
+                <div class="popover-cuerpo">
+                    <div class="filtro-select-caja">
+                        <label for="select-orden">Ordenar por:</label>
+                        <select id="select-orden">
+                            <option value="reciente">Más recientes primero</option>
+                            <option value="antiguo">Más antiguos primero</option>
+                            <option value="nota-desc">Mejor calificados (5-1 ⭐)</option>
+                            <option value="nota-asc">Peor calificación (1-5 ⭐)</option>
+                            <option value="titulo-asc">Título (A - Z)</option>
+                            <option value="titulo-desc">Título (Z - A)</option>
+                        </select>
                     </div>
 
-                    <div class="selects-filtros">
-                        <!-- Selector de Ordenamiento -->
-                        <div class="filtro-select-caja">
-                            <label for="select-orden">Ordenar por:</label>
-                            <select id="select-orden">
-                                <option value="reciente">Más recientes primero</option>
-                                <option value="antiguo">Más antiguos primero</option>
-                                <option value="nota-desc">Mejor calificados (5-1 ⭐)</option>
-                                <option value="nota-asc">Peor calificación (1-5 ⭐)</option>
-                                <option value="titulo-asc">Título (A - Z)</option>
-                                <option value="titulo-desc">Título (Z - A)</option>
-                            </select>
-                        </div>
+                    <div class="filtro-select-caja">
+                        <label for="select-estrellas">Calificación:</label>
+                        <select id="select-estrellas">
+                            <option value="todas">Todas ⭐</option>
+                            <option value="5">⭐⭐⭐⭐⭐</option>
+                            <option value="4">⭐⭐⭐⭐</option>
+                            <option value="3">⭐⭐⭐</option>
+                            <option value="2">⭐⭐</option>
+                            <option value="1">⭐</option>
+                        </select>
+                    </div>
 
-                        <!-- Selector por Estrellas -->
-                        <div class="filtro-select-caja">
-                            <label for="select-estrellas">Calificación:</label>
-                            <select id="select-estrellas">
-                                <option value="todas">Todas ⭐</option>
-                                <option value="5">⭐⭐⭐⭐⭐</option>
-                                <option value="4">⭐⭐⭐⭐</option>
-                                <option value="3">⭐⭐⭐</option>
-                                <option value="2">⭐⭐</option>
-                                <option value="1">⭐</option>
-                            </select>
-                        </div>
-
-                        <!-- Selector por Género -->
-                        <div class="filtro-select-caja">
-                            <label for="filtro-genero">Género:</label>
-                            <select id="filtro-genero">
-                                <option value="todos">Todos los géneros</option>
-                                <option value="sin-genero">Sin género</option>
-                                <option value="fantasia">Fantasía</option>
-                                <option value="terror">Terror</option>
-                                <option value="cifi">Ciencia ficción</option>
-                                <option value="comedia">Comedia</option>
-                                <option value="drama">Drama</option>
-                                <option value="romance">Romance</option>
-                                <option value="accion">Acción</option>
-                                <option value="documental">Documental</option>
-                            </select>
-                        </div>
+                    <div class="filtro-select-caja">
+                        <label for="filtro-genero">Género:</label>
+                        <select id="filtro-genero">
+                            <option value="todos">Todos los géneros</option>
+                            <option value="sin-genero">Sin género</option>
+                            <option value="fantasia">Fantasía</option>
+                            <option value="terror">Terror</option>
+                            <option value="cifi">Ciencia ficción</option>
+                            <option value="comedia">Comedia</option>
+                            <option value="drama">Drama</option>
+                            <option value="romance">Romance</option>
+                            <option value="accion">Acción</option>
+                            <option value="documental">Documental</option>
+                        </select>
                     </div>
                 </div>
 
-
-
-                <!-- Fila inferior: Filtros de Categoría y Botones de Acción -->
-                <div class="controles-inferiores">
-                    <div class="filtros-tipo">
-                        <button id="btn-todos" class="btn-filtro activo">Todos 🐾</button>
-                        <button id="btn-libros" class="btn-filtro">Libros 📚</button>
-                        <button id="btn-peliculas" class="btn-filtro">Películas 🎬</button>
-                        <button id="btn-series" class="btn-filtro">Series 📺</button>
-                    </div>
-
-                    <div class="acciones-crud">
-                        <button id="btn-abrir-agregar" class="btn-accion btn-crear">➕ Agregar Nuevo</button>
-                        <button id="btn-abrir-editar" class="btn-accion btn-modificar">📝 Editar</button>
-                    </div>
+                <div class="popover-footer">
+                    <button type="button" class="btn-secundario btn-limpiar-filtros" id="btn-limpiar-filtros">Limpiar</button>
+                    <button type="button" class="btn-accion btn-crear btn-aplicar-filtros" id="btn-aplicar-filtros">Aplicar</button>
                 </div>
-            </section>
+            </div>
+        </section>
 
 
             

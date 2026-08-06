@@ -23,17 +23,54 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Buscador y Filtros Avanzados
-    const buscador = document.getElementById('buscador');
+    const buscador = document.getElementById('input-busqueda');
     const selectOrden = document.getElementById('select-orden');
     const selectEstrellas = document.getElementById('select-estrellas');
     const selectGenero = document.getElementById('filtro-genero');
+    const btnFiltros = document.getElementById('btn-filtros-avanzados');
+    const popoverFiltros = document.getElementById('popover-filtros');
+    const btnCerrarFiltros = document.getElementById('btn-cerrar-filtros');
+    const btnAplicarFiltros = document.getElementById('btn-aplicar-filtros');
+    const btnLimpiarFiltros = document.getElementById('btn-limpiar-filtros');
 
     buscador.addEventListener('input', filtrarYOrdenarColeccion);
-    selectOrden.addEventListener('change', filtrarYOrdenarColeccion);
-    selectEstrellas.addEventListener('change', filtrarYOrdenarColeccion);
+    selectOrden.addEventListener('change', () => {
+        filtrarYOrdenarColeccion();
+        actualizarIndicadorFiltros();
+    });
+    selectEstrellas.addEventListener('change', () => {
+        filtrarYOrdenarColeccion();
+        actualizarIndicadorFiltros();
+    });
     selectGenero.addEventListener('change', () => {
         filtroGeneroActual = selectGenero.value;
         filtrarYOrdenarColeccion();
+        actualizarIndicadorFiltros();
+    });
+
+    btnFiltros.addEventListener('click', togglePopoverFiltros);
+    btnCerrarFiltros.addEventListener('click', cerrarPopoverFiltros);
+    btnAplicarFiltros.addEventListener('click', () => {
+        filtrarYOrdenarColeccion();
+        actualizarIndicadorFiltros();
+        cerrarPopoverFiltros();
+    });
+    btnLimpiarFiltros.addEventListener('click', () => {
+        selectOrden.value = 'reciente';
+        selectEstrellas.value = 'todas';
+        selectGenero.value = 'todos';
+        filtroGeneroActual = 'todos';
+        filtrarYOrdenarColeccion();
+        actualizarIndicadorFiltros();
+        cerrarPopoverFiltros();
+    });
+
+    document.addEventListener('click', (event) => {
+        const dentroPopover = popoverFiltros.contains(event.target);
+        const clicEnBoton = btnFiltros.contains(event.target);
+        if (!dentroPopover && !clicEnBoton && popoverFiltros.classList.contains('mostrar')) {
+            cerrarPopoverFiltros();
+        }
     });
 
     document.getElementById('btn-todos').addEventListener('click', (e) => cambiarFiltroTipo('todos', e.target));
@@ -103,8 +140,39 @@ function cambiarFiltroTipo(tipo, botonClickeado) {
     filtrarYOrdenarColeccion();
 }
 
+function togglePopoverFiltros() {
+    const popoverFiltros = document.getElementById('popover-filtros');
+    const btnFiltros = document.getElementById('btn-filtros-avanzados');
+    if (!popoverFiltros || !btnFiltros) return;
+
+    const mostrar = !popoverFiltros.classList.contains('mostrar');
+    popoverFiltros.classList.toggle('mostrar', mostrar);
+    btnFiltros.setAttribute('aria-expanded', mostrar ? 'true' : 'false');
+}
+
+function cerrarPopoverFiltros() {
+    const popoverFiltros = document.getElementById('popover-filtros');
+    const btnFiltros = document.getElementById('btn-filtros-avanzados');
+    if (!popoverFiltros || !btnFiltros) return;
+
+    popoverFiltros.classList.remove('mostrar');
+    btnFiltros.setAttribute('aria-expanded', 'false');
+}
+
+function actualizarIndicadorFiltros() {
+    const btnFiltros = document.getElementById('btn-filtros-avanzados');
+    if (!btnFiltros) return;
+
+    const orden = document.getElementById('select-orden')?.value || 'reciente';
+    const estrellas = document.getElementById('select-estrellas')?.value || 'todas';
+    const genero = document.getElementById('filtro-genero')?.value || 'todos';
+    const hayFiltros = orden !== 'reciente' || estrellas !== 'todas' || genero !== 'todos';
+
+    btnFiltros.classList.toggle('con-filtros', hayFiltros);
+}
+
 function filtrarYOrdenarColeccion() {
-    const textoBusqueda = document.getElementById('buscador').value.toLowerCase().trim();
+    const textoBusqueda = document.getElementById('input-busqueda').value.toLowerCase().trim();
     const ordenSeleccionado = document.getElementById('select-orden').value;
     const estrellasSeleccionadas = document.getElementById('select-estrellas').value;
     const generoSeleccionado = filtroGeneroActual || 'todos';

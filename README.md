@@ -5,7 +5,8 @@ El guardián ideal de libros, películas y series. Una aplicación web dinámica
 ## ✨ Características Principales
 * **CRUD Completo en Tiempo Real:** Permite agregar, visualizar, editar y eliminar libros o películas de forma asíncrona mediante peticiones HTTP `fetch` sin recargar la página.
 * **Sistema de Autenticación Dinámico:** Registro e inicio de sesión seguro para múltiples usuarios con sesiones cifradas. Cada usuario administra de forma exclusiva sus propios elementos guardados.
-* **Filtrado y Búsqueda Instantánea:** Barra de búsqueda integrada por coincidencia de texto (título, autor o director) y filtros rápidos por categorías (Libros 📚, Películas 🎬, Series 📺 o Todos 🐾).
+* **Filtrado y Búsqueda Instantánea:** Barra de búsqueda integrada por coincidencia de texto (título, autor o director), categorías rápidas (Libros 📚, Películas 🎬, Series 📺 o Todos 🐾) y panel de filtros avanzados por género, calificación y orden.
+* **Sistema de Categorías (Tags):** Clasificación por géneros visuales para organizar y filtrar las obras rápidamente.
 * **Auditoría del Sistema (Logs):** Registro histórico automático de la actividad de los usuarios en la base de datos (inicios de sesión, actualizaciones, modificaciones, etc.).
 * **Interfaz Pulida y Moderna:** Menú desplegable de perfil, modales interactivos para la gestión de elementos y alertas estéticas mediante **SweetAlert2**.
 
@@ -35,10 +36,11 @@ Almacena las credenciales y perfiles de los usuarios que acceden al sistema.
 * `rol` (VARCHAR): Nivel de privilegios ('USER', 'ADMIN').
 
 ### Tabla: `coleccion`
-Guarda los libros y películas agregados por la comunidad, vinculados a su respectivo creador.
+Guarda los libros, películas y series agregados por la comunidad, vinculados a su respectivo creador.
 * `id` (INT, Primary Key, Auto-increment)
 * `titulo` (VARCHAR): Nombre de la obra.
 * `tipo` (VARCHAR): Define si el elemento es `'libro'`, `'pelicula'` o `'serie'`.
+* `genero` (VARCHAR): Clasificación o género temático (ej. Fantasía, Terror, Sci-Fi, Drama).
 * `autor_director` (VARCHAR): Creador del material.
 * `descripcion` (TEXT): Sinopsis o resumen corto.
 * `calificacion` (INT): Puntuación personal de la escala del 1 al 5 representada con estrellas (⭐).
@@ -73,4 +75,3 @@ mysql-connector-python==9.7.0
 colorama==0.4.6
 gunicorn==26.0.0
 packaging==26.2
-```
