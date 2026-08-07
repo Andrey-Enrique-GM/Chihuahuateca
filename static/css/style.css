@@ -529,14 +529,16 @@ body {
     padding: 0.8rem;
     border-left: 3px solid var(--chihuahua-light);
     border-radius: 4px;
-    margin-top: auto;
+    margin-top: 0.5rem;
 }
 .tarjeta-opinion strong { font-size: 0.85rem; color: #7f8c8d; }
-.texto-opinion { font-style: italic; font-size: 0.9rem; color: #444; }
+.texto-opinion { font-style: italic; font-size: 0.9rem; color: #444; margin: 0.4rem 0 0; }
 
 .tarjeta-like-container {
     display: flex;
     justify-content: flex-start;
+    margin-top: 0.85rem;
+    margin-bottom: 0.85rem;
 }
 
 .btn-like {

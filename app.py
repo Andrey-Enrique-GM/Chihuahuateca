@@ -58,6 +58,7 @@ def ruta_perfil():
     total_libros = sum(1 for e in mis_elementos if e.tipo == 'libro')
     total_peliculas = sum(1 for e in mis_elementos if e.tipo == 'pelicula')
     total_series = sum(1 for e in mis_elementos if e.tipo == 'serie')
+    total_likes_recibidos = sum(e.total_likes for e in mis_elementos)
     
     # Promedio de calificacion dada por el usuario
     if total_aportes > 0:
@@ -70,7 +71,8 @@ def ruta_perfil():
         'libros': total_libros,
         'peliculas': total_peliculas,
         'series': total_series,
-        'promedio_nota': promedio_calificacion
+        'promedio_nota': promedio_calificacion,
+        'likes_recibidos': total_likes_recibidos
     }
     
     return render_template('profile.html', usuario=usuario, logs=actividad, stats=estadisticas)
