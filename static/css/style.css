@@ -534,6 +534,43 @@ body {
 .tarjeta-opinion strong { font-size: 0.85rem; color: #7f8c8d; }
 .texto-opinion { font-style: italic; font-size: 0.9rem; color: #444; }
 
+.tarjeta-like-container {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.btn-like {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.45rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid #d7dde7;
+    background-color: #ffffff;
+    color: #34495e;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transicion);
+}
+
+.btn-like:hover {
+    background-color: #f7f9fc;
+}
+
+.btn-like .icon-like {
+    font-size: 1rem;
+}
+
+.btn-like.liked {
+    border-color: #e74c3c;
+    color: #e74c3c;
+    background-color: rgba(231, 76, 60, 0.1);
+}
+
+.btn-like.liked:hover {
+    background-color: rgba(231, 76, 60, 0.16);
+}
+
 .autor-aporte {
     display: inline-block;
     color: var(--color-texto);

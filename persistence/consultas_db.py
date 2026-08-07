@@ -20,8 +20,8 @@ def obtener_toda_la_coleccion():
     # Traemos las fechas formateadas para que en el HTML se vean limpias (Ej: 2026-05-23 22:40)
     cursor.execute("""
         SELECT id, titulo, tipo, autor_director, genero, descripcion, calificacion, opinion, 
-               DATE_FORMAT(fecha_creacion, '%Y-%m-%d %H:%i') as fecha_creacion,
-               DATE_FORMAT(fecha_actualizacion, '%Y-%m-%d %H:%i') as fecha_actualizacion 
+               DATE_FORMAT(fecha_creacion, '%%Y-%%m-%%d %%H:%%i') as fecha_creacion,
+               DATE_FORMAT(fecha_actualizacion, '%%Y-%%m-%%d %%H:%%i') as fecha_actualizacion 
         FROM coleccion 
         ORDER BY id DESC
     """)

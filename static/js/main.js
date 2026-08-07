@@ -85,6 +85,39 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-borrar-elemento').addEventListener('click', borrarElemento);
 
     document.getElementById('grid-coleccion').addEventListener('click', (event) => {
+        const likeButton = event.target.closest('.btn-like');
+        if (likeButton) {
+            event.preventDefault();
+            const elementoId = likeButton.dataset.elementoId;
+            if (!elementoId) return;
+
+            fetch(`/api/like/${elementoId}`, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        likeButton.classList.toggle('liked', data.liked);
+                        likeButton.dataset.liked = data.liked ? 'true' : 'false';
+                        likeButton.querySelector('.icon-like').textContent = data.liked ? '❤️' : '🤍';
+                        likeButton.querySelector('.like-count').textContent = data.total_likes;
+                    } else {
+                        if (window.Swal) {
+                            Swal.fire({ icon: 'error', title: 'Error', text: data.message || 'No se pudo actualizar el like.' });
+                        } else {
+                            alert(data.message || 'No se pudo actualizar el like.');
+                        }
+                    }
+                })
+                .catch(err => {
+                    console.error('Error like:', err);
+                    if (window.Swal) {
+                        Swal.fire({ icon: 'error', title: 'Error de servidor', text: 'No se pudo actualizar el like en este momento.' });
+                    } else {
+                        alert('No se pudo actualizar el like en este momento.');
+                    }
+                });
+            return;
+        }
+
         const tagFiltro = event.target.closest('.tag-filtro');
         if (!tagFiltro) return;
 

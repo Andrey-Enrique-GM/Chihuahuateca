@@ -175,6 +175,13 @@
                                 <span class="numero-nota">({{ elemento.calificacion }}/5)</span>
                             </div>
 
+                            <div class="tarjeta-like-container">
+                                <button type="button" class="btn-like {% if elemento.le_gusta_usuario %}liked{% endif %}" data-elemento-id="{{ elemento.id }}" data-liked="{{ 'true' if elemento.le_gusta_usuario else 'false' }}" aria-label="Me gusta">
+                                    <span class="icon-like">{% if elemento.le_gusta_usuario %}❤️{% else %}🤍{% endif %}</span>
+                                    <span class="like-count">{{ elemento.total_likes }}</span>
+                                </button>
+                            </div>
+
                             <p class="tarjeta-descripcion">{{ elemento.descripcion }}</p>
                             
                             <div class="tarjeta-opinion">

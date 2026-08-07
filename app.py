@@ -35,7 +35,7 @@ def index():
     # Si no hay un usuario en la sesión, lo mandamos al login de vuelta
     if 'usuario_id' not in session:
         return redirect(url_for('login_view'))
-    coleccion_completa = Elemento.obtener_todos() 
+    coleccion_completa = Elemento.obtener_todos(usuario_id=session['usuario_id'])
     return render_template('index.html', elementos=coleccion_completa)
 
 
@@ -269,6 +269,23 @@ def api_borrar_elemento(elemento_id):
         return jsonify({'success': True})
 
     return jsonify({'success': False, 'message': 'No autorizado o no se encontró el elemento'}), 403
+
+
+@app.route('/api/like/<int:elemento_id>', methods=['POST'])
+def api_toggle_like(elemento_id):
+    usuario_id = session.get('usuario_id')
+    if not usuario_id:
+        return jsonify({'success': False, 'message': 'No hay sesión activa'}), 401
+
+    resultado = Elemento.toggle_like(usuario_id, elemento_id)
+    if resultado is None:
+        return jsonify({'success': False, 'message': 'Elemento no encontrado o error interno'}), 404
+
+    return jsonify({
+        'success': True,
+        'liked': resultado['liked'],
+        'total_likes': resultado['total_likes']
+    })
 
 
 @app.route('/api/elemento/<int:elemento_id>')
