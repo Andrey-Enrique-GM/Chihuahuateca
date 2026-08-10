@@ -6,6 +6,7 @@ from entities.log import Log
 from entities.usuario import User
 from enums.log_type import LogType
 from datetime import datetime
+from urllib.parse import urlparse
 
 
 
@@ -149,6 +150,21 @@ def _sanitize_text(value, required=False, max_length=255):
     return value
 
 
+def _sanitize_url(value):
+    if value is None:
+        return ''
+    if not isinstance(value, str):
+        value = str(value)
+    value = value.strip()
+    if not value:
+        return ''
+
+    parsed = urlparse(value)
+    if parsed.scheme not in ('http', 'https') or not parsed.netloc:
+        return None
+    return value
+
+
 def _validate_elemento_payload(data, require_id=False):
     if not isinstance(data, dict):
         return False, 'Datos inválidos', None
@@ -159,6 +175,8 @@ def _validate_elemento_payload(data, require_id=False):
     genero = _sanitize_text(data.get('genero'), required=False, max_length=50) or ''
     descripcion = _sanitize_text(data.get('descripcion'), required=False, max_length=1000)
     opinion = _sanitize_text(data.get('opinion'), required=False, max_length=1000)
+    imagen_url_raw = data.get('imagen_url', '')
+    imagen_url = _sanitize_url(imagen_url_raw)
 
     if titulo is None:
         return False, 'El título es obligatorio', None
@@ -166,6 +184,9 @@ def _validate_elemento_payload(data, require_id=False):
         return False, 'El tipo debe ser libro, pelicula o serie', None
     if autor_director is None:
         return False, 'Autor / Director / Creador es obligatorio', None
+
+    if imagen_url_raw and imagen_url is None:
+        return False, 'La URL de la imagen no es válida', None
 
     calificacion_raw = data.get('calificacion')
     try:
@@ -191,6 +212,7 @@ def _validate_elemento_payload(data, require_id=False):
         'descripcion': descripcion,
         'opinion': opinion,
         'calificacion': calificacion,
+        'imagen_url': imagen_url,
         'id': elemento_id
     }
 
@@ -213,6 +235,7 @@ def api_guardar_elemento():
         descripcion=payload['descripcion'],
         calificacion=payload['calificacion'],
         opinion=payload['opinion'],
+        imagen_url=payload['imagen_url'],
         usuario_id=usuario_id
     )
 
@@ -242,6 +265,7 @@ def api_editar_elemento():
         descripcion=payload['descripcion'],
         calificacion=payload['calificacion'],
         opinion=payload['opinion'],
+        imagen_url=payload['imagen_url'],
         usuario_id=session['usuario_id'],
         user_role=session.get('rol', 'usuario')
     )
@@ -298,7 +322,8 @@ def api_obtener_elemento_por_id(elemento_id):
         return jsonify({
             'id': el.id, 'titulo': el.titulo, 'tipo': el.tipo,
             'autor_director': el.autor_director, 'genero': getattr(el, 'genero', ''), 'descripcion': el.descripcion,
-            'calificacion': el.calificacion, 'opinion': el.opinion
+            'calificacion': el.calificacion, 'opinion': el.opinion,
+            'imagen_url': getattr(el, 'imagen_url', '')
         })
     return jsonify({"error": "No encontrado"}), 404
 

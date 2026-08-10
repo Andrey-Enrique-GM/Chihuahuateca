@@ -7,6 +7,7 @@ El guardián ideal de libros, películas y series. Una aplicación web dinámica
 * **Sistema de Autenticación Dinámico:** Registro e inicio de sesión seguro para múltiples usuarios con sesiones cifradas. Cada usuario administra de forma exclusiva sus propios elementos guardados.
 * **Filtrado y Búsqueda Instantánea:** Barra de búsqueda integrada por coincidencia de texto (título, autor o director), categorías rápidas (Libros 📚, Películas 🎬, Series 📺 o Todos 🐾) y panel de filtros avanzados por género, calificación y orden.
 * **Sistema de Categorías (Tags):** Clasificación por géneros visuales para organizar y filtrar las obras rápidamente.
+* **Soporte para Portadas y Pósters:** Muestra imágenes representativas en cada tarjeta mediante URL para una experiencia mucho más visual.
 * **Interacción Social (Likes ❤️):** Permite a los usuarios dar "Me gusta" a los elementos publicados por otros miembros de la comunidad en tiempo real.
 * **Auditoría del Sistema (Logs):** Registro histórico automático de la actividad de los usuarios en la base de datos (inicios de sesión, actualizaciones, modificaciones, etc.).
 * **Interfaz Pulida y Moderna:** Menú desplegable de perfil, modales interactivos para la gestión de elementos y alertas estéticas mediante **SweetAlert2**.
@@ -46,6 +47,7 @@ Guarda los libros, películas y series agregados por la comunidad, vinculados a 
 * `descripcion` (TEXT): Sinopsis o resumen corto.
 * `calificacion` (INT): Puntuación personal de la escala del 1 al 5 representada con estrellas (⭐).
 * `opinion` (TEXT): Reseña crítica personal.
+* `imagen_url` (TEXT): Enlace a la imagen de portada o póster de la obra.
 * `fecha_creacion` (TIMESTAMP): Registro automático de la fecha de alta.
 * `fecha_actualizacion` (TIMESTAMP): Registro automático al realizar modificaciones.
 * `usuario_id` (INT): Llave foránea vinculada al `id` de la tabla `usuarios`.

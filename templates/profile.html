@@ -58,29 +58,38 @@
                 </div>
                 
                 <div class="grid-stats-perfil">
-                    <div class="stat-box stat-total">
-                        <span class="stat-numero">{{ stats.total }}</span>
-                        <span class="stat-label">Aportes Totales</span>
+                    <div class="stats-row">
+                        <div class="stat-box stat-total">
+                            <span class="stat-numero">{{ stats.total }}</span>
+                            <span class="stat-label">Aportes Totales</span>
+                        </div>
+
+                        <div class="stat-box stat-promedio">
+                            <span class="stat-numero">⭐ {{ stats.promedio_nota }}</span>
+                            <span class="stat-label">Promedio Nota</span>
+                        </div>
+
+                        <div class="stat-box stat-likes">
+                            <span class="stat-numero">❤️ {{ stats.likes_recibidos }}</span>
+                            <span class="stat-label">Likes recibidos</span>
+                        </div>
                     </div>
 
-                    <div class="stat-box stat-promedio">
-                        <span class="stat-numero">⭐ {{ stats.promedio_nota }}</span>
-                        <span class="stat-label">Promedio Nota</span>
-                    </div>
+                    <div class="stats-row">
+                        <div class="stat-box stat-tipo libro">
+                            <span class="stat-numero">📚 {{ stats.libros }}</span>
+                            <span class="stat-label">Libros</span>
+                        </div>
 
-                    <div class="stat-box stat-tipo libro">
-                        <span class="stat-numero">📚 {{ stats.libros }}</span>
-                        <span class="stat-label">Libros</span>
-                    </div>
+                        <div class="stat-box stat-tipo pelicula">
+                            <span class="stat-numero">🎬 {{ stats.peliculas }}</span>
+                            <span class="stat-label">Películas</span>
+                        </div>
 
-                    <div class="stat-box stat-tipo pelicula">
-                        <span class="stat-numero">🎬 {{ stats.peliculas }}</span>
-                        <span class="stat-label">Películas</span>
-                    </div>
-
-                    <div class="stat-box stat-tipo serie">
-                        <span class="stat-numero">📺 {{ stats.series }}</span>
-                        <span class="stat-label">Series</span>
+                        <div class="stat-box stat-tipo serie">
+                            <span class="stat-numero">📺 {{ stats.series }}</span>
+                            <span class="stat-label">Series</span>
+                        </div>
                     </div>
                 </div>
             </section>

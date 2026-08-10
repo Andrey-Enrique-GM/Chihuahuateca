@@ -80,7 +80,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Formularios y Eventos CRUD
     document.getElementById('form-agregar').addEventListener('submit', guardarNuevoElemento);
+    document.getElementById('add-imagen-url')?.addEventListener('input', () => actualizarPreviewImagen('add-imagen-url', 'add-preview-imagen'));
     document.getElementById('select-editar-elemento').addEventListener('change', cargarDatosParaEditar);
+    document.getElementById('edit-imagen-url')?.addEventListener('input', () => actualizarPreviewImagen('edit-imagen-url', 'edit-preview-imagen'));
     document.getElementById('form-editar').addEventListener('submit', actualizarElemento);
     document.getElementById('btn-borrar-elemento').addEventListener('click', borrarElemento);
 
@@ -296,7 +298,8 @@ function guardarNuevoElemento(e) {
         genero: document.getElementById('add-genero').value,
         calificacion: document.getElementById('add-calificacion').value,
         descripcion: document.getElementById('add-descripcion').value,
-        opinion: document.getElementById('add-opinion').value
+        opinion: document.getElementById('add-opinion').value,
+        imagen_url: document.getElementById('add-imagen-url').value
     };
 
     const errorMensaje = validarPayloadElemento(datos);
@@ -369,6 +372,8 @@ function cargarDatosParaEditar() {
             document.getElementById('edit-genero').value = data.genero || '';
             document.getElementById('edit-calificacion').value = data.calificacion;
             document.getElementById('edit-descripcion').value = data.descripcion;
+            document.getElementById('edit-imagen-url').value = data.imagen_url || '';
+            actualizarPreviewImagen('edit-imagen-url', 'edit-preview-imagen');
             document.getElementById('edit-opinion').value = data.opinion;
 
             formularioEditar.classList.remove('deshabilitado');
@@ -398,6 +403,22 @@ function validarPayloadElemento(datos) {
     return '';
 }
 
+function actualizarPreviewImagen(inputId, previewId) {
+    const input = document.getElementById(inputId);
+    const preview = document.getElementById(previewId);
+    if (!input || !preview) return;
+
+    const url = input.value.trim();
+    if (!url) {
+        preview.textContent = 'Ingresa una URL válida para ver la vista previa';
+        preview.style.backgroundImage = 'none';
+        return;
+    }
+
+    preview.textContent = '';
+    preview.style.backgroundImage = `url('${url}')`;
+}
+
 function actualizarElemento(e) {
     e.preventDefault();
 
@@ -409,7 +430,8 @@ function actualizarElemento(e) {
         genero: document.getElementById('edit-genero').value,
         calificacion: document.getElementById('edit-calificacion').value,
         descripcion: document.getElementById('edit-descripcion').value,
-        opinion: document.getElementById('edit-opinion').value
+        opinion: document.getElementById('edit-opinion').value,
+        imagen_url: document.getElementById('edit-imagen-url').value
     };
 
     const errorMensaje = validarPayloadElemento(datos);

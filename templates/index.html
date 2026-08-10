@@ -151,6 +151,24 @@
                             {% endif %}
                         </div>
 
+                        <div class="tarjeta-imagen-contenedor">
+                            {% if elemento.imagen_url %}
+                                <img src="{{ elemento.imagen_url }}" alt="{{ elemento.titulo }}" class="tarjeta-imagen">
+                            {% else %}
+                                <div class="tarjeta-imagen tarjeta-imagen-placeholder {{ elemento.tipo }}">
+                                    <span class="tarjeta-imagen-text">
+                                        {% if elemento.tipo == 'libro' %}
+                                            Portada Libro
+                                        {% elif elemento.tipo == 'pelicula' %}
+                                            Póster Película
+                                        {% else %}
+                                            Portada Serie
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            {% endif %}
+                        </div>
+
                         <div class="tarjeta-cuerpo">
                             <h3 class="tarjeta-titulo">{{ elemento.titulo }}</h3>
 
@@ -276,6 +294,14 @@
                     <textarea id="add-descripcion" rows="3" placeholder="¿De qué trata?"></textarea>
                 </div>
                 <div class="form-grupo">
+                    <label for="add-imagen-url">URL de la Portada / Poster:</label>
+                    <input type="url" id="add-imagen-url" name="imagen_url" placeholder="https://ejemplo.com/portada.jpg">
+                </div>
+                <div class="form-grupo">
+                    <label>Vista previa de imagen:</label>
+                    <div class="preview-imagen" id="add-preview-imagen">Ingresa una URL válida para ver la vista previa</div>
+                </div>
+                <div class="form-grupo">
                     <label for="add-opinion">Opinión Personal:</label>
                     <textarea id="add-opinion" rows="3" placeholder="¿Qué te pareció?"></textarea>
                 </div>
@@ -354,6 +380,14 @@
                 <div class="form-grupo">
                     <label for="edit-descripcion">Sinopsis:</label>
                     <textarea id="edit-descripcion" rows="3"></textarea>
+                </div>
+                <div class="form-grupo">
+                    <label for="edit-imagen-url">URL de la Portada / Poster:</label>
+                    <input type="url" id="edit-imagen-url" name="imagen_url" placeholder="https://ejemplo.com/portada.jpg">
+                </div>
+                <div class="form-grupo">
+                    <label>Vista previa de imagen:</label>
+                    <div class="preview-imagen" id="edit-preview-imagen">Ingresa una URL válida para ver la vista previa</div>
                 </div>
                 <div class="form-grupo">
                     <label for="edit-opinion">Opinión Personal:</label>
