@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import urllib.error
 import urllib.request
@@ -220,8 +221,32 @@ def _validate_elemento_payload(data, require_id=False):
     }
 
 
+def _normalizar_titulo(titulo):
+    texto = (titulo or '').strip()
+    texto = re.sub(r"[^\w\sáéíóúÁÉÍÓÚñÑüÜ-]", " ", texto)
+    texto = re.sub(r"\s+", " ", texto).strip()
+    return texto
+
+
+def _merge_datos(datos_base, datos_fallback):
+    if not datos_base:
+        return datos_fallback
+    if not datos_fallback:
+        return datos_base
+
+    return {
+        'titulo': datos_base.get('titulo') or datos_fallback.get('titulo'),
+        'descripcion': datos_base.get('descripcion') or datos_fallback.get('descripcion') or '',
+        'imagen_url': datos_base.get('imagen_url') or datos_fallback.get('imagen_url') or ''
+    }
+
+
 def _buscar_datos_openlibrary(titulo):
-    url = f"https://openlibrary.org/search.json?title={quote_plus(titulo)}&limit=1"
+    texto_limpio = _normalizar_titulo(titulo)
+    if not texto_limpio:
+        return None
+
+    url = f"https://openlibrary.org/search.json?title={quote_plus(texto_limpio)}&limit=1"
     try:
         with urllib.request.urlopen(url, timeout=10) as response:
             data = json.loads(response.read().decode('utf-8'))
@@ -252,6 +277,44 @@ def _buscar_datos_openlibrary(titulo):
         'descripcion': descripcion,
         'imagen_url': imagen_url
     }
+
+
+def _buscar_datos_google_books(titulo):
+    texto_limpio = _normalizar_titulo(titulo)
+    if not texto_limpio:
+        return None
+
+    url = f"https://www.googleapis.com/books/v1/volumes?q={quote_plus(texto_limpio)}&langRestrict=es&maxResults=5"
+    try:
+        with urllib.request.urlopen(url, timeout=10) as response:
+            data = json.loads(response.read().decode('utf-8'))
+    except (urllib.error.HTTPError, urllib.error.URLError, ValueError):
+        return None
+
+    items = data.get('items', [])
+    if not items:
+        return None
+
+    for item in items:
+        info = item.get('volumeInfo', {})
+        if not info.get('title'):
+            continue
+
+        descripcion = info.get('description', '') or ''
+        imagen_url = ''
+        image_links = info.get('imageLinks', {})
+        if image_links.get('thumbnail'):
+            imagen_url = image_links.get('thumbnail').replace('http://', 'https://')
+        elif image_links.get('smallThumbnail'):
+            imagen_url = image_links.get('smallThumbnail').replace('http://', 'https://')
+
+        return {
+            'titulo': info.get('title') or titulo,
+            'descripcion': descripcion,
+            'imagen_url': imagen_url
+        }
+
+    return None
 
 
 def _buscar_datos_omdb(titulo, tipo):
@@ -303,7 +366,7 @@ def _buscar_datos_tmdb(titulo, tipo):
         return None
 
     item = resultados[0]
-    descripcion = item.get('overview', '')
+    descripcion = item.get('overview', '') or ''
     imagen_url = ''
     poster_path = item.get('poster_path')
     if poster_path:
@@ -316,37 +379,76 @@ def _buscar_datos_tmdb(titulo, tipo):
     }
 
 
+def _buscar_datos_itunes(titulo, tipo):
+    texto_limpio = _normalizar_titulo(titulo)
+    if not texto_limpio:
+        return None
+
+    media = 'tvShow' if tipo == 'serie' else 'movie'
+    url = f"https://itunes.apple.com/search?term={quote_plus(texto_limpio)}&media={quote_plus(media)}&limit=1"
+    try:
+        with urllib.request.urlopen(url, timeout=10) as response:
+            data = json.loads(response.read().decode('utf-8'))
+    except (urllib.error.HTTPError, urllib.error.URLError, ValueError):
+        return None
+
+    items = data.get('results', [])
+    if not items:
+        return None
+
+    item = items[0]
+    descripcion = item.get('longDescription') or item.get('shortDescription') or ''
+    imagen_url = item.get('artworkUrl100', '')
+    if imagen_url:
+        imagen_url = imagen_url.replace('100x100bb', '600x600bb').replace('100x100', '600x600')
+
+    titulo_itunes = item.get('trackName') or item.get('collectionName') or titulo
+    return {
+        'titulo': titulo_itunes,
+        'descripcion': descripcion,
+        'imagen_url': imagen_url
+    }
+
+
 def _buscar_datos_externos(tipo, titulo):
     if tipo == 'libro':
-        return _buscar_datos_openlibrary(titulo)
+        datos_ol = _buscar_datos_openlibrary(titulo)
+        datos_google = _buscar_datos_google_books(titulo)
+        return _merge_datos(datos_ol, datos_google)
 
-    buscador_omdb = _buscar_datos_omdb(titulo, tipo)
-    if buscador_omdb:
-        return buscador_omdb
+    datos = None
+    if os.getenv('OMDB_API_KEY', '').strip():
+        datos = _buscar_datos_omdb(titulo, tipo)
+    if not datos and os.getenv('TMDB_API_KEY', '').strip():
+        datos = _buscar_datos_tmdb(titulo, tipo)
+    if not datos:
+        datos = _buscar_datos_itunes(titulo, tipo)
 
-    buscador_tmdb = _buscar_datos_tmdb(titulo, tipo)
-    if buscador_tmdb:
-        return buscador_tmdb
-
-    return None
+    return datos
 
 
 @app.route('/api/buscar-external')
 def api_buscar_externos():
     tipo = (request.args.get('tipo') or '').strip().lower()
     titulo = (request.args.get('titulo') or '').strip()
+    titulo_normalizado = _normalizar_titulo(titulo)
 
-    if not titulo:
-        return jsonify({'success': False, 'message': 'Debes ingresar un título para buscar.'}), 400
+    if not titulo_normalizado:
+        return jsonify({'success': False, 'message': 'Debes ingresar un título válido para buscar.'}), 400
     if tipo not in ('libro', 'pelicula', 'serie'):
         return jsonify({'success': False, 'message': 'Tipo inválido para buscar datos externos.'}), 400
 
-    datos = _buscar_datos_externos(tipo, titulo)
-    if datos is None:
-        mensaje = 'No se pudo obtener información adicional. Verifica que el título exista o configura OMDB_API_KEY/TMDB_API_KEY para películas y series.'
+    datos = _buscar_datos_externos(tipo, titulo_normalizado)
+    if not datos:
+        mensaje = 'No se pudo obtener información adicional. Verifica que el título exista o prueba con una versión alternativa del título.'
         return jsonify({'success': False, 'message': mensaje}), 404
 
-    return jsonify({'success': True, **datos})
+    return jsonify({
+        'success': True,
+        'titulo': datos.get('titulo') or titulo,
+        'descripcion': datos.get('descripcion') or None,
+        'imagen_url': datos.get('imagen_url') or None
+    })
 
 
 @app.route('/api/guardar', methods=['POST'])
