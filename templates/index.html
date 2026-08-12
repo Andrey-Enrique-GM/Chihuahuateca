@@ -289,12 +289,18 @@
                     <label for="add-calificacion">Calificación (1 a 5):</label>
                     <input type="number" id="add-calificacion" min="1" max="5" value="5" required>
                 </div>
-                <div class="form-grupo">
-                    <label for="add-descripcion">Sinopsis:</label>
+                <div class="form-grupo form-grupo-asistencia">
+                    <div class="label-row">
+                        <label for="add-descripcion">Sinopsis:</label>
+                        <button type="button" id="btn-buscar-sinopsis-add" class="btn-secundario btn-asistencia">📝 Buscar</button>
+                    </div>
                     <textarea id="add-descripcion" rows="3" placeholder="¿De qué trata?"></textarea>
                 </div>
-                <div class="form-grupo">
-                    <label for="add-imagen-url">URL de la Portada / Poster:</label>
+                <div class="form-grupo form-grupo-asistencia">
+                    <div class="label-row">
+                        <label for="add-imagen-url">URL de la Portada / Poster:</label>
+                        <button type="button" id="btn-buscar-poster-add" class="btn-secundario btn-asistencia">🖼️ Buscar</button>
+                    </div>
                     <input type="url" id="add-imagen-url" name="imagen_url" placeholder="https://ejemplo.com/portada.jpg">
                 </div>
                 <div class="form-grupo">
@@ -377,12 +383,18 @@
                     <label for="edit-calificacion">Calificación:</label>
                     <input type="number" id="edit-calificacion" min="1" max="5" required>
                 </div>
-                <div class="form-grupo">
-                    <label for="edit-descripcion">Sinopsis:</label>
+                <div class="form-grupo form-grupo-asistencia">
+                    <div class="label-row">
+                        <label for="edit-descripcion">Sinopsis:</label>
+                        <button type="button" id="btn-buscar-sinopsis-edit" class="btn-secundario btn-asistencia">📝 Buscar</button>
+                    </div>
                     <textarea id="edit-descripcion" rows="3"></textarea>
                 </div>
-                <div class="form-grupo">
-                    <label for="edit-imagen-url">URL de la Portada / Poster:</label>
+                <div class="form-grupo form-grupo-asistencia">
+                    <div class="label-row">
+                        <label for="edit-imagen-url">URL de la Portada / Poster:</label>
+                        <button type="button" id="btn-buscar-poster-edit" class="btn-secundario btn-asistencia">🖼️ Buscar</button>
+                    </div>
                     <input type="url" id="edit-imagen-url" name="imagen_url" placeholder="https://ejemplo.com/portada.jpg">
                 </div>
                 <div class="form-grupo">

@@ -81,8 +81,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Formularios y Eventos CRUD
     document.getElementById('form-agregar').addEventListener('submit', guardarNuevoElemento);
     document.getElementById('add-imagen-url')?.addEventListener('input', () => actualizarPreviewImagen('add-imagen-url', 'add-preview-imagen'));
+    document.getElementById('btn-buscar-poster-add')?.addEventListener('click', () => buscarDatosExternos('add', 'poster'));
+    document.getElementById('btn-buscar-sinopsis-add')?.addEventListener('click', () => buscarDatosExternos('add', 'sinopsis'));
     document.getElementById('select-editar-elemento').addEventListener('change', cargarDatosParaEditar);
     document.getElementById('edit-imagen-url')?.addEventListener('input', () => actualizarPreviewImagen('edit-imagen-url', 'edit-preview-imagen'));
+    document.getElementById('btn-buscar-poster-edit')?.addEventListener('click', () => buscarDatosExternos('edit', 'poster'));
+    document.getElementById('btn-buscar-sinopsis-edit')?.addEventListener('click', () => buscarDatosExternos('edit', 'sinopsis'));
     document.getElementById('form-editar').addEventListener('submit', actualizarElemento);
     document.getElementById('btn-borrar-elemento').addEventListener('click', borrarElemento);
 
@@ -417,6 +421,72 @@ function actualizarPreviewImagen(inputId, previewId) {
 
     preview.textContent = '';
     preview.style.backgroundImage = `url('${url}')`;
+}
+
+function setBotonCargando(boton, activo) {
+    if (!boton) return;
+    boton.disabled = activo;
+    boton.classList.toggle('btn-cargando', activo);
+    boton.textContent = activo ? 'Buscando...' : boton.dataset.originalText || boton.textContent;
+}
+
+function buscarDatosExternos(formPrefix, campoObjetivo) {
+    const tipo = document.getElementById(`${formPrefix}-tipo`)?.value;
+    const titulo = document.getElementById(`${formPrefix}-titulo`)?.value.trim();
+    const btnId = `btn-buscar-${campoObjetivo}-${formPrefix}`;
+    const boton = document.getElementById(btnId);
+
+    if (!titulo) {
+        Swal.fire({ icon: 'warning', title: 'Falta título', text: 'Ingresa el título antes de buscar datos externos.' });
+        return;
+    }
+    if (!tipo || !['libro', 'pelicula', 'serie'].includes(tipo)) {
+        Swal.fire({ icon: 'warning', title: 'Tipo inválido', text: 'Selecciona el tipo de elemento antes de buscar.' });
+        return;
+    }
+
+    if (boton && !boton.dataset.originalText) {
+        boton.dataset.originalText = boton.textContent;
+    }
+    setBotonCargando(boton, true);
+
+    fetch(`/api/buscar-external?tipo=${encodeURIComponent(tipo)}&titulo=${encodeURIComponent(titulo)}`)
+        .then(res => res.json())
+        .then(data => {
+            setBotonCargando(boton, false);
+            if (!data.success) {
+                Swal.fire({ icon: 'error', title: 'No se encontró', text: data.message || 'No se obtuvieron resultados de búsqueda.' });
+                return;
+            }
+
+            if (campoObjetivo === 'poster') {
+                if (!data.imagen_url) {
+                    Swal.fire({ icon: 'info', title: 'Sin portada', text: 'No se encontró una portada o póster para ese título.' });
+                    return;
+                }
+                const imagenInput = document.getElementById(`${formPrefix}-imagen-url`);
+                imagenInput.value = data.imagen_url;
+                actualizarPreviewImagen(`${formPrefix}-imagen-url`, `${formPrefix}-preview-imagen`);
+                Swal.fire({ icon: 'success', title: 'Portada encontrada', text: 'Se actualizó la URL de la imagen automáticamente.' });
+                return;
+            }
+
+            if (campoObjetivo === 'sinopsis') {
+                if (!data.descripcion) {
+                    Swal.fire({ icon: 'info', title: 'Sinopsis no encontrada', text: 'No se encontró una sinopsis para ese título.' });
+                    return;
+                }
+                const descripcionInput = document.getElementById(`${formPrefix}-descripcion`);
+                descripcionInput.value = data.descripcion;
+                Swal.fire({ icon: 'success', title: 'Sinopsis encontrada', text: 'Se completó la sinopsis automáticamente.' });
+                return;
+            }
+        })
+        .catch(err => {
+            setBotonCargando(boton, false);
+            console.error('Error en búsqueda externa:', err);
+            Swal.fire({ icon: 'error', title: 'Error de búsqueda', text: 'No se pudo conectar con el servicio de búsqueda externa.' });
+        });
 }
 
 function actualizarElemento(e) {

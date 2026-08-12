@@ -1,4 +1,7 @@
 import os
+import json
+import urllib.error
+import urllib.request
 from flask import Flask, redirect, render_template, jsonify, request, session, url_for
 from dotenv import load_dotenv
 from entities.elemento import Elemento
@@ -6,7 +9,7 @@ from entities.log import Log
 from entities.usuario import User
 from enums.log_type import LogType
 from datetime import datetime
-from urllib.parse import urlparse
+from urllib.parse import quote_plus, urlparse
 
 
 
@@ -215,6 +218,135 @@ def _validate_elemento_payload(data, require_id=False):
         'imagen_url': imagen_url,
         'id': elemento_id
     }
+
+
+def _buscar_datos_openlibrary(titulo):
+    url = f"https://openlibrary.org/search.json?title={quote_plus(titulo)}&limit=1"
+    try:
+        with urllib.request.urlopen(url, timeout=10) as response:
+            data = json.loads(response.read().decode('utf-8'))
+    except (urllib.error.HTTPError, urllib.error.URLError, ValueError):
+        return None
+
+    docs = data.get('docs', [])
+    if not docs:
+        return None
+
+    doc = docs[0]
+    descripcion = ''
+    if isinstance(doc.get('first_sentence'), list):
+        descripcion = ' '.join(doc.get('first_sentence', [])).strip()
+    elif isinstance(doc.get('first_sentence'), str):
+        descripcion = doc.get('first_sentence').strip()
+    elif isinstance(doc.get('subtitle'), str):
+        descripcion = doc.get('subtitle').strip()
+
+    imagen_url = ''
+    if doc.get('cover_i'):
+        imagen_url = f"https://covers.openlibrary.org/b/id/{doc.get('cover_i')}-L.jpg"
+    elif doc.get('cover_edition_key'):
+        imagen_url = f"https://covers.openlibrary.org/b/olid/{doc.get('cover_edition_key')}-L.jpg"
+
+    return {
+        'titulo': doc.get('title_suggest') or doc.get('title') or titulo,
+        'descripcion': descripcion,
+        'imagen_url': imagen_url
+    }
+
+
+def _buscar_datos_omdb(titulo, tipo):
+    api_key = os.getenv('OMDB_API_KEY', '').strip()
+    if not api_key:
+        return None
+
+    tipo_busqueda = 'series' if tipo == 'serie' else 'movie'
+    url = f"http://www.omdbapi.com/?apikey={quote_plus(api_key)}&t={quote_plus(titulo)}&type={quote_plus(tipo_busqueda)}&plot=short&r=json"
+    try:
+        with urllib.request.urlopen(url, timeout=10) as response:
+            data = json.loads(response.read().decode('utf-8'))
+    except (urllib.error.HTTPError, urllib.error.URLError, ValueError):
+        return None
+
+    if data.get('Response') != 'True':
+        return None
+
+    descripcion = data.get('Plot', '')
+    if descripcion == 'N/A':
+        descripcion = ''
+
+    imagen_url = data.get('Poster', '')
+    if imagen_url == 'N/A':
+        imagen_url = ''
+
+    return {
+        'titulo': data.get('Title', titulo),
+        'descripcion': descripcion,
+        'imagen_url': imagen_url
+    }
+
+
+def _buscar_datos_tmdb(titulo, tipo):
+    api_key = os.getenv('TMDB_API_KEY', '').strip()
+    if not api_key:
+        return None
+
+    media_type = 'tv' if tipo == 'serie' else 'movie'
+    search_url = f"https://api.themoviedb.org/3/search/{media_type}?api_key={quote_plus(api_key)}&query={quote_plus(titulo)}&language=es-ES&page=1"
+    try:
+        with urllib.request.urlopen(search_url, timeout=10) as response:
+            data = json.loads(response.read().decode('utf-8'))
+    except (urllib.error.HTTPError, urllib.error.URLError, ValueError):
+        return None
+
+    resultados = data.get('results', [])
+    if not resultados:
+        return None
+
+    item = resultados[0]
+    descripcion = item.get('overview', '')
+    imagen_url = ''
+    poster_path = item.get('poster_path')
+    if poster_path:
+        imagen_url = f"https://image.tmdb.org/t/p/w500{poster_path}"
+
+    return {
+        'titulo': item.get('name') or item.get('title') or titulo,
+        'descripcion': descripcion,
+        'imagen_url': imagen_url
+    }
+
+
+def _buscar_datos_externos(tipo, titulo):
+    if tipo == 'libro':
+        return _buscar_datos_openlibrary(titulo)
+
+    buscador_omdb = _buscar_datos_omdb(titulo, tipo)
+    if buscador_omdb:
+        return buscador_omdb
+
+    buscador_tmdb = _buscar_datos_tmdb(titulo, tipo)
+    if buscador_tmdb:
+        return buscador_tmdb
+
+    return None
+
+
+@app.route('/api/buscar-external')
+def api_buscar_externos():
+    tipo = (request.args.get('tipo') or '').strip().lower()
+    titulo = (request.args.get('titulo') or '').strip()
+
+    if not titulo:
+        return jsonify({'success': False, 'message': 'Debes ingresar un título para buscar.'}), 400
+    if tipo not in ('libro', 'pelicula', 'serie'):
+        return jsonify({'success': False, 'message': 'Tipo inválido para buscar datos externos.'}), 400
+
+    datos = _buscar_datos_externos(tipo, titulo)
+    if datos is None:
+        mensaje = 'No se pudo obtener información adicional. Verifica que el título exista o configura OMDB_API_KEY/TMDB_API_KEY para películas y series.'
+        return jsonify({'success': False, 'message': mensaje}), 404
+
+    return jsonify({'success': True, **datos})
 
 
 @app.route('/api/guardar', methods=['POST'])
