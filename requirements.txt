@@ -11,5 +11,5 @@ mysql-connector-python==9.7.0
 colorama==0.4.6
 gunicorn==26.0.0
 packaging==26.2
-reportlab==3.6.12
-Pillow==10.1.0
+reportlab
+Pillow
