@@ -1,16 +1,25 @@
 import os
 import re
+import io
 import json
 import urllib.error
 import urllib.request
-from flask import Flask, redirect, render_template, jsonify, request, session, url_for
+from datetime import datetime
+from flask import Flask, redirect, render_template, jsonify, request, session, url_for, send_file
 from dotenv import load_dotenv
 from entities.elemento import Elemento
 from entities.log import Log
 from entities.usuario import User
 from enums.log_type import LogType
-from datetime import datetime
 from urllib.parse import quote_plus, urlparse
+
+# ReportLab para generacion de archivos PDF
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Image, Spacer, PageBreak, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib import colors
+from reportlab.lib.units import cm
+from reportlab.lib.enums import TA_JUSTIFY, TA_CENTER
 
 
 
@@ -81,6 +90,97 @@ def ruta_perfil():
     }
     
     return render_template('profile.html', usuario=usuario, logs=actividad, stats=estadisticas)
+
+
+@app.route('/exportar-pdf')
+def exportar_pdf():
+    usuario_id = session.get('usuario_id')
+    if not usuario_id:
+        return redirect(url_for('login_view'))
+
+    elementos = Elemento.obtener_todos(usuario_id=usuario_id)
+
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=2*cm, leftMargin=2*cm, topMargin=3*cm, bottomMargin=2*cm)
+    styles = getSampleStyleSheet()
+    style_title = ParagraphStyle('Title', parent=styles['Heading1'], fontSize=18, alignment=TA_CENTER, spaceAfter=8)
+    style_meta = ParagraphStyle('Meta', parent=styles['Normal'], fontSize=10)
+    style_normal = ParagraphStyle('Normal', parent=styles['BodyText'], fontSize=11, alignment=TA_JUSTIFY)
+
+    flowables = []
+    gen_date = datetime.now().strftime('%d/%m/%Y %H:%M')
+
+    def _header_footer(canvas, doc):
+        canvas.saveState()
+        canvas.setFont('Helvetica-Bold', 10)
+        canvas.drawString(cm, A4[1] - cm + 6, 'Chihuahuateca 🐾 - Ficha de la Colección')
+        canvas.setFont('Helvetica', 8)
+        footer = f'Generado: {gen_date} — Página {doc.page}'
+        canvas.drawRightString(A4[0] - cm, cm / 2, footer)
+        canvas.restoreState()
+
+    for el in elementos:
+        tipo_badge = f"[{(el.tipo or '').upper()}]"
+        genero_badge = f"[{(el.genero or 'Sin género')}]"
+        flowables.append(Paragraph(f"{tipo_badge} - {genero_badge}", style_meta))
+        flowables.append(Spacer(1, 6))
+
+        # Imagen portada
+        imagen_url = getattr(el, 'imagen_url', '') or ''
+        if imagen_url:
+            try:
+                resp = urllib.request.urlopen(imagen_url, timeout=8)
+                img_data = resp.read()
+                img_buf = io.BytesIO(img_data)
+                img = Image(img_buf)
+                img._restrictSize(12*cm, 12*cm)
+                flowables.append(img)
+                flowables.append(Spacer(1, 8))
+            except Exception:
+                tb = Table([['Sin imagen disponible']], colWidths=[12*cm])
+                tb.setStyle(TableStyle([('BOX', (0,0), (-1,-1), 1, colors.lightgrey), ('ALIGN', (0,0), (-1,-1), 'CENTER')]))
+                flowables.append(tb)
+                flowables.append(Spacer(1, 8))
+        else:
+            tb = Table([['Sin imagen disponible']], colWidths=[12*cm])
+            tb.setStyle(TableStyle([('BOX', (0,0), (-1,-1), 1, colors.lightgrey), ('ALIGN', (0,0), (-1,-1), 'CENTER')]))
+            flowables.append(tb)
+            flowables.append(Spacer(1, 8))
+
+        # Título y metadatos
+        flowables.append(Paragraph(getattr(el, 'titulo', 'Sin título'), style_title))
+        flowables.append(Paragraph(f"<b>Autor / Director:</b> {getattr(el, 'autor_director', '')}", style_meta))
+        flowables.append(Spacer(1, 4))
+        calif = getattr(el, 'calificacion', 0) or 0
+        stars = '⭐' * int(calif)
+        flowables.append(Paragraph(f"{stars} {calif}/5", style_meta))
+        flowables.append(Spacer(1, 8))
+
+        # Descripción
+        descripcion_text = getattr(el, 'descripcion', '') or ''
+        flowables.append(Paragraph(descripcion_text, style_normal))
+        flowables.append(Spacer(1, 8))
+
+        # Opinion en caja
+        opinion_text = getattr(el, 'opinion', '') or ''
+        opinion_box = Table([[Paragraph(opinion_text, style_normal)]], colWidths=[None])
+        opinion_box.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#f8f9fb')),
+            ('BOX', (0,0), (-1,-1), 0.5, colors.grey),
+            ('LEFTPADDING', (0,0), (-1,-1), 6), ('RIGHTPADDING', (0,0), (-1,-1), 6),
+            ('TOPPADDING', (0,0), (-1,-1), 6), ('BOTTOMPADDING', (0,0), (-1,-1), 6),
+        ]))
+        flowables.append(opinion_box)
+        flowables.append(Spacer(1, 12))
+        flowables.append(PageBreak())
+
+    if not flowables:
+        flowables.append(Paragraph('No hay elementos en la colección.', styles['Normal']))
+
+    doc.build(flowables, onFirstPage=_header_footer, onLaterPages=_header_footer)
+    buffer.seek(0)
+
+    return send_file(buffer, mimetype='application/pdf', as_attachment=True, download_name=f'Coleccion_Chihuahuateca_{session.get("username", "usuario")}.pdf')
 
 
 

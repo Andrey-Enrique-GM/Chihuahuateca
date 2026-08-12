@@ -5,12 +5,13 @@ El guardián ideal de libros, películas y series. Una aplicación web dinámica
 ## ✨ Características Principales
 * **CRUD Completo en Tiempo Real:** Permite agregar, visualizar, editar y eliminar libros o películas de forma asíncrona mediante peticiones HTTP `fetch` sin recargar la página.
 * **Sistema de Autenticación Dinámico:** Registro e inicio de sesión seguro para múltiples usuarios con sesiones cifradas. Cada usuario administra de forma exclusiva sus propios elementos guardados.
-* **Filtrado y Búsqueda Instantánea:** Barra de búsqueda integrada por coincidencia de texto (título, autor o director), categorías rápidas (Libros 📚, Películas 🎬, Series 📺 o Todos 🐾) y panel de filtros avanzados por género, calificación y orden.
+* **Filtrado y Búsqueda Instantánea:** Barra de búsqueda integrada por coincidencia de texto (título, autor o director), categorías rápidas (Libros 📚, Películas 🎬, Series 📺 o Todos 🐾) y modal/panel emergente compacto para filtros avanzados (género, calificación y orden).
 * **Sistema de Categorías (Tags):** Clasificación por géneros visuales para organizar y filtrar las obras rápidamente.
-* **Soporte para Portadas y Pósters:** Muestra imágenes representativas en cada tarjeta mediante URL para una experiencia mucho más visual.
+* **Soporte para Portadas y Autocompletado Online:** Muestra imágenes de portada o póster en cada tarjeta. Incluye botones de asistencia técnica para buscar y autocompletar dinámicamente la portada y la sinopsis desde APIs públicas (Open Library / TMDB / OMDb).
+* **Exportación de Colección a PDF:** Generación e impresión en PDF descargable desde el perfil del usuario, maquetando una ficha completa formateada por cada página para su consulta offline.
 * **Interacción Social (Likes ❤️):** Permite a los usuarios dar "Me gusta" a los elementos publicados por otros miembros de la comunidad en tiempo real.
 * **Auditoría del Sistema (Logs):** Registro histórico automático de la actividad de los usuarios en la base de datos (inicios de sesión, actualizaciones, modificaciones, etc.).
-* **Interfaz Pulida y Moderna:** Menú desplegable de perfil, modales interactivos para la gestión de elementos y alertas estéticas mediante **SweetAlert2**.
+* **Interfaz Pulida y Moderna:** Menú desplegable de perfil, panel organizado de estadísticas personales, modales interactivos para la gestión de elementos y alertas estéticas mediante **SweetAlert2**.
 
 ---
 
@@ -18,6 +19,7 @@ El guardián ideal de libros, películas y series. Una aplicación web dinámica
 * **Backend:** Python + Flask (Framework web ágil)
 * **Frontend:** HTML5, CSS3 (Diseño responsivo y variables nativas), JavaScript (Vanilla ES6)
 * **Plantillas:** Jinja2 (Renderizado dinámico de componentes en el servidor)
+* **Generación de Reportes:** xhtml2pdf / ReportLab (Renderizado de documentos PDF)
 * **Base de Datos:** MySQL (Alojado en la nube con la plataforma **Aiven**)
 * **Aplicación:** Alojada en la nube con la plataforma **Render**
 * **Componentes de Terceros:** SweetAlert2 (Notificaciones de interfaz)
@@ -85,3 +87,4 @@ mysql-connector-python==9.7.0
 colorama==0.4.6
 gunicorn==26.0.0
 packaging==26.2
+xhtml2pdf==0.2.16

@@ -219,6 +219,27 @@ body {
     padding: 0 1.5rem 2rem 1.5rem;
 }
 
+/* Botón primario (perfil / acciones importantes) */
+.btn-primario {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 1rem;
+    background: linear-gradient(90deg, var(--chihuahua-brown), var(--chihuahua-light));
+    color: var(--blanco);
+    border-radius: 999px;
+    border: none;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: var(--sombra);
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.btn-primario:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--sombra-hover);
+}
+
 .barra-controles {
     position: relative;
     background-color: var(--blanco);
