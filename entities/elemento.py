@@ -15,7 +15,7 @@ para mantener una separacion clara entre la logica de negocio y la capa de acces
 
 
 class Elemento:
-    def __init__(self, id: int, titulo: str, tipo: str, autor_director: str, genero: str, descripcion: str, calificacion: int, opinion: str, usuario_id: int, usuario_nombre: str, fecha_creacion: str, fecha_actualizacion: str, imagen_url: str = '', total_likes: int = 0, le_gusta_usuario: bool = False):
+    def __init__(self, id: int, titulo: str, tipo: str, autor_director: str, genero: str, descripcion: str, calificacion: int, opinion: str, usuario_id: int, usuario_nombre: str, fecha_creacion: str, fecha_actualizacion: str, imagen_url: str = '', total_likes: int = 0, le_gusta_usuario: bool = False, usuario_username: str = None):
         self.id = id
         self.titulo = titulo
         self.tipo = tipo
@@ -26,6 +26,7 @@ class Elemento:
         self.opinion = opinion
         self.usuario_id = usuario_id
         self.usuario_nombre = usuario_nombre
+        self.usuario_username = usuario_username
         self.fecha_creacion = fecha_creacion
         self.fecha_actualizacion = fecha_actualizacion
         self.imagen_url = imagen_url
@@ -45,7 +46,7 @@ class Elemento:
                     SELECT c.id, c.titulo, c.tipo, c.autor_director, c.genero, c.descripcion, c.calificacion, c.opinion, c.imagen_url,
                         DATE_FORMAT(c.fecha_creacion, '%%Y-%%m-%%d %%H:%%i') as fecha_creacion,
                         DATE_FORMAT(c.fecha_actualizacion, '%%Y-%%m-%%d %%H:%%i') as fecha_actualizacion,
-                        c.usuario_id, u.nombre as usuario_nombre,
+                        c.usuario_id, u.nombre as usuario_nombre, u.username as usuario_username,
                         COALESCE(mg.total_likes, 0) AS total_likes,
                         CASE WHEN ul.usuario_id IS NOT NULL THEN 1 ELSE 0 END AS le_gusta_usuario
                     FROM coleccion c
@@ -68,7 +69,7 @@ class Elemento:
                     SELECT c.id, c.titulo, c.tipo, c.autor_director, c.genero, c.descripcion, c.calificacion, c.opinion, c.imagen_url,
                         DATE_FORMAT(c.fecha_creacion, '%%Y-%%m-%%d %%H:%%i') as fecha_creacion,
                         DATE_FORMAT(c.fecha_actualizacion, '%%Y-%%m-%%d %%H:%%i') as fecha_actualizacion,
-                        c.usuario_id, u.nombre as usuario_nombre,
+                        c.usuario_id, u.nombre as usuario_nombre, u.username as usuario_username,
                         COALESCE(mg.total_likes, 0) AS total_likes,
                         0 AS le_gusta_usuario
                     FROM coleccion c
@@ -92,7 +93,7 @@ class Elemento:
                     usuario_id=r['usuario_id'], usuario_nombre=r['usuario_nombre'],
                     fecha_creacion=r['fecha_creacion'], fecha_actualizacion=r['fecha_actualizacion'],
                     imagen_url=r.get('imagen_url', ''),
-                    total_likes=r.get('total_likes', 0), le_gusta_usuario=bool(r.get('le_gusta_usuario', 0))
+                    total_likes=r.get('total_likes', 0), le_gusta_usuario=bool(r.get('le_gusta_usuario', 0)), usuario_username=r.get('usuario_username')
                 )
                 elementos.append(nuevo_elemento)
 
@@ -111,7 +112,7 @@ class Elemento:
             cursor = conexion.cursor(DictCursor)
             sql = """
                 SELECT c.id, c.titulo, c.tipo, c.autor_director, c.genero, c.descripcion, c.calificacion, c.opinion, c.imagen_url,
-                   c.fecha_creacion, c.fecha_actualizacion, c.usuario_id, u.nombre as usuario_nombre
+                   c.fecha_creacion, c.fecha_actualizacion, c.usuario_id, u.nombre as usuario_nombre, u.username as usuario_username
                 FROM coleccion c
                 LEFT JOIN usuarios u ON c.usuario_id = u.id
                 WHERE c.id = %s
@@ -134,6 +135,7 @@ class Elemento:
                     opinion=r['opinion'],
                     usuario_id=r['usuario_id'],
                     usuario_nombre=r['usuario_nombre'],
+                    usuario_username=r.get('usuario_username'),
                     fecha_creacion=str(r['fecha_creacion']),
                     fecha_actualizacion=str(r['fecha_actualizacion']),
                     imagen_url=r.get('imagen_url', '')

@@ -105,6 +105,7 @@ def exportar_pdf():
     styles = getSampleStyleSheet()
     style_title = ParagraphStyle('Title', parent=styles['Heading1'], fontSize=18, alignment=TA_CENTER, spaceAfter=8)
     style_meta = ParagraphStyle('Meta', parent=styles['Normal'], fontSize=10)
+    style_meta_small = ParagraphStyle('MetaSmall', parent=styles['Normal'], fontSize=9, textColor=colors.grey)
     style_normal = ParagraphStyle('Normal', parent=styles['BodyText'], fontSize=11, alignment=TA_JUSTIFY)
 
     flowables = []
@@ -113,15 +114,59 @@ def exportar_pdf():
     def _header_footer(canvas, doc):
         canvas.saveState()
         canvas.setFont('Helvetica-Bold', 10)
-        canvas.drawString(cm, A4[1] - cm + 6, 'Chihuahuateca 🐾 - Ficha de la Colección')
+        canvas.drawString(cm, A4[1] - cm + 6, 'Chihuahuateca - Ficha de la Colección')
         canvas.setFont('Helvetica', 8)
         footer = f'Generado: {gen_date} — Página {doc.page}'
         canvas.drawRightString(A4[0] - cm, cm / 2, footer)
         canvas.restoreState()
 
+    def _sanitizar_texto_para_pdf(text):
+        import unicodedata
+        if not text:
+            return ''
+        out = []
+        for ch in str(text):
+            cp = ord(ch)
+            # remover emojis y símbolos que puedan causar problemas en PDF
+            if unicodedata.category(ch) == 'So':
+                continue
+            if 0x1F300 <= cp <= 0x1FAFF:
+                continue
+            if 0x1F600 <= cp <= 0x1F64F:
+                continue
+            if 0x1F680 <= cp <= 0x1F6FF:
+                continue
+            if 0x2600 <= cp <= 0x26FF:
+                # permitir estrellas (2605)
+                if cp == 0x2605 or cp == 0x2606:
+                    out.append('★' if cp == 0x2605 else '☆')
+                    continue
+                continue
+            if 0x2700 <= cp <= 0x27BF:
+                continue
+            # saltar caracteres de control (ASCII < 32)
+            if cp < 32:
+                continue
+            out.append(ch)
+        s = ''.join(out)
+        s = re.sub(r'\s+', ' ', s).strip()
+        return s
+
+    def _formatear_fecha(fecha_str):
+        if not fecha_str:
+            return ''
+        for fmt in ('%Y-%m-%d %H:%M', '%Y-%m-%d %H:%M:%S', '%Y-%m-%d'):
+            try:
+                dt = datetime.strptime(str(fecha_str), fmt)
+                return dt.strftime('%d/%m/%Y')
+            except Exception:
+                continue
+        # retorna solo la parte de fecha si es un string largo
+        return str(fecha_str)[:10]
+
     for el in elementos:
         tipo_badge = f"[{(el.tipo or '').upper()}]"
-        genero_badge = f"[{(el.genero or 'Sin género')}]"
+        genero_badge = f"[{_sanitizar_texto_para_pdf(el.genero or 'Sin género')}]"
         flowables.append(Paragraph(f"{tipo_badge} - {genero_badge}", style_meta))
         flowables.append(Spacer(1, 6))
 
@@ -148,22 +193,42 @@ def exportar_pdf():
             flowables.append(Spacer(1, 8))
 
         # Título y metadatos
-        flowables.append(Paragraph(getattr(el, 'titulo', 'Sin título'), style_title))
-        flowables.append(Paragraph(f"<b>Autor / Director:</b> {getattr(el, 'autor_director', '')}", style_meta))
+        titulo_seguro = _sanitizar_texto_para_pdf(getattr(el, 'titulo', 'Sin título'))
+        flowables.append(Paragraph(titulo_seguro or 'Sin título', style_title))
+        autor_seguro = _sanitizar_texto_para_pdf(getattr(el, 'autor_director', ''))
+        flowables.append(Paragraph(f"<b>Autor / Director / Creador:</b> {autor_seguro}", style_meta))
         flowables.append(Spacer(1, 4))
-        calif = getattr(el, 'calificacion', 0) or 0
-        stars = '⭐' * int(calif)
-        flowables.append(Paragraph(f"{stars} {calif}/5", style_meta))
+
+        # Metadatos de publicación (Publicado por, fechas)
+        usuario_pub = getattr(el, 'usuario_username', None) or getattr(el, 'usuario_nombre', '')
+        usuario_pub = _sanitizar_texto_para_pdf(usuario_pub)
+        fecha_cre = _formatear_fecha(getattr(el, 'fecha_creacion', ''))
+        fecha_act = _formatear_fecha(getattr(el, 'fecha_actualizacion', ''))
+        meta_line = f"Publicado por: @{usuario_pub} | Fecha: {fecha_cre}"
+        flowables.append(Paragraph(meta_line, style_meta_small))
+        if fecha_act and fecha_act != fecha_cre:
+            flowables.append(Paragraph(f"(Editado el: {fecha_act})", style_meta_small))
+        flowables.append(Spacer(1, 6))
+
+        # Calificación: renderizar con estrellas de texto seguras
+        try:
+            calif = int(getattr(el, 'calificacion', 0) or 0)
+        except Exception:
+            calif = 0
+        calif = max(0, min(5, calif))
+        stars = ' '.join('★' for _ in range(calif))
+        rating_line = f"Calificación: {stars} ({calif}/5)"
+        flowables.append(Paragraph(rating_line, style_meta))
         flowables.append(Spacer(1, 8))
 
         # Descripción
-        descripcion_text = getattr(el, 'descripcion', '') or ''
-        flowables.append(Paragraph(descripcion_text, style_normal))
+        descripcion_text = _sanitizar_texto_para_pdf(getattr(el, 'descripcion', '') or '')
+        flowables.append(Paragraph(descripcion_text or 'Sin sinopsis disponible', style_normal))
         flowables.append(Spacer(1, 8))
 
         # Opinion en caja
-        opinion_text = getattr(el, 'opinion', '') or ''
-        opinion_box = Table([[Paragraph(opinion_text, style_normal)]], colWidths=[None])
+        opinion_text = _sanitizar_texto_para_pdf(getattr(el, 'opinion', '') or '')
+        opinion_box = Table([[Paragraph(opinion_text or 'Sin opinión disponible', style_normal)]], colWidths=[None])
         opinion_box.setStyle(TableStyle([
             ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#f8f9fb')),
             ('BOX', (0,0), (-1,-1), 0.5, colors.grey),
