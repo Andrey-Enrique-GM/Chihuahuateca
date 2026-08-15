@@ -245,6 +245,15 @@ def exportar_pdf():
     doc.build(flowables, onFirstPage=_header_footer, onLaterPages=_header_footer)
     buffer.seek(0)
 
+    # Registrar exportación a PDF
+    try:
+        usuario_id = session.get('usuario_id')
+        if usuario_id:
+            usuario = User(id=usuario_id, username=session.get('username', ''), nombre=session.get('nombre', ''), password='', rol=session.get('rol', 'usuario'))
+            Log.save_log(usuario, 'Exportó la colección completa a PDF', LogType.PDF_EXPORT)
+    except Exception:
+        pass
+
     return send_file(buffer, mimetype='application/pdf', as_attachment=True, download_name=f'Coleccion_Chihuahuateca_{session.get("username", "usuario")}.pdf')
 
 
@@ -268,7 +277,7 @@ def api_login():
         session['nombre'] = usuario.nombre
         session['rol'] = usuario.rol
 
-        Log.save_log(usuario, "Inicio de sesion", LogType.LOGIN)
+        Log.save_log(usuario, "Inicio de sesión", LogType.LOGIN)
         return jsonify({'success': True, 'redirect': url_for('index')})
 
     return jsonify({'success': False, 'message': 'Usuario o contraseña incorrectos'}), 401
@@ -276,8 +285,17 @@ def api_login():
 
 @app.route("/logout")
 def api_logout():
+    # Registrar cierre de sesión si existe sesión activa
+    usuario_id = session.get('usuario_id')
+    if usuario_id:
+        try:
+            usuario = User(id=usuario_id, username=session.get('username', ''), nombre=session.get('nombre', ''), password='', rol=session.get('rol', 'usuario'))
+            Log.save_log(usuario, 'Cierre de sesión', LogType.LOGOUT)
+        except Exception:
+            pass
+
     session.clear()
-    return redirect(url_for("login_view"))
+    return redirect(url_for('login_view'))
 
 
 @app.route('/api/signup', methods=['POST'])
@@ -607,6 +625,14 @@ def api_buscar_externos():
     if not datos:
         mensaje = 'No se pudo obtener información adicional. Verifica que el título exista o prueba con una versión alternativa del título.'
         return jsonify({'success': False, 'message': mensaje}), 404
+    # Registrar búsqueda automática exitosa (si hay sesión)
+    try:
+        usuario_id = session.get('usuario_id')
+        if usuario_id:
+            usuario = User(id=usuario_id, username=session.get('username', ''), nombre=session.get('nombre', ''), password='', rol=session.get('rol', 'usuario'))
+            Log.save_log(usuario, f"Búsqueda automática de portada/sinopsis para: {titulo}", LogType.AUTOCOMPLETE_QUERY)
+    except Exception:
+        pass
 
     return jsonify({
         'success': True,
@@ -753,7 +779,7 @@ def api_cambiar_password():
 
     if exito:
         usuario = User(id=usuario_id, username=username_actual, nombre=session.get('nombre', ''), password='', rol=session.get('rol', 'usuario'))
-        Log.save_log(usuario, "El usuario cambió su contraseña de seguridad", LogType.EDIT)
+        Log.save_log(usuario, "El usuario cambió su contraseña", LogType.EDIT)
         return jsonify({'success': True, 'message': 'Tu contraseña ha sido actualizada con éxito.'})
     
     return jsonify({'success': False, 'message': mensaje or 'Error interno al actualizar la contraseña.'}), 500
