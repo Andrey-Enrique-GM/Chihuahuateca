@@ -77,11 +77,23 @@
                     </div>
 
                     <div class="stats-row">
+                        <div class="stat-box stat-seguidores">
+                            <span id="seguidores-total" class="stat-numero">{{ stats.seguidores }}</span>
+                            <span class="stat-label">Seguidores</span>
+                        </div>
+
+                        <div class="stat-box stat-siguiendo">
+                            <span id="siguiendo-total" class="stat-numero">{{ stats.siguiendo }}</span>
+                            <span class="stat-label">Siguiendo</span>
+                        </div>
+
                         <div class="stat-box stat-tipo libro">
                             <span class="stat-numero">📚 {{ stats.libros }}</span>
                             <span class="stat-label">Libros</span>
                         </div>
+                    </div>
 
+                    <div class="stats-row">
                         <div class="stat-box stat-tipo pelicula">
                             <span class="stat-numero">🎬 {{ stats.peliculas }}</span>
                             <span class="stat-label">Películas</span>

@@ -11,3 +11,5 @@ class LogType(Enum):
     UNLIKE = 8
     PDF_EXPORT = 9
     AUTOCOMPLETE_QUERY = 10
+    FOLLOW = 11
+    UNFOLLOW = 12

@@ -124,6 +124,46 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        const followButton = event.target.closest('.btn-seguir, .btn-siguiendo');
+        if (followButton) {
+            event.preventDefault();
+            const usuarioId = followButton.dataset.usuarioId;
+            if (!usuarioId) return;
+
+            fetch(`/api/seguir/${usuarioId}`, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.success) {
+                        if (window.Swal) {
+                            Swal.fire({ icon: 'error', title: 'Error', text: data.message || 'No se pudo cambiar el seguimiento.' });
+                        } else {
+                            alert(data.message || 'No se pudo cambiar el seguimiento.');
+                        }
+                        return;
+                    }
+
+                    const siguiendo = Boolean(data.siguiendo);
+                    followButton.dataset.siguiendo = siguiendo ? 'true' : 'false';
+                    followButton.classList.toggle('btn-siguiendo', siguiendo);
+                    followButton.classList.toggle('btn-seguir', !siguiendo);
+                    followButton.textContent = siguiendo ? '✓ Siguiendo' : '+ Seguir';
+
+                    const contadorSeguidores = document.getElementById('seguidores-total');
+                    if (contadorSeguidores) {
+                        contadorSeguidores.textContent = data.total_seguidores;
+                    }
+                })
+                .catch(err => {
+                    console.error('Error seguimiento:', err);
+                    if (window.Swal) {
+                        Swal.fire({ icon: 'error', title: 'Error de servidor', text: 'No se pudo actualizar el seguimiento en este momento.' });
+                    } else {
+                        alert('No se pudo actualizar el seguimiento en este momento.');
+                    }
+                });
+            return;
+        }
+
         const tagFiltro = event.target.closest('.tag-filtro');
         if (!tagFiltro) return;
 

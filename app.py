@@ -5,12 +5,15 @@ import json
 import urllib.error
 import urllib.request
 from datetime import datetime
+import pymysql
 from flask import Flask, redirect, render_template, jsonify, request, session, url_for, send_file
 from dotenv import load_dotenv
 from entities.elemento import Elemento
 from entities.log import Log
 from entities.usuario import User
 from enums.log_type import LogType
+from persistence.db import get_connection
+from pymysql.cursors import DictCursor
 from urllib.parse import quote_plus, urlparse
 
 # ReportLab para generacion de archivos PDF
@@ -58,7 +61,7 @@ def ruta_perfil():
     usuario_id = session.get('usuario_id')
     if not usuario_id:
         return redirect(url_for('login_view'))
-    
+
     usuario = User.get_by_id(usuario_id)
     # Obtenemos sus logs recientes para mostrar actividad
     actividad = Log.get_by_user(usuario_id)
@@ -80,13 +83,28 @@ def ruta_perfil():
     else:
         promedio_calificacion = 0.0
 
+    try:
+        conexion = get_connection()
+        cursor = conexion.cursor(DictCursor)
+        cursor.execute("SELECT COUNT(*) AS total FROM seguidores WHERE seguido_id = %s", (usuario_id,))
+        seguidores = int(cursor.fetchone()['total'] or 0)
+        cursor.execute("SELECT COUNT(*) AS total FROM seguidores WHERE seguidor_id = %s", (usuario_id,))
+        siguiendo = int(cursor.fetchone()['total'] or 0)
+        cursor.close(); conexion.close()
+    except Exception as ex:
+        print(f"Error al consultar estadísticas sociales: {ex}")
+        seguidores = 0
+        siguiendo = 0
+
     estadisticas = {
         'total': total_aportes,
         'libros': total_libros,
         'peliculas': total_peliculas,
         'series': total_series,
         'promedio_nota': promedio_calificacion,
-        'likes_recibidos': total_likes_recibidos
+        'likes_recibidos': total_likes_recibidos,
+        'seguidores': seguidores,
+        'siguiendo': siguiendo
     }
     
     return render_template('profile.html', usuario=usuario, logs=actividad, stats=estadisticas)
@@ -273,6 +291,7 @@ def api_login():
 
     if usuario:
         session['usuario_id'] = usuario.id
+        session['user_id'] = usuario.id
         session['username'] = usuario.username
         session['nombre'] = usuario.nombre
         session['rol'] = usuario.rol
@@ -737,6 +756,61 @@ def api_toggle_like(elemento_id):
         'liked': resultado['liked'],
         'total_likes': resultado['total_likes']
     })
+
+
+@app.route('/api/seguir/<int:usuario_id>', methods=['POST'])
+def api_seguir_usuario(usuario_id):
+    seguidor_id = session.get('usuario_id') or session.get('user_id')
+    if not seguidor_id:
+        return jsonify({'success': False, 'message': 'No hay sesión activa'}), 401
+
+    if seguidor_id == usuario_id:
+        return jsonify({'success': False, 'message': 'No puedes seguirte a ti mismo.'}), 400
+
+    try:
+        conexion = get_connection()
+        cursor = conexion.cursor(DictCursor)
+
+        cursor.execute("SELECT id FROM usuarios WHERE id = %s", (usuario_id,))
+        if not cursor.fetchone():
+            cursor.close(); conexion.close()
+            return jsonify({'success': False, 'message': 'Usuario no encontrado.'}), 404
+
+        cursor.execute(
+            "SELECT id FROM seguidores WHERE seguidor_id = %s AND seguido_id = %s",
+            (seguidor_id, usuario_id)
+        )
+        ya_sigue = cursor.fetchone()
+
+        if ya_sigue:
+            cursor.execute(
+                "DELETE FROM seguidores WHERE seguidor_id = %s AND seguido_id = %s",
+                (seguidor_id, usuario_id)
+            )
+            siguiendo = False
+            descripcion = f'Dejó de seguir al usuario ID {usuario_id}'
+            tipo_log = LogType.UNFOLLOW
+        else:
+            cursor.execute(
+                "INSERT INTO seguidores (seguidor_id, seguido_id, fecha) VALUES (%s, %s, NOW())",
+                (seguidor_id, usuario_id)
+            )
+            siguiendo = True
+            descripcion = f'Comenzó a seguir al usuario ID {usuario_id}'
+            tipo_log = LogType.FOLLOW
+
+        conexion.commit()
+        cursor.execute("SELECT COUNT(*) AS total FROM seguidores WHERE seguido_id = %s", (usuario_id,))
+        total_seguidores = int(cursor.fetchone()['total'] or 0)
+
+        usuario = User(id=seguidor_id, username=session.get('username', ''), nombre=session.get('nombre', ''), password='', rol=session.get('rol', 'usuario'))
+        Log.save_log(usuario, descripcion, tipo_log)
+
+        cursor.close(); conexion.close()
+        return jsonify({'success': True, 'siguiendo': siguiendo, 'total_seguidores': total_seguidores})
+    except Exception as ex:
+        print(f"Error al alternar seguimiento: {ex}")
+        return jsonify({'success': False, 'message': 'No se pudo actualizar el seguimiento.'}), 500
 
 
 @app.route('/api/elemento/<int:elemento_id>')

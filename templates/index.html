@@ -211,7 +211,21 @@
 
                         <div class="tarjeta-fechas">
                             {% if elemento.usuario_nombre %}
-                                <span class="autor-aporte">Subido por: <strong>{{ elemento.usuario_nombre }}</strong></span><br>
+                                <div class="fila-autor-social">
+                                    <span class="autor-aporte">Subido por: <strong>{{ elemento.usuario_nombre }}</strong></span>
+                                    {% if session.get('usuario_id') and session.get('usuario_id') != elemento.usuario_id %}
+                                        <button type="button"
+                                                class="btn-seguir {% if elemento.usuario_sigue_creador %}btn-siguiendo{% endif %}"
+                                                data-usuario-id="{{ elemento.usuario_id }}"
+                                                data-siguiendo="{{ 'true' if elemento.usuario_sigue_creador else 'false' }}">
+                                            {% if elemento.usuario_sigue_creador %}
+                                                ✓ Siguiendo
+                                            {% else %}
+                                                + Seguir
+                                            {% endif %}
+                                        </button>
+                                    {% endif %}
+                                </div>
                             {% endif %}
 
                             <small>Registrado: {{ elemento.fecha_creacion | formato_fecha }}</small>

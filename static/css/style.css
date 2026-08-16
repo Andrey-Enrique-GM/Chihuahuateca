@@ -657,12 +657,52 @@ body {
     background-color: rgba(231, 76, 60, 0.16);
 }
 
+.fila-autor-social {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.65rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.3rem;
+}
+
 .autor-aporte {
     display: inline-block;
     color: var(--color-texto);
     font-size: 0.8rem;
-    margin-bottom: 0.3rem;
     opacity: 0.8;
+}
+
+.btn-seguir,
+.btn-siguiendo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    padding: 0.38rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid #dfe7f1;
+    background: #fff;
+    color: #1f4d8f;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.btn-seguir:hover {
+    background: #eef6ff;
+}
+
+.btn-siguiendo {
+    background: #e9f8ee;
+    border-color: #63b980;
+    color: #1e7d46;
+}
+
+.btn-siguiendo:hover {
+    background: #def4e6;
 }
 
 .tarjeta-fechas {

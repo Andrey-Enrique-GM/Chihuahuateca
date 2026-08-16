@@ -5,12 +5,13 @@ El guardián ideal de libros, películas y series. Una aplicación web dinámica
 ## ✨ Características Principales
 * **CRUD Completo en Tiempo Real:** Permite agregar, visualizar, editar y eliminar libros o películas de forma asíncrona mediante peticiones HTTP `fetch` sin recargar la página.
 * **Sistema de Autenticación Dinámico:** Registro e inicio de sesión seguro para múltiples usuarios con sesiones cifradas. Cada usuario administra de forma exclusiva sus propios elementos guardados.
+* **Red Social y Sistema de Seguidores:** Modelo de interacción que permite seguir y dejar de seguir a otros usuarios de la comunidad, así como visualizar estadísticas de seguidores y seguidos en el perfil personal.
 * **Filtrado y Búsqueda Instantánea:** Barra de búsqueda integrada por coincidencia de texto (título, autor o director), categorías rápidas (Libros 📚, Películas 🎬, Series 📺 o Todos 🐾) y modal/panel emergente compacto para filtros avanzados (género, calificación y orden).
 * **Sistema de Categorías (Tags):** Clasificación por géneros visuales para organizar y filtrar las obras rápidamente.
 * **Soporte para Portadas y Autocompletado Online:** Muestra imágenes de portada o póster en cada tarjeta. Incluye botones de asistencia técnica para buscar y autocompletar dinámicamente la portada y la sinopsis desde APIs públicas (Open Library / TMDB / OMDb).
-* **Exportación de Colección a PDF:** Generación e impresión en PDF descargable desde el perfil del usuario, maquetando una ficha completa formateada por cada página para su consulta offline.
+* **Exportación de Colección a PDF Enriquecida:** Generación e impresión en PDF descargable desde el perfil del usuario, maquetando una ficha completa formateada por cada página, autor de publicación y fecha de modificación para su consulta offline.
 * **Interacción Social (Likes ❤️):** Permite a los usuarios dar "Me gusta" a los elementos publicados por otros miembros de la comunidad en tiempo real.
-* **Auditoría del Sistema (Logs):** Registro histórico automático de la actividad de los usuarios en la base de datos (inicios de sesión, actualizaciones, modificaciones, etc.).
+* **Auditoría Extendida del Sistema (Logs):** Registro histórico automático de la actividad de los usuarios en la base de datos (inicios de sesión, cierres de sesión, registros, me gusta, exportaciones PDF y modificaciones).
 * **Interfaz Pulida y Moderna:** Menú desplegable de perfil, panel organizado de estadísticas personales, modales interactivos para la gestión de elementos y alertas estéticas mediante **SweetAlert2**.
 
 ---
@@ -19,7 +20,7 @@ El guardián ideal de libros, películas y series. Una aplicación web dinámica
 * **Backend:** Python + Flask (Framework web ágil)
 * **Frontend:** HTML5, CSS3 (Diseño responsivo y variables nativas), JavaScript (Vanilla ES6)
 * **Plantillas:** Jinja2 (Renderizado dinámico de componentes en el servidor)
-* **Generación de Reportes:** xhtml2pdf / ReportLab (Renderizado de documentos PDF)
+* **Generación de Reportes:** ReportLab / Pillow (Renderizado de documentos PDF)
 * **Base de Datos:** MySQL (Alojado en la nube con la plataforma **Aiven**)
 * **Aplicación:** Alojada en la nube con la plataforma **Render**
 * **Componentes de Terceros:** SweetAlert2 (Notificaciones de interfaz)
@@ -54,6 +55,13 @@ Guarda los libros, películas y series agregados por la comunidad, vinculados a 
 * `fecha_actualizacion` (TIMESTAMP): Registro automático al realizar modificaciones.
 * `usuario_id` (INT): Llave foránea vinculada al `id` de la tabla `usuarios`.
 
+### Tabla: `seguidores`
+Gestiona la red de conexiones y seguimiento entre los usuarios de la plataforma.
+* `id` (INT, Primary Key, Auto-increment)
+* `seguidor_id` (INT): Llave foránea vinculada al usuario que realiza el seguimiento (`ON DELETE CASCADE`).
+* `seguido_id` (INT): Llave foránea vinculada al usuario que recibe el seguimiento (`ON DELETE CASCADE`).
+* `fecha` (TIMESTAMP): Registro de fecha y hora del seguimiento (`DEFAULT CURRENT_TIMESTAMP`).
+
 ### Tabla: `me_gusta`
 Gestiona la interacción social de los usuarios mediante "likes" en los elementos de la colección.
 * `id` (INT, Primary Key, Auto-increment)
@@ -67,7 +75,7 @@ Tabla de auditoría para monitorizar los eventos críticos ocurridos dentro del 
 * `fecha` (TIMESTAMP): Estampa de tiempo generada por el servidor de forma nativa (`DEFAULT CURRENT_TIMESTAMP`).
 * `id_user` (INT): Llave foránea vinculada al usuario que ejecutó la acción (`ON DELETE CASCADE`).
 * `descripcion` (TEXT): Información extendida del evento en cuestión.
-* `type` (VARCHAR): Breve descripción de la actividad efectuada (ej: `'Inicio de sesión'`, `'Guardó el elemento'`).
+* `type` (INT): Categoría del evento, ENUM (ej: `'LOGIN'`, `'LOGOUT'`, `'REGISTER'`, `'SAVE'`, `'EDIT'`, `'DELETE'`, `'LIKE'`, `'UNLIKE'`, `'PDF_EXPORT'`, `'FOLLOW'`, `'UNFOLLOW'`).
 
 ---
 
@@ -87,4 +95,5 @@ mysql-connector-python==9.7.0
 colorama==0.4.6
 gunicorn==26.0.0
 packaging==26.2
-xhtml2pdf==0.2.16
+reportlab
+Pillow

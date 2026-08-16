@@ -15,7 +15,7 @@ para mantener una separacion clara entre la logica de negocio y la capa de acces
 
 
 class Elemento:
-    def __init__(self, id: int, titulo: str, tipo: str, autor_director: str, genero: str, descripcion: str, calificacion: int, opinion: str, usuario_id: int, usuario_nombre: str, fecha_creacion: str, fecha_actualizacion: str, imagen_url: str = '', total_likes: int = 0, le_gusta_usuario: bool = False, usuario_username: str = None):
+    def __init__(self, id: int, titulo: str, tipo: str, autor_director: str, genero: str, descripcion: str, calificacion: int, opinion: str, usuario_id: int, usuario_nombre: str, fecha_creacion: str, fecha_actualizacion: str, imagen_url: str = '', total_likes: int = 0, le_gusta_usuario: bool = False, usuario_username: str = None, usuario_sigue_creador: bool = False):
         self.id = id
         self.titulo = titulo
         self.tipo = tipo
@@ -32,6 +32,7 @@ class Elemento:
         self.imagen_url = imagen_url
         self.total_likes = total_likes
         self.le_gusta_usuario = le_gusta_usuario
+        self.usuario_sigue_creador = usuario_sigue_creador
 
 
     # Metodo estatico para obtener todos los elementos de la coleccion y mapearlos a objetos
@@ -48,7 +49,8 @@ class Elemento:
                         DATE_FORMAT(c.fecha_actualizacion, '%%Y-%%m-%%d %%H:%%i') as fecha_actualizacion,
                         c.usuario_id, u.nombre as usuario_nombre, u.username as usuario_username,
                         COALESCE(mg.total_likes, 0) AS total_likes,
-                        CASE WHEN ul.usuario_id IS NOT NULL THEN 1 ELSE 0 END AS le_gusta_usuario
+                        CASE WHEN ul.usuario_id IS NOT NULL THEN 1 ELSE 0 END AS le_gusta_usuario,
+                        CASE WHEN sf.seguidor_id IS NOT NULL THEN 1 ELSE 0 END AS usuario_sigue_creador
                     FROM coleccion c
                     LEFT JOIN usuarios u ON c.usuario_id = u.id
                     LEFT JOIN (
@@ -61,9 +63,10 @@ class Elemento:
                         FROM me_gusta
                         WHERE usuario_id = %s
                     ) ul ON ul.elemento_id = c.id
+                    LEFT JOIN seguidores sf ON sf.seguido_id = c.usuario_id AND sf.seguidor_id = %s
                     ORDER BY c.id DESC
                 """
-                cursor.execute(sql, (usuario_id,))
+                cursor.execute(sql, (usuario_id, usuario_id))
             else:
                 sql = """
                     SELECT c.id, c.titulo, c.tipo, c.autor_director, c.genero, c.descripcion, c.calificacion, c.opinion, c.imagen_url,
@@ -71,7 +74,8 @@ class Elemento:
                         DATE_FORMAT(c.fecha_actualizacion, '%%Y-%%m-%%d %%H:%%i') as fecha_actualizacion,
                         c.usuario_id, u.nombre as usuario_nombre, u.username as usuario_username,
                         COALESCE(mg.total_likes, 0) AS total_likes,
-                        0 AS le_gusta_usuario
+                        0 AS le_gusta_usuario,
+                        0 AS usuario_sigue_creador
                     FROM coleccion c
                     LEFT JOIN usuarios u ON c.usuario_id = u.id
                     LEFT JOIN (
@@ -93,7 +97,7 @@ class Elemento:
                     usuario_id=r['usuario_id'], usuario_nombre=r['usuario_nombre'],
                     fecha_creacion=r['fecha_creacion'], fecha_actualizacion=r['fecha_actualizacion'],
                     imagen_url=r.get('imagen_url', ''),
-                    total_likes=r.get('total_likes', 0), le_gusta_usuario=bool(r.get('le_gusta_usuario', 0)), usuario_username=r.get('usuario_username')
+                    total_likes=r.get('total_likes', 0), le_gusta_usuario=bool(r.get('le_gusta_usuario', 0)), usuario_username=r.get('usuario_username'), usuario_sigue_creador=bool(r.get('usuario_sigue_creador', 0))
                 )
                 elementos.append(nuevo_elemento)
 
