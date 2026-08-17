@@ -6,6 +6,17 @@ let filtroTipoActual = 'todos';
 let filtroGeneroActual = 'todos';
 
 document.addEventListener('DOMContentLoaded', () => {
+    const actualizarBotonesSeguir = (usuarioId, siguiendo) => {
+        document.querySelectorAll('.btn-seguir, .btn-siguiendo').forEach((button) => {
+            if (String(button.dataset.usuarioId) !== String(usuarioId)) return;
+
+            button.dataset.siguiendo = siguiendo ? 'true' : 'false';
+            button.classList.toggle('btn-siguiendo', siguiendo);
+            button.classList.toggle('btn-seguir', !siguiendo);
+            button.textContent = siguiendo ? '✓ Siguiendo' : '+ Seguir';
+        });
+    };
+
     const btnNotificaciones = document.getElementById('btn-notificaciones');
     const dropdownNotificaciones = document.getElementById('dropdown-notificaciones');
     const badgeNotificaciones = document.getElementById('badge-notificaciones');
@@ -239,10 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
 
                     const siguiendo = Boolean(data.siguiendo);
-                    followButton.dataset.siguiendo = siguiendo ? 'true' : 'false';
-                    followButton.classList.toggle('btn-siguiendo', siguiendo);
-                    followButton.classList.toggle('btn-seguir', !siguiendo);
-                    followButton.textContent = siguiendo ? '✓ Siguiendo' : '+ Seguir';
+                    actualizarBotonesSeguir(usuarioId, siguiendo);
 
                     const contadorSeguidores = document.getElementById('seguidores-total');
                     if (contadorSeguidores) {
