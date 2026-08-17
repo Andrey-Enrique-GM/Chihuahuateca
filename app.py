@@ -1,28 +1,27 @@
 import os
-import re
-import io
-import json
-import urllib.error
-import urllib.request
 from datetime import datetime
-import pymysql
-from flask import Flask, redirect, render_template, jsonify, request, session, url_for, send_file
+
+from flask import Flask, jsonify, redirect, render_template, request, session, url_for
 from dotenv import load_dotenv
+from pymysql.cursors import DictCursor
+
 from entities.elemento import Elemento
 from entities.log import Log
 from entities.usuario import User
 from enums.log_type import LogType
 from persistence.db import get_connection
-from pymysql.cursors import DictCursor
-from urllib.parse import quote_plus, urlparse
-
-# ReportLab para generacion de archivos PDF
-from reportlab.lib.pagesizes import A4
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Image, Spacer, PageBreak, Table, TableStyle
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib import colors
-from reportlab.lib.units import cm
-from reportlab.lib.enums import TA_JUSTIFY, TA_CENTER
+from services.auth_service import cambiar_password_usuario, get_usuario_sesion, login_usuario, logout_usuario, registrar_usuario
+from services.elemento_service import (
+    alternar_like,
+    alternar_seguimiento,
+    borrar_elemento,
+    buscar_datos_externos,
+    editar_elemento,
+    guardar_elemento,
+    normalizar_titulo,
+    validate_elemento_payload,
+)
+from services.pdf_service import exportar_coleccion_pdf
 
 
 
@@ -117,162 +116,7 @@ def exportar_pdf():
         return redirect(url_for('login_view'))
 
     elementos = Elemento.obtener_todos(usuario_id=usuario_id)
-
-    buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=2*cm, leftMargin=2*cm, topMargin=3*cm, bottomMargin=2*cm)
-    styles = getSampleStyleSheet()
-    style_title = ParagraphStyle('Title', parent=styles['Heading1'], fontSize=18, alignment=TA_CENTER, spaceAfter=8)
-    style_meta = ParagraphStyle('Meta', parent=styles['Normal'], fontSize=10)
-    style_meta_small = ParagraphStyle('MetaSmall', parent=styles['Normal'], fontSize=9, textColor=colors.grey)
-    style_normal = ParagraphStyle('Normal', parent=styles['BodyText'], fontSize=11, alignment=TA_JUSTIFY)
-
-    flowables = []
-    gen_date = datetime.now().strftime('%d/%m/%Y %H:%M')
-
-    def _header_footer(canvas, doc):
-        canvas.saveState()
-        canvas.setFont('Helvetica-Bold', 10)
-        canvas.drawString(cm, A4[1] - cm + 6, 'Chihuahuateca - Ficha de la Colección')
-        canvas.setFont('Helvetica', 8)
-        footer = f'Generado: {gen_date} — Página {doc.page}'
-        canvas.drawRightString(A4[0] - cm, cm / 2, footer)
-        canvas.restoreState()
-
-    def _sanitizar_texto_para_pdf(text):
-        import unicodedata
-        if not text:
-            return ''
-        out = []
-        for ch in str(text):
-            cp = ord(ch)
-            # remover emojis y símbolos que puedan causar problemas en PDF
-            if unicodedata.category(ch) == 'So':
-                continue
-            if 0x1F300 <= cp <= 0x1FAFF:
-                continue
-            if 0x1F600 <= cp <= 0x1F64F:
-                continue
-            if 0x1F680 <= cp <= 0x1F6FF:
-                continue
-            if 0x2600 <= cp <= 0x26FF:
-                # permitir estrellas (2605)
-                if cp == 0x2605 or cp == 0x2606:
-                    out.append('★' if cp == 0x2605 else '☆')
-                    continue
-                continue
-            if 0x2700 <= cp <= 0x27BF:
-                continue
-            # saltar caracteres de control (ASCII < 32)
-            if cp < 32:
-                continue
-            out.append(ch)
-        s = ''.join(out)
-        s = re.sub(r'\s+', ' ', s).strip()
-        return s
-
-    def _formatear_fecha(fecha_str):
-        if not fecha_str:
-            return ''
-        for fmt in ('%Y-%m-%d %H:%M', '%Y-%m-%d %H:%M:%S', '%Y-%m-%d'):
-            try:
-                dt = datetime.strptime(str(fecha_str), fmt)
-                return dt.strftime('%d/%m/%Y')
-            except Exception:
-                continue
-        # retorna solo la parte de fecha si es un string largo
-        return str(fecha_str)[:10]
-
-    for el in elementos:
-        tipo_badge = f"[{(el.tipo or '').upper()}]"
-        genero_badge = f"[{_sanitizar_texto_para_pdf(el.genero or 'Sin género')}]"
-        flowables.append(Paragraph(f"{tipo_badge} - {genero_badge}", style_meta))
-        flowables.append(Spacer(1, 6))
-
-        # Imagen portada
-        imagen_url = getattr(el, 'imagen_url', '') or ''
-        if imagen_url:
-            try:
-                resp = urllib.request.urlopen(imagen_url, timeout=8)
-                img_data = resp.read()
-                img_buf = io.BytesIO(img_data)
-                img = Image(img_buf)
-                img._restrictSize(12*cm, 12*cm)
-                flowables.append(img)
-                flowables.append(Spacer(1, 8))
-            except Exception:
-                tb = Table([['Sin imagen disponible']], colWidths=[12*cm])
-                tb.setStyle(TableStyle([('BOX', (0,0), (-1,-1), 1, colors.lightgrey), ('ALIGN', (0,0), (-1,-1), 'CENTER')]))
-                flowables.append(tb)
-                flowables.append(Spacer(1, 8))
-        else:
-            tb = Table([['Sin imagen disponible']], colWidths=[12*cm])
-            tb.setStyle(TableStyle([('BOX', (0,0), (-1,-1), 1, colors.lightgrey), ('ALIGN', (0,0), (-1,-1), 'CENTER')]))
-            flowables.append(tb)
-            flowables.append(Spacer(1, 8))
-
-        # Título y metadatos
-        titulo_seguro = _sanitizar_texto_para_pdf(getattr(el, 'titulo', 'Sin título'))
-        flowables.append(Paragraph(titulo_seguro or 'Sin título', style_title))
-        autor_seguro = _sanitizar_texto_para_pdf(getattr(el, 'autor_director', ''))
-        flowables.append(Paragraph(f"<b>Autor / Director / Creador:</b> {autor_seguro}", style_meta))
-        flowables.append(Spacer(1, 4))
-
-        # Metadatos de publicación (Publicado por, fechas)
-        usuario_pub = getattr(el, 'usuario_username', None) or getattr(el, 'usuario_nombre', '')
-        usuario_pub = _sanitizar_texto_para_pdf(usuario_pub)
-        fecha_cre = _formatear_fecha(getattr(el, 'fecha_creacion', ''))
-        fecha_act = _formatear_fecha(getattr(el, 'fecha_actualizacion', ''))
-        meta_line = f"Publicado por: @{usuario_pub} | Fecha: {fecha_cre}"
-        flowables.append(Paragraph(meta_line, style_meta_small))
-        if fecha_act and fecha_act != fecha_cre:
-            flowables.append(Paragraph(f"(Editado el: {fecha_act})", style_meta_small))
-        flowables.append(Spacer(1, 6))
-
-        # Calificación: renderizar con estrellas de texto seguras
-        try:
-            calif = int(getattr(el, 'calificacion', 0) or 0)
-        except Exception:
-            calif = 0
-        calif = max(0, min(5, calif))
-        stars = ' '.join('★' for _ in range(calif))
-        rating_line = f"Calificación: {stars} ({calif}/5)"
-        flowables.append(Paragraph(rating_line, style_meta))
-        flowables.append(Spacer(1, 8))
-
-        # Descripción
-        descripcion_text = _sanitizar_texto_para_pdf(getattr(el, 'descripcion', '') or '')
-        flowables.append(Paragraph(descripcion_text or 'Sin sinopsis disponible', style_normal))
-        flowables.append(Spacer(1, 8))
-
-        # Opinion en caja
-        opinion_text = _sanitizar_texto_para_pdf(getattr(el, 'opinion', '') or '')
-        opinion_box = Table([[Paragraph(opinion_text or 'Sin opinión disponible', style_normal)]], colWidths=[None])
-        opinion_box.setStyle(TableStyle([
-            ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#f8f9fb')),
-            ('BOX', (0,0), (-1,-1), 0.5, colors.grey),
-            ('LEFTPADDING', (0,0), (-1,-1), 6), ('RIGHTPADDING', (0,0), (-1,-1), 6),
-            ('TOPPADDING', (0,0), (-1,-1), 6), ('BOTTOMPADDING', (0,0), (-1,-1), 6),
-        ]))
-        flowables.append(opinion_box)
-        flowables.append(Spacer(1, 12))
-        flowables.append(PageBreak())
-
-    if not flowables:
-        flowables.append(Paragraph('No hay elementos en la colección.', styles['Normal']))
-
-    doc.build(flowables, onFirstPage=_header_footer, onLaterPages=_header_footer)
-    buffer.seek(0)
-
-    # Registrar exportación a PDF
-    try:
-        usuario_id = session.get('usuario_id')
-        if usuario_id:
-            usuario = User(id=usuario_id, username=session.get('username', ''), nombre=session.get('nombre', ''), password='', rol=session.get('rol', 'usuario'))
-            Log.save_log(usuario, 'Exportó la colección completa a PDF', LogType.PDF_EXPORT)
-    except Exception:
-        pass
-
-    return send_file(buffer, mimetype='application/pdf', as_attachment=True, download_name=f'Coleccion_Chihuahuateca_{session.get("username", "usuario")}.pdf')
+    return exportar_coleccion_pdf(elementos, session)
 
 
 
@@ -280,375 +124,48 @@ def exportar_pdf():
 
 @app.route('/api/login', methods=['POST'])
 def api_login():
-    data = request.get_json() or {}
-    username = data.get('username', '').strip()
-    password = data.get('password', '').strip()
-
-    if not username or not password:
-        return jsonify({'success': False, 'message': 'Faltan datos'}), 400
-
-    usuario = User.authenticate(username, password)
-
-    if usuario:
-        session['usuario_id'] = usuario.id
-        session['user_id'] = usuario.id
-        session['username'] = usuario.username
-        session['nombre'] = usuario.nombre
-        session['rol'] = usuario.rol
-
-        Log.save_log(usuario, "Inicio de sesión", LogType.LOGIN)
-        return jsonify({'success': True, 'redirect': url_for('index')})
-
-    return jsonify({'success': False, 'message': 'Usuario o contraseña incorrectos'}), 401
+    ok, result, status = login_usuario(session, request.get_json() or {})
+    if ok:
+        return jsonify({'success': True, 'redirect': url_for('index')}), status
+    return jsonify({'success': False, 'message': result}), status
 
 
 @app.route("/logout")
 def api_logout():
-    # Registrar cierre de sesión si existe sesión activa
-    usuario_id = session.get('usuario_id')
-    if usuario_id:
-        try:
-            usuario = User(id=usuario_id, username=session.get('username', ''), nombre=session.get('nombre', ''), password='', rol=session.get('rol', 'usuario'))
-            Log.save_log(usuario, 'Cierre de sesión', LogType.LOGOUT)
-        except Exception:
-            pass
-
-    session.clear()
+    logout_usuario(session)
     return redirect(url_for('login_view'))
 
 
 @app.route('/api/signup', methods=['POST'])
 def api_signup():
-    data = request.get_json() or {}
-    nombre = data.get('name', '').strip()
-    username = data.get('username', '').strip()
-    password = data.get('password', '').strip()
-    confirm_password = data.get('confirm_password', '').strip()
-
-    # Validaciones básicas
-    if not nombre or not username or not password:
-        return jsonify({'success': False, 'message': 'Todos los campos son obligatorios'}), 400
-
-    if password != confirm_password:
-        return jsonify({'success': False, 'message': 'Las contraseñas no coinciden'}), 400
-
-    exito, mensaje = User.create(nombre, username, password)
-
-    if exito:
-        return jsonify({'success': True, 'message': '¡Cuenta creada con éxito! Ahora puedes iniciar sesión.'})
-
-    if mensaje and 'ocupado' in mensaje.lower():
-        return jsonify({'success': False, 'message': mensaje}), 409
-
-    return jsonify({'success': False, 'message': mensaje or 'Error al crear la cuenta'}), 500
+    ok, message, status = registrar_usuario(request.get_json() or {})
+    if ok:
+        return jsonify({'success': True, 'message': message}), status
+    return jsonify({'success': False, 'message': message}), status
 
 
-def _sanitize_text(value, required=False, max_length=255):
-    if value is None:
-        value = ''
-    if not isinstance(value, str):
-        value = str(value)
-    value = value.strip()
-    if required and not value:
-        return None
-    if len(value) > max_length:
-        return value[:max_length]
-    return value
-
-
-def _sanitize_url(value):
-    if value is None:
-        return ''
-    if not isinstance(value, str):
-        value = str(value)
-    value = value.strip()
-    if not value:
-        return ''
-
-    parsed = urlparse(value)
-    if parsed.scheme not in ('http', 'https') or not parsed.netloc:
-        return None
-    return value
-
-
-def _validate_elemento_payload(data, require_id=False):
-    if not isinstance(data, dict):
-        return False, 'Datos inválidos', None
-
-    titulo = _sanitize_text(data.get('titulo'), required=True, max_length=200)
-    tipo = _sanitize_text(data.get('tipo'), required=True, max_length=20)
-    autor_director = _sanitize_text(data.get('autor_director'), required=True, max_length=150)
-    genero = _sanitize_text(data.get('genero'), required=False, max_length=50) or ''
-    descripcion = _sanitize_text(data.get('descripcion'), required=False, max_length=1000)
-    opinion = _sanitize_text(data.get('opinion'), required=False, max_length=1000)
-    imagen_url_raw = data.get('imagen_url', '')
-    imagen_url = _sanitize_url(imagen_url_raw)
-
-    if titulo is None:
-        return False, 'El título es obligatorio', None
-    if tipo not in ('libro', 'pelicula', 'serie'):
-        return False, 'El tipo debe ser libro, pelicula o serie', None
-    if autor_director is None:
-        return False, 'Autor / Director / Creador es obligatorio', None
-
-    if imagen_url_raw and imagen_url is None:
-        return False, 'La URL de la imagen no es válida', None
-
-    calificacion_raw = data.get('calificacion')
-    try:
-        calificacion = int(calificacion_raw)
-    except (TypeError, ValueError):
-        return False, 'La calificación debe ser un número entre 1 y 5', None
-
-    if calificacion < 1 or calificacion > 5:
-        return False, 'La calificación debe estar entre 1 y 5', None
-
-    elemento_id = None
-    if require_id:
-        try:
-            elemento_id = int(data.get('id'))
-        except (TypeError, ValueError):
-            return False, 'ID de elemento inválido', None
-
-    return True, None, {
-        'titulo': titulo,
-        'tipo': tipo,
-        'autor_director': autor_director,
-        'genero': genero,
-        'descripcion': descripcion,
-        'opinion': opinion,
-        'calificacion': calificacion,
-        'imagen_url': imagen_url,
-        'id': elemento_id
-    }
-
-
-def _normalizar_titulo(titulo):
-    texto = (titulo or '').strip()
-    texto = re.sub(r"[^\w\sáéíóúÁÉÍÓÚñÑüÜ-]", " ", texto)
-    texto = re.sub(r"\s+", " ", texto).strip()
-    return texto
-
-
-def _merge_datos(datos_base, datos_fallback):
-    if not datos_base:
-        return datos_fallback
-    if not datos_fallback:
-        return datos_base
-
-    return {
-        'titulo': datos_base.get('titulo') or datos_fallback.get('titulo'),
-        'descripcion': datos_base.get('descripcion') or datos_fallback.get('descripcion') or '',
-        'imagen_url': datos_base.get('imagen_url') or datos_fallback.get('imagen_url') or ''
-    }
-
-
-def _buscar_datos_openlibrary(titulo):
-    texto_limpio = _normalizar_titulo(titulo)
-    if not texto_limpio:
-        return None
-
-    url = f"https://openlibrary.org/search.json?title={quote_plus(texto_limpio)}&limit=1"
-    try:
-        with urllib.request.urlopen(url, timeout=10) as response:
-            data = json.loads(response.read().decode('utf-8'))
-    except (urllib.error.HTTPError, urllib.error.URLError, ValueError):
-        return None
-
-    docs = data.get('docs', [])
-    if not docs:
-        return None
-
-    doc = docs[0]
-    descripcion = ''
-    if isinstance(doc.get('first_sentence'), list):
-        descripcion = ' '.join(doc.get('first_sentence', [])).strip()
-    elif isinstance(doc.get('first_sentence'), str):
-        descripcion = doc.get('first_sentence').strip()
-    elif isinstance(doc.get('subtitle'), str):
-        descripcion = doc.get('subtitle').strip()
-
-    imagen_url = ''
-    if doc.get('cover_i'):
-        imagen_url = f"https://covers.openlibrary.org/b/id/{doc.get('cover_i')}-L.jpg"
-    elif doc.get('cover_edition_key'):
-        imagen_url = f"https://covers.openlibrary.org/b/olid/{doc.get('cover_edition_key')}-L.jpg"
-
-    return {
-        'titulo': doc.get('title_suggest') or doc.get('title') or titulo,
-        'descripcion': descripcion,
-        'imagen_url': imagen_url
-    }
-
-
-def _buscar_datos_google_books(titulo):
-    texto_limpio = _normalizar_titulo(titulo)
-    if not texto_limpio:
-        return None
-
-    url = f"https://www.googleapis.com/books/v1/volumes?q={quote_plus(texto_limpio)}&langRestrict=es&maxResults=5"
-    try:
-        with urllib.request.urlopen(url, timeout=10) as response:
-            data = json.loads(response.read().decode('utf-8'))
-    except (urllib.error.HTTPError, urllib.error.URLError, ValueError):
-        return None
-
-    items = data.get('items', [])
-    if not items:
-        return None
-
-    for item in items:
-        info = item.get('volumeInfo', {})
-        if not info.get('title'):
-            continue
-
-        descripcion = info.get('description', '') or ''
-        imagen_url = ''
-        image_links = info.get('imageLinks', {})
-        if image_links.get('thumbnail'):
-            imagen_url = image_links.get('thumbnail').replace('http://', 'https://')
-        elif image_links.get('smallThumbnail'):
-            imagen_url = image_links.get('smallThumbnail').replace('http://', 'https://')
-
-        return {
-            'titulo': info.get('title') or titulo,
-            'descripcion': descripcion,
-            'imagen_url': imagen_url
-        }
-
-    return None
-
-
-def _buscar_datos_omdb(titulo, tipo):
-    api_key = os.getenv('OMDB_API_KEY', '').strip()
-    if not api_key:
-        return None
-
-    tipo_busqueda = 'series' if tipo == 'serie' else 'movie'
-    url = f"http://www.omdbapi.com/?apikey={quote_plus(api_key)}&t={quote_plus(titulo)}&type={quote_plus(tipo_busqueda)}&plot=short&r=json"
-    try:
-        with urllib.request.urlopen(url, timeout=10) as response:
-            data = json.loads(response.read().decode('utf-8'))
-    except (urllib.error.HTTPError, urllib.error.URLError, ValueError):
-        return None
-
-    if data.get('Response') != 'True':
-        return None
-
-    descripcion = data.get('Plot', '')
-    if descripcion == 'N/A':
-        descripcion = ''
-
-    imagen_url = data.get('Poster', '')
-    if imagen_url == 'N/A':
-        imagen_url = ''
-
-    return {
-        'titulo': data.get('Title', titulo),
-        'descripcion': descripcion,
-        'imagen_url': imagen_url
-    }
-
-
-def _buscar_datos_tmdb(titulo, tipo):
-    api_key = os.getenv('TMDB_API_KEY', '').strip()
-    if not api_key:
-        return None
-
-    media_type = 'tv' if tipo == 'serie' else 'movie'
-    search_url = f"https://api.themoviedb.org/3/search/{media_type}?api_key={quote_plus(api_key)}&query={quote_plus(titulo)}&language=es-ES&page=1"
-    try:
-        with urllib.request.urlopen(search_url, timeout=10) as response:
-            data = json.loads(response.read().decode('utf-8'))
-    except (urllib.error.HTTPError, urllib.error.URLError, ValueError):
-        return None
-
-    resultados = data.get('results', [])
-    if not resultados:
-        return None
-
-    item = resultados[0]
-    descripcion = item.get('overview', '') or ''
-    imagen_url = ''
-    poster_path = item.get('poster_path')
-    if poster_path:
-        imagen_url = f"https://image.tmdb.org/t/p/w500{poster_path}"
-
-    return {
-        'titulo': item.get('name') or item.get('title') or titulo,
-        'descripcion': descripcion,
-        'imagen_url': imagen_url
-    }
-
-
-def _buscar_datos_itunes(titulo, tipo):
-    texto_limpio = _normalizar_titulo(titulo)
-    if not texto_limpio:
-        return None
-
-    media = 'tvShow' if tipo == 'serie' else 'movie'
-    url = f"https://itunes.apple.com/search?term={quote_plus(texto_limpio)}&media={quote_plus(media)}&limit=1"
-    try:
-        with urllib.request.urlopen(url, timeout=10) as response:
-            data = json.loads(response.read().decode('utf-8'))
-    except (urllib.error.HTTPError, urllib.error.URLError, ValueError):
-        return None
-
-    items = data.get('results', [])
-    if not items:
-        return None
-
-    item = items[0]
-    descripcion = item.get('longDescription') or item.get('shortDescription') or ''
-    imagen_url = item.get('artworkUrl100', '')
-    if imagen_url:
-        imagen_url = imagen_url.replace('100x100bb', '600x600bb').replace('100x100', '600x600')
-
-    titulo_itunes = item.get('trackName') or item.get('collectionName') or titulo
-    return {
-        'titulo': titulo_itunes,
-        'descripcion': descripcion,
-        'imagen_url': imagen_url
-    }
-
-
-def _buscar_datos_externos(tipo, titulo):
-    if tipo == 'libro':
-        datos_ol = _buscar_datos_openlibrary(titulo)
-        datos_google = _buscar_datos_google_books(titulo)
-        return _merge_datos(datos_ol, datos_google)
-
-    datos = None
-    if os.getenv('OMDB_API_KEY', '').strip():
-        datos = _buscar_datos_omdb(titulo, tipo)
-    if not datos and os.getenv('TMDB_API_KEY', '').strip():
-        datos = _buscar_datos_tmdb(titulo, tipo)
-    if not datos:
-        datos = _buscar_datos_itunes(titulo, tipo)
-
-    return datos
 
 
 @app.route('/api/buscar-external')
 def api_buscar_externos():
     tipo = (request.args.get('tipo') or '').strip().lower()
     titulo = (request.args.get('titulo') or '').strip()
-    titulo_normalizado = _normalizar_titulo(titulo)
+    titulo_normalizado = normalizar_titulo(titulo)
 
     if not titulo_normalizado:
         return jsonify({'success': False, 'message': 'Debes ingresar un título válido para buscar.'}), 400
     if tipo not in ('libro', 'pelicula', 'serie'):
         return jsonify({'success': False, 'message': 'Tipo inválido para buscar datos externos.'}), 400
 
-    datos = _buscar_datos_externos(tipo, titulo_normalizado)
+    datos = buscar_datos_externos(tipo, titulo_normalizado)
     if not datos:
         mensaje = 'No se pudo obtener información adicional. Verifica que el título exista o prueba con una versión alternativa del título.'
         return jsonify({'success': False, 'message': mensaje}), 404
-    # Registrar búsqueda automática exitosa (si hay sesión)
+
     try:
         usuario_id = session.get('usuario_id')
         if usuario_id:
-            usuario = User(id=usuario_id, username=session.get('username', ''), nombre=session.get('nombre', ''), password='', rol=session.get('rol', 'usuario'))
+            usuario = get_usuario_sesion(session)
             Log.save_log(usuario, f"Búsqueda automática de portada/sinopsis para: {titulo}", LogType.AUTOCOMPLETE_QUERY)
     except Exception:
         pass
@@ -657,7 +174,7 @@ def api_buscar_externos():
         'success': True,
         'titulo': datos.get('titulo') or titulo,
         'descripcion': datos.get('descripcion') or None,
-        'imagen_url': datos.get('imagen_url') or None
+        'imagen_url': datos.get('imagen_url') or None,
     })
 
 
@@ -667,28 +184,17 @@ def api_guardar_elemento():
     if not usuario_id:
         return jsonify({'success': False, 'message': 'No hay sesión activa'}), 401
 
-    success, message, payload = _validate_elemento_payload(request.json or {})
+    success, message, payload = validate_elemento_payload(request.json or {})
     if not success:
         return jsonify({'success': False, 'message': message}), 400
 
-    exito = Elemento.save(
-        titulo=payload['titulo'],
-        tipo=payload['tipo'],
-        autor_director=payload['autor_director'],
-        genero=payload['genero'],
-        descripcion=payload['descripcion'],
-        calificacion=payload['calificacion'],
-        opinion=payload['opinion'],
-        imagen_url=payload['imagen_url'],
-        usuario_id=usuario_id
-    )
-
+    exito, error = guardar_elemento(usuario_id, payload)
     if exito:
-        usuario = User(id=usuario_id, username=session.get('username', ''), nombre=session.get('nombre', ''), password='', rol=session.get('rol', 'usuario'))
+        usuario = get_usuario_sesion(session)
         Log.save_log(usuario, f"Guardó el elemento '{payload['titulo']}'", LogType.SAVE)
         return jsonify({'success': True})
 
-    return jsonify({'success': False, 'message': 'Error interno al guardar el elemento'}), 500
+    return jsonify({'success': False, 'message': error}), 500
 
 
 @app.route('/api/editar', methods=['POST'])
@@ -696,30 +202,15 @@ def api_editar_elemento():
     if 'usuario_id' not in session:
         return jsonify({'success': False, 'message': 'No hay sesión activa'}), 401
 
-    success, message, payload = _validate_elemento_payload(request.json or {}, require_id=True)
+    success, message, payload = validate_elemento_payload(request.json or {}, require_id=True)
     if not success:
         return jsonify({'success': False, 'message': message}), 400
 
-    exito = Elemento.update(
-        id_elemento=payload['id'],
-        titulo=payload['titulo'],
-        tipo=payload['tipo'],
-        autor_director=payload['autor_director'],
-        genero=payload['genero'],
-        descripcion=payload['descripcion'],
-        calificacion=payload['calificacion'],
-        opinion=payload['opinion'],
-        imagen_url=payload['imagen_url'],
-        usuario_id=session['usuario_id'],
-        user_role=session.get('rol', 'usuario')
-    )
-
+    exito, error = editar_elemento(session, payload)
     if exito:
-        usuario = User(id=session['usuario_id'], username=session.get('username', ''), nombre=session.get('nombre', ''), password='', rol=session.get('rol', 'usuario'))
-        Log.save_log(usuario, f"Editó el elemento '{payload['titulo']}'", LogType.EDIT)
         return jsonify({'success': True})
 
-    return jsonify({'success': False, 'message': 'No autorizado o no se encontró el elemento'}), 403
+    return jsonify({'success': False, 'message': error}), 403
 
 
 @app.route('/api/borrar/<int:elemento_id>', methods=['DELETE'])
@@ -727,90 +218,29 @@ def api_borrar_elemento(elemento_id):
     if 'usuario_id' not in session:
         return jsonify({'success': False, 'message': 'No hay sesión activa'}), 401
 
-    exito = Elemento.delete(
-        id_elemento=elemento_id,
-        usuario_id=session['usuario_id'],
-        user_role=session.get('rol', 'usuario')
-    )
-
+    exito, error = borrar_elemento(session, elemento_id)
     if exito:
-        usuario = User(id=session['usuario_id'], username=session.get('username', ''), nombre=session.get('nombre', ''), password='', rol=session.get('rol', 'usuario'))
-        Log.save_log(usuario, f"Eliminó el elemento con ID {elemento_id}", LogType.DELETE)
         return jsonify({'success': True})
 
-    return jsonify({'success': False, 'message': 'No autorizado o no se encontró el elemento'}), 403
+    return jsonify({'success': False, 'message': error}), 403
 
 
 @app.route('/api/like/<int:elemento_id>', methods=['POST'])
 def api_toggle_like(elemento_id):
-    usuario_id = session.get('usuario_id')
-    if not usuario_id:
-        return jsonify({'success': False, 'message': 'No hay sesión activa'}), 401
+    ok, result, status = alternar_like(session, elemento_id)
+    if not ok:
+        return jsonify({'success': False, 'message': result}), status
 
-    resultado = Elemento.toggle_like(usuario_id, elemento_id)
-    if resultado is None:
-        return jsonify({'success': False, 'message': 'Elemento no encontrado o error interno'}), 404
-
-    return jsonify({
-        'success': True,
-        'liked': resultado['liked'],
-        'total_likes': resultado['total_likes']
-    })
+    return jsonify({'success': True, 'liked': result['liked'], 'total_likes': result['total_likes']})
 
 
 @app.route('/api/seguir/<int:usuario_id>', methods=['POST'])
 def api_seguir_usuario(usuario_id):
-    seguidor_id = session.get('usuario_id') or session.get('user_id')
-    if not seguidor_id:
-        return jsonify({'success': False, 'message': 'No hay sesión activa'}), 401
+    ok, result, status = alternar_seguimiento(session, usuario_id)
+    if not ok:
+        return jsonify({'success': False, 'message': result}), status
 
-    if seguidor_id == usuario_id:
-        return jsonify({'success': False, 'message': 'No puedes seguirte a ti mismo.'}), 400
-
-    try:
-        conexion = get_connection()
-        cursor = conexion.cursor(DictCursor)
-
-        cursor.execute("SELECT id FROM usuarios WHERE id = %s", (usuario_id,))
-        if not cursor.fetchone():
-            cursor.close(); conexion.close()
-            return jsonify({'success': False, 'message': 'Usuario no encontrado.'}), 404
-
-        cursor.execute(
-            "SELECT id FROM seguidores WHERE seguidor_id = %s AND seguido_id = %s",
-            (seguidor_id, usuario_id)
-        )
-        ya_sigue = cursor.fetchone()
-
-        if ya_sigue:
-            cursor.execute(
-                "DELETE FROM seguidores WHERE seguidor_id = %s AND seguido_id = %s",
-                (seguidor_id, usuario_id)
-            )
-            siguiendo = False
-            descripcion = f'Dejó de seguir al usuario ID {usuario_id}'
-            tipo_log = LogType.UNFOLLOW
-        else:
-            cursor.execute(
-                "INSERT INTO seguidores (seguidor_id, seguido_id, fecha) VALUES (%s, %s, NOW())",
-                (seguidor_id, usuario_id)
-            )
-            siguiendo = True
-            descripcion = f'Comenzó a seguir al usuario ID {usuario_id}'
-            tipo_log = LogType.FOLLOW
-
-        conexion.commit()
-        cursor.execute("SELECT COUNT(*) AS total FROM seguidores WHERE seguido_id = %s", (usuario_id,))
-        total_seguidores = int(cursor.fetchone()['total'] or 0)
-
-        usuario = User(id=seguidor_id, username=session.get('username', ''), nombre=session.get('nombre', ''), password='', rol=session.get('rol', 'usuario'))
-        Log.save_log(usuario, descripcion, tipo_log)
-
-        cursor.close(); conexion.close()
-        return jsonify({'success': True, 'siguiendo': siguiendo, 'total_seguidores': total_seguidores})
-    except Exception as ex:
-        print(f"Error al alternar seguimiento: {ex}")
-        return jsonify({'success': False, 'message': 'No se pudo actualizar el seguimiento.'}), 500
+    return jsonify({'success': True, **result})
 
 
 @app.route('/api/elemento/<int:elemento_id>')
@@ -829,34 +259,10 @@ def api_obtener_elemento_por_id(elemento_id):
 
 @app.route('/api/usuario/cambiar-password', methods=['POST'])
 def api_cambiar_password():
-    # Asegurar que el usuario tiene sesión activa
-    usuario_id = session.get('usuario_id')
-    if not usuario_id:
-        return jsonify({'success': False, 'message': 'Sesión no válida o expirada.'}), 401
-
-    data = request.get_json() or {}
-    pass_actual = data.get('pass_actual', '').strip()
-    pass_nueva = data.get('pass_nueva', '').strip()
-
-    if not pass_actual or not pass_nueva:
-        return jsonify({'success': False, 'message': 'Todos los campos son obligatorios.'}), 400
-
-    # Usamos el username en sesión para validar que conozca su contraseña actual
-    username_actual = session.get('username')
-    usuario_validado = User.authenticate(username_actual, pass_actual)
-
-    if not usuario_validado:
-        return jsonify({'success': False, 'message': 'La contraseña actual es incorrecta.'}), 401
-
-    # Guardar la nueva contraseña. 
-    exito, mensaje = User.update_password(usuario_id, pass_nueva)
-
-    if exito:
-        usuario = User(id=usuario_id, username=username_actual, nombre=session.get('nombre', ''), password='', rol=session.get('rol', 'usuario'))
-        Log.save_log(usuario, "El usuario cambió su contraseña", LogType.EDIT)
-        return jsonify({'success': True, 'message': 'Tu contraseña ha sido actualizada con éxito.'})
-    
-    return jsonify({'success': False, 'message': mensaje or 'Error interno al actualizar la contraseña.'}), 500
+    ok, message, status = cambiar_password_usuario(session, request.get_json() or {})
+    if ok:
+        return jsonify({'success': True, 'message': message}), status
+    return jsonify({'success': False, 'message': message}), status
 
 
 @app.template_filter('formato_fecha')

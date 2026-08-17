@@ -15,12 +15,17 @@ para mantener una separacion clara entre la logica de negocio y la capa de acces
 
 
 class User:
-    def __init__(self, id: int, username: str, nombre: str, password: str, rol: str = 'usuario'):
+    @staticmethod
+    def normalizar_rol(rol: str) -> str:
+        valor = (rol or '').strip().upper()
+        return valor if valor in {'USER', 'ADMIN'} else 'USER'
+
+    def __init__(self, id: int, username: str, nombre: str, password: str, rol: str = 'USER'):
         self.id = id
         self.username = username
         self.nombre = nombre
         self.password = password
-        self.rol = rol
+        self.rol = self.normalizar_rol(rol)
 
 
     # Metodo estatico para autenticar el usuario
@@ -99,7 +104,7 @@ class User:
                     username=usuario['username'],
                     nombre=usuario['nombre'],
                     password=usuario['password'],
-                    rol=usuario.get('rol', 'usuario')
+                    rol=usuario.get('rol', 'USER')
                 )
         except Exception as ex:
             print(f"Error al obtener usuario por username: {ex}")
@@ -109,10 +114,11 @@ class User:
 
     # Metodo estatico para crear un nuevo usuario
     @staticmethod
-    def create(nombre: str, username: str, password: str, rol: str = 'usuario'):
+    def create(nombre: str, username: str, password: str, rol: str = 'USER'):
         if not nombre or not username or not password:
             return False, 'Todos los campos son obligatorios'
 
+        rol_normalizado = User.normalizar_rol(rol)
         password_encriptada = generate_password_hash(password)
 
         try:
@@ -122,7 +128,7 @@ class User:
                 INSERT INTO usuarios (username, nombre, password, rol)
                 VALUES (%s, %s, %s, %s)
             """
-            cursor.execute(sql, (username, nombre, password_encriptada, rol))
+            cursor.execute(sql, (username, nombre, password_encriptada, rol_normalizado))
             conexion.commit()
 
             cursor.close()

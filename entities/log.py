@@ -92,7 +92,7 @@ class Log:
                 Log(
                     id=row['id'],
                     fecha=row['fecha'],
-                    user=User(id=row['id_user'], username='', nombre='', password='', rol='usuario'),
+                    user=User(id=row['id_user'], username='', nombre='', password='', rol='USER'),
                     descripcion=row['descripcion'],
                     type=(LogType(row['type']) if isinstance(row.get('type'), int) and row.get('type') in set(item.value for item in LogType) else LogType.EDIT),
                 )

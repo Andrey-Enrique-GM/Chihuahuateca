@@ -174,19 +174,20 @@ class Elemento:
 
     # Metodo estatico para actualizar un elemento existente en la base de datos
     @staticmethod
-    def update(id_elemento: int, titulo: str, tipo: str, autor_director: str, genero: str, descripcion: str, calificacion: int, opinion: str, imagen_url: str, usuario_id: int, user_role: str = 'usuario') -> bool:
+    def update(id_elemento: int, titulo: str, tipo: str, autor_director: str, genero: str, descripcion: str, calificacion: int, opinion: str, imagen_url: str, usuario_id: int, user_role: str = 'USER') -> bool:
         try:
             conexion = get_connection()
             cursor = conexion.cursor(DictCursor)
             ahora = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            rol_normalizado = (user_role or '').strip().upper()
             
             sql = """
                 UPDATE coleccion 
                 SET titulo = %s, tipo = %s, autor_director = %s, genero = %s, descripcion = %s, 
                     calificacion = %s, opinion = %s, imagen_url = %s, fecha_actualizacion = %s
-                WHERE id = %s AND (usuario_id = %s OR %s = 'admin')
+                WHERE id = %s AND (usuario_id = %s OR %s = 'ADMIN')
             """
-            cursor.execute(sql, (titulo, tipo, autor_director, genero, descripcion, calificacion, opinion, imagen_url, ahora, id_elemento, usuario_id, user_role))
+            cursor.execute(sql, (titulo, tipo, autor_director, genero, descripcion, calificacion, opinion, imagen_url, ahora, id_elemento, usuario_id, rol_normalizado))
             conexion.commit()
 
             updated_rows = cursor.rowcount
@@ -234,12 +235,13 @@ class Elemento:
 
     # Metodo estatico para eliminar un elemento de la base de datos por su ID
     @staticmethod
-    def delete(id_elemento: int, usuario_id: int, user_role: str = 'usuario') -> bool:
+    def delete(id_elemento: int, usuario_id: int, user_role: str = 'USER') -> bool:
         try:
             conexion = get_connection()
             cursor = conexion.cursor(DictCursor)
-            sql = "DELETE FROM coleccion WHERE id = %s AND (usuario_id = %s OR %s = 'admin')"
-            cursor.execute(sql, (id_elemento, usuario_id, user_role))
+            rol_normalizado = (user_role or '').strip().upper()
+            sql = "DELETE FROM coleccion WHERE id = %s AND (usuario_id = %s OR %s = 'ADMIN')"
+            cursor.execute(sql, (id_elemento, usuario_id, rol_normalizado))
             conexion.commit()
 
             deleted_rows = cursor.rowcount
