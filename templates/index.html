@@ -31,7 +31,19 @@
         </div>
     </div>
 
+    <div class="notificacion-menu-container">
+        <button class="notificacion-boton" id="btn-notificaciones" type="button" aria-label="Notificaciones">
+            <span class="notificacion-icono">🔔</span>
+            <span id="badge-notificaciones" class="badge-notificaciones hidden"></span>
+        </button>
 
+        <div id="dropdown-notificaciones" class="dropdown-notificaciones hidden" aria-live="polite">
+            <div class="dropdown-header">
+                <strong>Notificaciones</strong>
+            </div>
+            <div id="lista-notificaciones" class="lista-notificaciones"></div>
+        </div>
+    </div>
 
     <header class="header-app">
         <div class="header-contenido">

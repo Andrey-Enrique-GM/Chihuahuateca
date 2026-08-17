@@ -46,6 +46,130 @@ body {
     margin-bottom: 1.5rem;
 }
 
+.notificacion-menu-container {
+    position: absolute;
+    top: 16px;
+    right: 24px;
+    z-index: 1006;
+}
+
+.notificacion-boton {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.14);
+    border-radius: 50%;
+    color: var(--blanco);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: var(--transicion);
+}
+
+.notificacion-boton:hover {
+    background: rgba(255, 255, 255, 0.22);
+    transform: translateY(-1px);
+}
+
+.badge-notificaciones {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #d32f2f;
+    color: var(--blanco);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    border: 2px solid #fff;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.dropdown-notificaciones {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    width: min(340px, 86vw);
+    max-height: 380px;
+    overflow-y: auto;
+    background: var(--blanco);
+    border-radius: 14px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.16);
+    border: 1px solid rgba(44, 62, 80, 0.08);
+    z-index: 1007;
+}
+
+.dropdown-header {
+    padding: 0.9rem 1rem;
+    border-bottom: 1px solid #eef2f7;
+    color: var(--color-texto);
+    font-size: 0.95rem;
+}
+
+.lista-notificaciones {
+    display: flex;
+    flex-direction: column;
+}
+
+.notificacion-item {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid #eef2f7;
+    background: #fff;
+}
+
+.notificacion-item.no-leida {
+    background: #f6faff;
+}
+
+.notificacion-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #e8f0ff, #fbe5d7);
+    color: #334155;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.notificacion-texto {
+    margin: 0;
+    font-size: 0.82rem;
+    color: var(--color-texto);
+    line-height: 1.4;
+}
+
+.notificacion-tiempo {
+    display: block;
+    margin-top: 0.2rem;
+    color: #6b7280;
+    font-size: 0.72rem;
+}
+
+@media (max-width: 768px) {
+    .notificacion-menu-container {
+        top: 12px;
+        right: 16px;
+    }
+}
+
 .header-contenido h1 {
     font-size: 2.5rem;
     margin-bottom: 0.5rem;

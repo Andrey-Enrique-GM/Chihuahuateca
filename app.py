@@ -7,8 +7,10 @@ from pymysql.cursors import DictCursor
 
 from entities.elemento import Elemento
 from entities.log import Log
+from entities.notificacion import Notificacion
 from entities.usuario import User
 from enums.log_type import LogType
+from enums.notificacion_type import TipoNotificacion
 from persistence.db import get_connection
 from services.auth_service import cambiar_password_usuario, get_usuario_sesion, login_usuario, logout_usuario, registrar_usuario
 from services.elemento_service import (
@@ -231,6 +233,19 @@ def api_toggle_like(elemento_id):
     if not ok:
         return jsonify({'success': False, 'message': result}), status
 
+    if result.get('liked'):
+        elemento = Elemento.obtener_por_id(elemento_id)
+        usuario_actual = User.get_by_id(session.get('usuario_id'))
+        if elemento and usuario_actual and elemento.usuario_id != session.get('usuario_id'):
+            Notificacion.crear_desde_evento(
+                usuario_id=elemento.usuario_id,
+                emisor_id=usuario_actual.id,
+                tipo=TipoNotificacion.LIKE,
+                referencia_id=elemento.id,
+                titulo_referencia=elemento.titulo,
+                emisor_username=usuario_actual.username,
+            )
+
     return jsonify({'success': True, 'liked': result['liked'], 'total_likes': result['total_likes']})
 
 
@@ -240,7 +255,105 @@ def api_seguir_usuario(usuario_id):
     if not ok:
         return jsonify({'success': False, 'message': result}), status
 
+    if result.get('siguiendo'):
+        emisor = User.get_by_id(session.get('usuario_id'))
+        if emisor:
+            Notificacion.crear_desde_evento(
+                usuario_id=usuario_id,
+                emisor_id=emisor.id,
+                tipo=TipoNotificacion.FOLLOW,
+                referencia_id=emisor.id,
+                titulo_referencia=None,
+                emisor_username=emisor.username,
+            )
+
     return jsonify({'success': True, **result})
+
+
+@app.route('/api/comentario/<int:elemento_id>', methods=['POST'])
+def api_comentar_elemento(elemento_id):
+    usuario_id = session.get('usuario_id')
+    if not usuario_id:
+        return jsonify({'success': False, 'message': 'No hay sesión activa'}), 401
+
+    payload = request.get_json(silent=True) or request.form or {}
+    comentario = (payload.get('comentario') or '').strip()
+    if not comentario:
+        return jsonify({'success': False, 'message': 'El comentario no puede estar vacío.'}), 400
+
+    elemento = Elemento.obtener_por_id(elemento_id)
+    if not elemento:
+        return jsonify({'success': False, 'message': 'Elemento no encontrado'}), 404
+
+    emisor = User.get_by_id(usuario_id)
+    if emisor and elemento.usuario_id != usuario_id:
+        Notificacion.crear_desde_evento(
+            usuario_id=elemento.usuario_id,
+            emisor_id=emisor.id,
+            tipo=TipoNotificacion.COMMENT,
+            referencia_id=elemento.id,
+            titulo_referencia=elemento.titulo,
+            emisor_username=emisor.username,
+        )
+
+    return jsonify({'success': True, 'message': 'Comentario registrado.'})
+
+
+@app.route('/api/notificaciones')
+def api_notificaciones():
+    Notificacion.asegurar_estructura()
+    usuario_id = session.get('usuario_id')
+    if not usuario_id:
+        return jsonify({'success': False, 'message': 'No hay sesión activa'}), 401
+
+    items = Notificacion.listar_para_usuario(usuario_id, limite=20)
+    payload = []
+    for item in items:
+        tipo = int(item.get('tipo', 0) or 0)
+        emisor_username = item.get('emisor_username') or 'Alguien'
+        titulo_referencia = item.get('titulo_referencia')
+        mensaje = TipoNotificacion.construir_mensaje(tipo, emisor_username, titulo_referencia)
+        payload.append({
+            'id': item.get('id'),
+            'tipo': tipo,
+            'mensaje': mensaje,
+            'leido': bool(item.get('leido', 0)),
+            'fecha': item.get('fecha').strftime('%Y-%m-%d %H:%M:%S') if item.get('fecha') else None,
+            'emisor': {
+                'id': item.get('emisor_id'),
+                'username': emisor_username,
+                'nombre': item.get('emisor_nombre')
+            },
+            'titulo_referencia': titulo_referencia,
+            'referencia_id': item.get('referencia_id'),
+            'icono': {
+                TipoNotificacion.LIKE: '❤️',
+                TipoNotificacion.FOLLOW: '👤',
+                TipoNotificacion.COMMENT: '💬'
+            }.get(TipoNotificacion(tipo), '🔔'),
+            'link': f"/coleccion#{item.get('referencia_id') or 'notificacion'}"
+        })
+
+    return jsonify({
+        'success': True,
+        'items': payload,
+        'unread_count': Notificacion.contador_no_leidas(usuario_id),
+    })
+
+
+@app.route('/api/notificaciones/marcar-leidas', methods=['POST'])
+def api_marcar_notificaciones_leidas():
+    usuario_id = session.get('usuario_id')
+    if not usuario_id:
+        return jsonify({'success': False, 'message': 'No hay sesión activa'}), 401
+
+    data = request.get_json(silent=True) or {}
+    notificacion_id = data.get('notificacion_id')
+    Notificacion.marcar_leidas(usuario_id, notificacion_id)
+    return jsonify({
+        'success': True,
+        'unread_count': Notificacion.contador_no_leidas(usuario_id)
+    })
 
 
 @app.route('/api/elemento/<int:elemento_id>')

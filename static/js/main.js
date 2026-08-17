@@ -6,6 +6,102 @@ let filtroTipoActual = 'todos';
 let filtroGeneroActual = 'todos';
 
 document.addEventListener('DOMContentLoaded', () => {
+    const btnNotificaciones = document.getElementById('btn-notificaciones');
+    const dropdownNotificaciones = document.getElementById('dropdown-notificaciones');
+    const badgeNotificaciones = document.getElementById('badge-notificaciones');
+    const listaNotificaciones = document.getElementById('lista-notificaciones');
+
+    function formatearTiempo(fecha) {
+        if (!fecha) return 'ahora';
+
+        const fechaHora = new Date(fecha.replace(' ', 'T'));
+        const diferenciaMin = Math.max(1, Math.round((Date.now() - fechaHora.getTime()) / 60000));
+
+        if (diferenciaMin < 60) return `Hace ${diferenciaMin} min`;
+
+        const diferenciaHoras = Math.round(diferenciaMin / 60);
+        if (diferenciaHoras < 24) return `Hace ${diferenciaHoras} h`;
+
+        const diferenciaDias = Math.round(diferenciaHoras / 24);
+        return `Hace ${diferenciaDias} d`;
+    }
+
+    function renderNotificaciones(items) {
+        if (!listaNotificaciones) return;
+
+        if (!items || !items.length) {
+            listaNotificaciones.innerHTML = '<div class="notificacion-item"><p class="notificacion-texto">No tienes notificaciones.</p></div>';
+            return;
+        }
+
+        listaNotificaciones.innerHTML = items.map(item => {
+            const avatar = (item.emisor && item.emisor.username) ? item.emisor.username.charAt(0).toUpperCase() : 'N';
+            const claseNoLeida = item.leido ? '' : 'no-leida';
+            return `
+                <div class="notificacion-item ${claseNoLeida}" data-id="${item.id}">
+                    <div class="notificacion-avatar">${avatar}</div>
+                    <div>
+                        <p class="notificacion-texto">${item.mensaje}</p>
+                        <span class="notificacion-tiempo">${formatearTiempo(item.fecha)}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function cargarNotificaciones() {
+        fetch('/api/notificaciones')
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success) return;
+
+                if ((data.unread_count || 0) > 0) {
+                    badgeNotificaciones.textContent = data.unread_count;
+                    badgeNotificaciones.classList.remove('hidden');
+                } else {
+                    badgeNotificaciones.classList.add('hidden');
+                    badgeNotificaciones.textContent = '';
+                }
+
+                renderNotificaciones(data.items || []);
+            })
+            .catch(err => console.error('Error al cargar notificaciones:', err));
+    }
+
+    if (btnNotificaciones && dropdownNotificaciones) {
+        btnNotificaciones.addEventListener('click', () => {
+            const mostrar = dropdownNotificaciones.classList.toggle('hidden');
+
+            if (!mostrar) {
+                fetch('/api/notificaciones/marcar-leidas', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            badgeNotificaciones.classList.add('hidden');
+                            badgeNotificaciones.textContent = '';
+                            cargarNotificaciones();
+                        }
+                    })
+                    .catch(err => console.error('Error al marcar notificaciones como leídas:', err));
+            }
+        });
+    }
+
+    document.addEventListener('click', (event) => {
+        if (!dropdownNotificaciones) return;
+        const clicDentro = dropdownNotificaciones.contains(event.target) || btnNotificaciones?.contains(event.target);
+        if (!clicDentro) {
+            dropdownNotificaciones.classList.add('hidden');
+        }
+    });
+
+    cargarNotificaciones();
+    setInterval(cargarNotificaciones, 30000);
+
     // Modales
     const modalAgregar = document.getElementById('modal-agregar');
     const modalEditar = document.getElementById('modal-editar');

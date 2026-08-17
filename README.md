@@ -6,13 +6,14 @@ El guardián ideal de libros, películas y series. Una aplicación web dinámica
 * **CRUD Completo en Tiempo Real:** Permite agregar, visualizar, editar y eliminar libros o películas de forma asíncrona mediante peticiones HTTP `fetch` sin recargar la página.
 * **Sistema de Autenticación Dinámico:** Registro e inicio de sesión seguro para múltiples usuarios con sesiones cifradas. Cada usuario administra de forma exclusiva sus propios elementos guardados.
 * **Red Social y Sistema de Seguidores:** Modelo de interacción que permite seguir y dejar de seguir a otros usuarios de la comunidad, así como visualizar estadísticas de seguidores y seguidos en el perfil personal.
+* **Centro de Notificaciones en Tiempo Real:** Sistema de alertas y notificaciones con contador visual (campana) para informar al usuario de interacciones clave (nuevos seguidores, likes en sus publicaciones y comentarios).
 * **Filtrado y Búsqueda Instantánea:** Barra de búsqueda integrada por coincidencia de texto (título, autor o director), categorías rápidas (Libros 📚, Películas 🎬, Series 📺 o Todos 🐾) y modal/panel emergente compacto para filtros avanzados (género, calificación y orden).
 * **Sistema de Categorías (Tags):** Clasificación por géneros visuales para organizar y filtrar las obras rápidamente.
 * **Soporte para Portadas y Autocompletado Online:** Muestra imágenes de portada o póster en cada tarjeta. Incluye botones de asistencia técnica para buscar y autocompletar dinámicamente la portada y la sinopsis desde APIs públicas (Open Library / TMDB / OMDb).
 * **Exportación de Colección a PDF Enriquecida:** Generación e impresión en PDF descargable desde el perfil del usuario, maquetando una ficha completa formateada por cada página, autor de publicación y fecha de modificación para su consulta offline.
 * **Interacción Social (Likes ❤️):** Permite a los usuarios dar "Me gusta" a los elementos publicados por otros miembros de la comunidad en tiempo real.
 * **Auditoría Extendida del Sistema (Logs):** Registro histórico automático de la actividad de los usuarios en la base de datos (inicios de sesión, cierres de sesión, registros, me gusta, exportaciones PDF y modificaciones).
-* **Interfaz Pulida y Moderna:** Menú desplegable de perfil, panel organizado de estadísticas personales, modales interactivos para la gestión de elementos y alertas estéticas mediante **SweetAlert2**.
+* **Interfaz Pulida y Moderna:** Menú desplegable de perfil, centro de notificaciones, panel organizado de estadísticas personales, modales interactivos para la gestión de elementos y alertas estéticas mediante **SweetAlert2**.
 
 ---
 
@@ -37,7 +38,7 @@ Almacena las credenciales y perfiles de los usuarios que acceden al sistema.
 * `username` (VARCHAR, Unique): Identificador único para el inicio de sesión.
 * `nombre` (VARCHAR): Nombre real del usuario que inició sesión.
 * `password` (VARCHAR): Contraseña segura encriptada.
-* `fecha_registro` (DATETIME): Fecha en la que se registro el usuario.
+* `fecha_registro` (DATETIME): Fecha en la que se registró el usuario.
 * `rol` (VARCHAR): Nivel de privilegios ('USER', 'ADMIN').
 
 ### Tabla: `coleccion`
@@ -62,12 +63,24 @@ Gestiona la red de conexiones y seguimiento entre los usuarios de la plataforma.
 * `seguido_id` (INT): Llave foránea vinculada al usuario que recibe el seguimiento (`ON DELETE CASCADE`).
 * `fecha` (TIMESTAMP): Registro de fecha y hora del seguimiento (`DEFAULT CURRENT_TIMESTAMP`).
 
+### Tabla: `notificaciones`
+Almacena la actividad e interacciones destinadas a avisar a los usuarios.
+* `id` (INT, Primary Key, Auto-increment)
+* `usuario_id` (INT): Llave foránea vinculada al usuario receptor (`ON DELETE CASCADE`).
+* `emisor_id` (INT): Llave foránea vinculada al usuario que originó la interacción (`ON DELETE CASCADE`).
+* `tipo` (INT): Identificador numérico mapeado vía Enum en Python (`1: LIKE`, `2: FOLLOW`, `3: COMMENT`).
+* `referencia_id` (INT): Llave foránea opcional vinculada al elemento de `coleccion` (`ON DELETE CASCADE`).
+* `titulo_referencia` (VARCHAR): En caso de ser un me gusta, se menciona el elemento al que se le dio me gusta.
+* `mensaje` (TEXT): Mensaje descriptivo de la notificación.
+* `leido` (TINYINT): Estado de lectura (`1` significa leido).
+* `fecha` (DATETIME): Fecha de la notificación.
+
 ### Tabla: `me_gusta`
 Gestiona la interacción social de los usuarios mediante "likes" en los elementos de la colección.
 * `id` (INT, Primary Key, Auto-increment)
-* `usuario_id` (INT): Llave foránea vinculada al `id` del usuario que da el like (`ON DELETE CASCADE`).
+* `usuario_id` (INT): Llave foránea vinculada al `id` del usuario que da el me gusta (`ON DELETE CASCADE`).
 * `elemento_id` (INT): Llave foránea vinculada al `id` del elemento en `coleccion` (`ON DELETE CASCADE`).
-* `fecha` (TIMESTAMP): Registro de fecha y hora del like (`DEFAULT CURRENT_TIMESTAMP`).
+* `fecha` (TIMESTAMP): Registro de fecha y hora del me gusta (`DEFAULT CURRENT_TIMESTAMP`).
 
 ### Tabla: `log`
 Tabla de auditoría para monitorizar los eventos críticos ocurridos dentro del ecosistema.
@@ -75,7 +88,7 @@ Tabla de auditoría para monitorizar los eventos críticos ocurridos dentro del 
 * `fecha` (TIMESTAMP): Estampa de tiempo generada por el servidor de forma nativa (`DEFAULT CURRENT_TIMESTAMP`).
 * `id_user` (INT): Llave foránea vinculada al usuario que ejecutó la acción (`ON DELETE CASCADE`).
 * `descripcion` (TEXT): Información extendida del evento en cuestión.
-* `type` (INT): Categoría del evento, ENUM (ej: `'LOGIN'`, `'LOGOUT'`, `'REGISTER'`, `'SAVE'`, `'EDIT'`, `'DELETE'`, `'LIKE'`, `'UNLIKE'`, `'PDF_EXPORT'`, `'FOLLOW'`, `'UNFOLLOW'`).
+* `type` (INT): Categoría numérica del evento expresada vía Enum (ej: `LOGIN`, `LOGOUT`, `REGISTER`, `SAVE`, `EDIT`, `DELETE`, `LIKE`, `UNLIKE`, `PDF_EXPORT`, `FOLLOW`, `UNFOLLOW`).
 
 ---
 
