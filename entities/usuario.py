@@ -85,6 +85,27 @@ class User:
 
 
     @staticmethod
+    def get_all():
+        try:
+            conexion = get_connection()
+            cursor = conexion.cursor(DictCursor)
+            cursor.execute(
+                """
+                SELECT id, username, nombre, rol, fecha_registro
+                FROM usuarios
+                ORDER BY id ASC
+                """
+            )
+            usuarios = cursor.fetchall()
+            cursor.close()
+            conexion.close()
+            return usuarios
+        except Exception as ex:
+            print(f"Error al obtener usuarios: {ex}")
+            return []
+
+
+    @staticmethod
     def get_by_username(username: str):
         if not username:
             return None

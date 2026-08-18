@@ -364,6 +364,149 @@ body {
     box-shadow: var(--sombra-hover);
 }
 
+.acciones-perfil {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    justify-content: flex-end;
+}
+
+.usuarios-principal {
+    max-width: 900px;
+}
+
+.usuarios-cabecera {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.4rem;
+}
+
+.usuarios-cabecera h2 {
+    color: var(--color-texto);
+    font-size: 1.8rem;
+    margin-top: 0.2rem;
+}
+
+.usuarios-etiqueta {
+    color: var(--chihuahua-brown);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+}
+
+.contador-usuarios {
+    color: #6b7280;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.lista-usuarios {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+}
+
+.ficha-usuario {
+    display: grid;
+    grid-template-columns: 58px 64px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 1rem;
+    min-height: 106px;
+    padding: 1rem 1.2rem;
+    background: var(--blanco);
+    border: 1px solid rgba(44, 62, 80, 0.08);
+    border-left: 5px solid var(--chihuahua-light);
+    border-radius: 10px;
+    box-shadow: var(--sombra);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ficha-usuario:hover {
+    transform: translateX(7px);
+    box-shadow: var(--sombra-hover);
+}
+
+.ficha-escalonada:nth-child(even) {
+    margin-left: 3.5rem;
+}
+
+.ficha-escalonada:nth-child(3n) {
+    margin-left: 1.5rem;
+}
+
+.ficha-usuario-id {
+    color: var(--chihuahua-brown);
+    font-size: 1.1rem;
+    font-weight: 800;
+    text-align: center;
+}
+
+.ficha-usuario-avatar {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #f4d7bd;
+}
+
+.ficha-usuario-datos h3 {
+    color: var(--color-texto);
+    font-size: 1.15rem;
+    margin-bottom: 0.15rem;
+}
+
+.ficha-usuario-username {
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+
+.ficha-usuario-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.45rem;
+}
+
+.ficha-usuario-fecha {
+    color: #6b7280;
+    font-size: 0.78rem;
+    text-align: right;
+}
+
+@media (max-width: 700px) {
+    .acciones-perfil {
+        justify-content: flex-start;
+    }
+
+    .usuarios-cabecera {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .ficha-usuario,
+    .ficha-escalonada:nth-child(even),
+    .ficha-escalonada:nth-child(3n) {
+        grid-template-columns: 42px 52px minmax(0, 1fr);
+        margin-left: 0;
+    }
+
+    .ficha-usuario-avatar {
+        width: 52px;
+        height: 52px;
+    }
+
+    .ficha-usuario-meta {
+        grid-column: 3;
+        align-items: flex-start;
+    }
+
+    .ficha-usuario-fecha {
+        text-align: left;
+    }
+}
+
 .barra-controles {
     position: relative;
     background-color: var(--blanco);

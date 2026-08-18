@@ -55,7 +55,10 @@
             <section class="tarjeta-perfil-seccion tarjeta-estadisticas">
                 <div class="historial-cabecera">
                     <h3>Mis Estadísticas</h3>
-                    <a href="/exportar-pdf" class="btn-primario" target="_blank">📄 Exportar Colección a PDF</a>
+                    <div class="acciones-perfil">
+                        <a href="{{ url_for('usuarios_view') }}" class="btn-primario">🔎 Buscar usuarios</a>
+                        <a href="/exportar-pdf" class="btn-primario" target="_blank">📄 Exportar Colección a PDF</a>
+                    </div>
                 </div>
                 
                 <div class="grid-stats-perfil">
@@ -138,6 +141,8 @@
 
     </main>
 
+
+
     <!-- Botón Flotante de mi repositorio en GitHub -->
     <a href="https://github.com/Andrey-Enrique-GM/Chihuahuateca" target="_blank" class="link-github-flotante" title="Ver repositorio en GitHub">
         <svg viewBox="0 0 16 16" width="22" height="22" fill="currentColor">
@@ -152,5 +157,7 @@
     <!-- Modal de Información y Créditos -->
     {% include 'modal_info.html' %}
 
+
+    
 </body>
 </html>

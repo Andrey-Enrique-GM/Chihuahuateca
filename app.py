@@ -111,6 +111,15 @@ def ruta_perfil():
     return render_template('profile.html', usuario=usuario, logs=actividad, stats=estadisticas)
 
 
+@app.route('/users')
+def usuarios_view():
+    if 'usuario_id' not in session:
+        return redirect(url_for('login_view'))
+
+    usuarios = User.get_all()
+    return render_template('users.html', usuarios=usuarios)
+
+
 @app.route('/exportar-pdf')
 def exportar_pdf():
     usuario_id = session.get('usuario_id')
@@ -144,8 +153,6 @@ def api_signup():
     if ok:
         return jsonify({'success': True, 'message': message}), status
     return jsonify({'success': False, 'message': message}), status
-
-
 
 
 @app.route('/api/buscar-external')
