@@ -420,12 +420,6 @@ body {
     border-left: 5px solid var(--chihuahua-light);
     border-radius: 10px;
     box-shadow: var(--sombra);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.ficha-usuario:hover {
-    transform: translateX(7px);
-    box-shadow: var(--sombra-hover);
 }
 
 .ficha-escalonada:nth-child(even) {
@@ -469,6 +463,11 @@ body {
     gap: 0.45rem;
 }
 
+.ficha-usuario-meta .btn-seguir,
+.ficha-usuario-meta .btn-siguiendo {
+    align-self: flex-end;
+}
+
 .ficha-usuario-fecha {
     color: #6b7280;
     font-size: 0.78rem;
@@ -500,6 +499,11 @@ body {
     .ficha-usuario-meta {
         grid-column: 3;
         align-items: flex-start;
+    }
+
+    .ficha-usuario-meta .btn-seguir,
+    .ficha-usuario-meta .btn-siguiendo {
+        align-self: flex-start;
     }
 
     .ficha-usuario-fecha {

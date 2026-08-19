@@ -85,16 +85,20 @@ class User:
 
 
     @staticmethod
-    def get_all():
+    def get_all(usuario_actual_id=None):
         try:
             conexion = get_connection()
             cursor = conexion.cursor(DictCursor)
             cursor.execute(
                 """
-                SELECT id, username, nombre, rol, fecha_registro
-                FROM usuarios
-                ORDER BY id ASC
-                """
+                SELECT u.id, u.username, u.nombre, u.rol, u.fecha_registro,
+                       CASE WHEN s.id IS NULL THEN 0 ELSE 1 END AS usuario_sigue
+                FROM usuarios u
+                LEFT JOIN seguidores s
+                    ON s.seguido_id = u.id AND s.seguidor_id = %s
+                ORDER BY u.id ASC
+                """,
+                (usuario_actual_id,)
             )
             usuarios = cursor.fetchall()
             cursor.close()

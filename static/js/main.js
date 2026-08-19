@@ -17,6 +17,34 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
+    const listaUsuarios = document.querySelector('.lista-usuarios');
+    if (listaUsuarios) {
+        listaUsuarios.addEventListener('click', (event) => {
+            const botonSeguir = event.target.closest('.btn-seguir, .btn-siguiendo');
+            if (!botonSeguir) return;
+
+            event.preventDefault();
+            const usuarioId = botonSeguir.dataset.usuarioId;
+            if (!usuarioId) return;
+
+            fetch(`/api/seguir/${usuarioId}`, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.success) {
+                        mostrarErrorSeguimiento(data.message || 'No se pudo cambiar el seguimiento.');
+                        return;
+                    }
+
+                    actualizarBotonesSeguir(usuarioId, Boolean(data.siguiendo));
+                })
+                .catch(error => {
+                    console.error('Error seguimiento:', error);
+                    mostrarErrorSeguimiento('No se pudo actualizar el seguimiento en este momento.');
+                });
+        });
+        return;
+    }
+
     const btnNotificaciones = document.getElementById('btn-notificaciones');
     const dropdownNotificaciones = document.getElementById('dropdown-notificaciones');
     const badgeNotificaciones = document.getElementById('badge-notificaciones');
@@ -281,6 +309,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Ejecutar filtrado inicial para ordenar y actualizar contador al cargar la pagina
     filtrarYOrdenarColeccion();
 });
+
+function mostrarErrorSeguimiento(mensaje) {
+    if (window.Swal) {
+        Swal.fire({ icon: 'error', title: 'Error', text: mensaje });
+    } else {
+        alert(mensaje);
+    }
+}
 
 
 

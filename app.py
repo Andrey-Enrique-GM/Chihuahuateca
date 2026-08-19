@@ -116,7 +116,7 @@ def usuarios_view():
     if 'usuario_id' not in session:
         return redirect(url_for('login_view'))
 
-    usuarios = User.get_all()
+    usuarios = User.get_all(session.get('usuario_id'))
     return render_template('users.html', usuarios=usuarios)
 
 

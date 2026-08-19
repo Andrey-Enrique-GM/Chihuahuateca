@@ -41,6 +41,18 @@
                     <div class="ficha-usuario-meta">
                         <span class="badge-rol {{ cuenta.rol|lower }}">{{ cuenta.rol }}</span>
                         <span class="ficha-usuario-fecha">Registro: {{ cuenta.fecha_registro|formato_fecha }}</span>
+                        {% if cuenta.id != session.get('usuario_id') %}
+                            <button type="button"
+                                    class="btn-seguir {% if cuenta.usuario_sigue %}btn-siguiendo{% endif %}"
+                                    data-usuario-id="{{ cuenta.id }}"
+                                    data-siguiendo="{{ 'true' if cuenta.usuario_sigue else 'false' }}">
+                                {% if cuenta.usuario_sigue %}
+                                    ✓ Siguiendo
+                                {% else %}
+                                    + Seguir
+                                {% endif %}
+                            </button>
+                        {% endif %}
                     </div>
                 </article>
             {% else %}
@@ -67,6 +79,7 @@
     <!-- Modal de Información y Créditos -->
     {% include 'modal_info.html' %}
 
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
 
 </body>
