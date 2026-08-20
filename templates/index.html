@@ -140,6 +140,8 @@
                 <span id="contador-resultados" class="badge-contador">Cargando colección...</span>
             </div>
 
+
+
             <section class="grid-coleccion" id="grid-coleccion">
                 {% for elemento in elementos %}
                     <div class="tarjeta-item {{ elemento.tipo }}" 
@@ -237,9 +239,9 @@
                                 </div>
                             {% endif %}
 
-                            <small>Registrado: {{ elemento.fecha_creacion | formato_fecha }}</small>
+                            <small class="fecha-utc" data-fecha-utc="{{ elemento.fecha_creacion }}">Registrado: {{ elemento.fecha_creacion | formato_fecha }}</small>
                             {% if elemento.fecha_actualizacion and elemento.fecha_actualizacion != elemento.fecha_creacion %}
-                                <br><small class="txt-editado">Editado: {{ elemento.fecha_actualizacion | formato_fecha }}</small>
+                                <br><small class="txt-editado fecha-utc" data-fecha-utc="{{ elemento.fecha_actualizacion }}">Editado: {{ elemento.fecha_actualizacion | formato_fecha }}</small>
                             {% endif %}
                         </div>
 

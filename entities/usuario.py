@@ -20,12 +20,13 @@ class User:
         valor = (rol or '').strip().upper()
         return valor if valor in {'USER', 'ADMIN'} else 'USER'
 
-    def __init__(self, id: int, username: str, nombre: str, password: str, rol: str = 'USER'):
+    def __init__(self, id: int, username: str, nombre: str, password: str, rol: str = 'USER', zona_horaria: str = 'AUTO'):
         self.id = id
         self.username = username
         self.nombre = nombre
         self.password = password
         self.rol = self.normalizar_rol(rol)
+        self.zona_horaria = (zona_horaria or 'AUTO').strip() or 'AUTO'
 
 
     # Metodo estatico para autenticar el usuario
@@ -34,7 +35,7 @@ class User:
         try:
             conexion = get_connection()
             cursor = conexion.cursor(DictCursor)
-            sql = "SELECT id, username, nombre, password, rol FROM usuarios WHERE username = %s"
+            sql = "SELECT id, username, nombre, password, rol, zona_horaria FROM usuarios WHERE username = %s"
             cursor.execute(sql, (username,))
             usuario = cursor.fetchone()
 
@@ -47,7 +48,8 @@ class User:
                     username=usuario['username'],
                     nombre=usuario['nombre'],
                     password=usuario['password'],
-                    rol=usuario['rol']
+                    rol=usuario['rol'],
+                    zona_horaria=usuario.get('zona_horaria', 'AUTO')
                 )
         except Exception as ex:
             print(f"Error al autenticar usuario: {ex}")
@@ -63,7 +65,7 @@ class User:
         try:
             conexion = get_connection()
             cursor = conexion.cursor(DictCursor)
-            sql = "SELECT id, username, nombre, password, rol FROM usuarios WHERE id = %s"
+            sql = "SELECT id, username, nombre, password, rol, zona_horaria FROM usuarios WHERE id = %s"
             cursor.execute(sql, (usuario_id,))
             usuario = cursor.fetchone()
 
@@ -76,7 +78,8 @@ class User:
                     username=usuario['username'],
                     nombre=usuario['nombre'],
                     password=usuario['password'],
-                    rol=usuario['rol']
+                    rol=usuario['rol'],
+                    zona_horaria=usuario.get('zona_horaria', 'AUTO')
                 )
         except Exception as ex:
             print(f"Error al obtener usuario por ID: {ex}")
@@ -116,7 +119,7 @@ class User:
         try:
             conexion = get_connection()
             cursor = conexion.cursor(DictCursor)
-            sql = "SELECT id, username, nombre, password, rol FROM usuarios WHERE username = %s"
+            sql = "SELECT id, username, nombre, password, rol, zona_horaria FROM usuarios WHERE username = %s"
             cursor.execute(sql, (username,))
             usuario = cursor.fetchone()
 
@@ -129,7 +132,8 @@ class User:
                     username=usuario['username'],
                     nombre=usuario['nombre'],
                     password=usuario['password'],
-                    rol=usuario.get('rol', 'USER')
+                    rol=usuario.get('rol', 'USER'),
+                    zona_horaria=usuario.get('zona_horaria', 'AUTO')
                 )
         except Exception as ex:
             print(f"Error al obtener usuario por username: {ex}")

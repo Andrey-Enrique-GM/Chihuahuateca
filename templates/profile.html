@@ -129,7 +129,7 @@
                                 {% if log.detalles %}
                                     <p class="log-detalles-texto">{{ log.detalles }}</p>
                                 {% endif %}
-                                <span class="log-fecha">🕒 {{ log.fecha_hora | formato_fecha }}</span>
+                                <span class="log-fecha fecha-utc" data-fecha-utc="{{ log.fecha_hora }}">🕒 {{ log.fecha_hora | formato_fecha }}</span>
                             </div>
                         </div>
                     {% else %}
@@ -168,11 +168,30 @@
             </div>
             <div class="modal-ajustes-cuerpo" aria-label="Contenido de ajustes">
                 <span class="modal-ajustes-patitas" aria-hidden="true">🐾</span>
+
+                <div class="form-group">
+                    <label for="select-zona-horaria"><strong>🌐 Zona Horaria:</strong></label>
+                    <select id="select-zona-horaria" class="form-control">
+                        <option value="AUTO">Automática (Detectar del Navegador)</option>
+                        <option value="-7">UTC-7 (Hermosillo / Sonora / MST)</option>
+                        <option value="-6">UTC-6 (Ciudad de México / CST)</option>
+                        <option value="-5">UTC-5 (Cancún / EST)</option>
+                        <option value="0">UTC-0 (Tiempo del Servidor / GMT)</option>
+                    </select>
+                    <small class="form-text text-muted">Ajusta cómo se muestran las fechas y horas de las publicaciones y registros.</small>
+                </div>
+
+                <div class="modal-ajustes-acciones">
+                    <button type="button" id="btn-guardar-zona-horaria" class="btn-accion btn-crear">Guardar zona horaria</button>
+                </div>
             </div>
         </div>
     </div>
 
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        window.__zonaHorariaActual = {{ ((session.get('zona_horaria') if session else None) or (usuario.zona_horaria if usuario else None) or 'AUTO') | tojson }};
+    </script>
 
-    
 </body>
 </html>

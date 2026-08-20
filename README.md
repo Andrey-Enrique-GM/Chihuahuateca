@@ -4,16 +4,17 @@ El guardián ideal de libros, películas y series. Una aplicación web dinámica
 
 ## ✨ Características Principales
 * **CRUD Completo en Tiempo Real:** Permite agregar, visualizar, editar y eliminar libros o películas de forma asíncrona mediante peticiones HTTP `fetch` sin recargar la página.
-* **Sistema de Autenticación Dinámico:** Registro e inicio de sesión seguro para múltiples usuarios con sesiones cifradas. Cada usuario administra de forma exclusiva sus propios elementos guardados.
-* **Red Social y Sistema de Seguidores:** Modelo de interacción que permite seguir y dejar de seguir a otros usuarios de la comunidad, así como visualizar estadísticas de seguidores y seguidos en el perfil personal.
-* **Centro de Notificaciones en Tiempo Real:** Sistema de alertas y notificaciones con contador visual (campana) para informar al usuario de interacciones clave (nuevos seguidores, likes en sus publicaciones y comentarios).
+* **Sistema de Autenticación Dinámico y Roles Normalizados:** Registro e inicio de sesión seguro para múltiples usuarios con sesiones cifradas. Manejo estandarizado de roles de usuario (`USER` y `ADMIN`). Cada usuario administra de forma exclusiva sus propios elementos guardados.
+* **Red Social y Explorador de Usuarios (`/users`):** Vista dedicada para explorar todas las cuentas registradas en la comunidad, permitiendo interactuar directamente con el botón de seguir/dejar de seguir y consultar estadísticas personales (seguidores y seguidos).
+* **Centro de Notificaciones en Tiempo Real:** Sistema de alertas y notificaciones con contador visual (campana) e interpretación por Enums para informar al usuario de interacciones clave (nuevos seguidores, me gusta en sus publicaciones y comentarios).
+* **Modal de Ajustes y Gestión de Zona Horaria:** Panel de configuración accesible desde el perfil que permite personalizar la preferencia de zona horaria (`AUTO` vía navegador, `UTC-7`, `UTC-6`, `UTC-0`, etc.) para renderizar de forma precisa las fechas y horas locales sin importar la ubicación del servidor.
 * **Filtrado y Búsqueda Instantánea:** Barra de búsqueda integrada por coincidencia de texto (título, autor o director), categorías rápidas (Libros 📚, Películas 🎬, Series 📺 o Todos 🐾) y modal/panel emergente compacto para filtros avanzados (género, calificación y orden).
 * **Sistema de Categorías (Tags):** Clasificación por géneros visuales para organizar y filtrar las obras rápidamente.
 * **Soporte para Portadas y Autocompletado Online:** Muestra imágenes de portada o póster en cada tarjeta. Incluye botones de asistencia técnica para buscar y autocompletar dinámicamente la portada y la sinopsis desde APIs públicas (Open Library / TMDB / OMDb).
 * **Exportación de Colección a PDF Enriquecida:** Generación e impresión en PDF descargable desde el perfil del usuario, maquetando una ficha completa formateada por cada página, autor de publicación y fecha de modificación para su consulta offline.
 * **Interacción Social (Likes ❤️):** Permite a los usuarios dar "Me gusta" a los elementos publicados por otros miembros de la comunidad en tiempo real.
-* **Auditoría Extendida del Sistema (Logs):** Registro histórico automático de la actividad de los usuarios en la base de datos (inicios de sesión, cierres de sesión, registros, me gusta, exportaciones PDF y modificaciones).
-* **Interfaz Pulida y Moderna:** Menú desplegable de perfil, centro de notificaciones, panel organizado de estadísticas personales, modales interactivos para la gestión de elementos y alertas estéticas mediante **SweetAlert2**.
+* **Auditoría Extendida del Sistema (Logs):** Registro histórico automático de la actividad de los usuarios en la base de datos mapeado mediante Enums (inicios de sesión, cierres de sesión, registros, me gusta, exportaciones PDF, cambios de ajustes y modificaciones).
+* **Interfaz Pulida y Moderna:** Menú desplegable de perfil, centro de notificaciones, vista pública de miembros, modal de ajustes, panel de estadísticas personales y alertas estéticas mediante **SweetAlert2**.
 
 ---
 
@@ -33,13 +34,14 @@ El guardián ideal de libros, películas y series. Una aplicación web dinámica
 La aplicación utiliza la base de datos `chihuahuadb` y está compuesta por las siguientes estructuras relacionales:
 
 ### Tabla: `usuarios`
-Almacena las credenciales y perfiles de los usuarios que acceden al sistema.
+Almacena las credenciales, perfiles y configuraciones personales de los usuarios.
 * `id` (INT, Primary Key, Auto-increment)
 * `username` (VARCHAR, Unique): Identificador único para el inicio de sesión.
 * `nombre` (VARCHAR): Nombre real del usuario que inició sesión.
 * `password` (VARCHAR): Contraseña segura encriptada.
 * `fecha_registro` (DATETIME): Fecha en la que se registró el usuario.
-* `rol` (VARCHAR): Nivel de privilegios ('USER', 'ADMIN').
+* `rol` (VARCHAR): Nivel de privilegios estandarizado ('USER', 'ADMIN').
+* `zona_horaria` (VARCHAR): Preferencia de zona horaria elegida por el usuario ('AUTO', '-7', '-6', '0', etc.).
 
 ### Tabla: `coleccion`
 Guarda los libros, películas y series agregados por la comunidad, vinculados a su respectivo creador.
@@ -72,7 +74,7 @@ Almacena la actividad e interacciones destinadas a avisar a los usuarios.
 * `referencia_id` (INT): Llave foránea opcional vinculada al elemento de `coleccion` (`ON DELETE CASCADE`).
 * `titulo_referencia` (VARCHAR): En caso de ser un me gusta, se menciona el elemento al que se le dio me gusta.
 * `mensaje` (TEXT): Mensaje descriptivo de la notificación.
-* `leido` (TINYINT): Estado de lectura (`1` significa leido).
+* `leido` (TINYINT): Estado de lectura (`1` significa leído, `0` no leído).
 * `fecha` (DATETIME): Fecha de la notificación.
 
 ### Tabla: `me_gusta`
@@ -88,7 +90,7 @@ Tabla de auditoría para monitorizar los eventos críticos ocurridos dentro del 
 * `fecha` (TIMESTAMP): Estampa de tiempo generada por el servidor de forma nativa (`DEFAULT CURRENT_TIMESTAMP`).
 * `id_user` (INT): Llave foránea vinculada al usuario que ejecutó la acción (`ON DELETE CASCADE`).
 * `descripcion` (TEXT): Información extendida del evento en cuestión.
-* `type` (INT): Categoría numérica del evento expresada vía Enum (ej: `LOGIN`, `LOGOUT`, `REGISTER`, `SAVE`, `EDIT`, `DELETE`, `LIKE`, `UNLIKE`, `PDF_EXPORT`, `FOLLOW`, `UNFOLLOW`).
+* `type` (INT): Categoría numérica del evento expresada vía Enum (ej: `LOGIN`, `LOGOUT`, `REGISTER`, `SAVE`, `EDIT`, `DELETE`, `LIKE`, `UNLIKE`, `PDF_EXPORT`, `FOLLOW`, `UNFOLLOW`, `SETTINGS_UPDATE`).
 
 ---
 

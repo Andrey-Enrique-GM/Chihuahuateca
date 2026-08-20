@@ -64,6 +64,8 @@ def ruta_perfil():
         return redirect(url_for('login_view'))
 
     usuario = User.get_by_id(usuario_id)
+    if usuario:
+        session['zona_horaria'] = getattr(usuario, 'zona_horaria', 'AUTO') or 'AUTO'
     # Obtenemos sus logs recientes para mostrar actividad
     actividad = Log.get_by_user(usuario_id)
     
@@ -137,7 +139,11 @@ def exportar_pdf():
 def api_login():
     ok, result, status = login_usuario(session, request.get_json() or {})
     if ok:
-        return jsonify({'success': True, 'redirect': url_for('index')}), status
+        return jsonify({
+            'success': True,
+            'redirect': url_for('index'),
+            'zona_horaria': session.get('zona_horaria', 'AUTO')
+        }), status
     return jsonify({'success': False, 'message': result}), status
 
 
@@ -383,6 +389,38 @@ def api_cambiar_password():
     if ok:
         return jsonify({'success': True, 'message': message}), status
     return jsonify({'success': False, 'message': message}), status
+
+
+@app.route('/api/ajustes/zona-horaria', methods=['POST'])
+def api_actualizar_zona_horaria():
+    usuario_id = session.get('usuario_id')
+    if not usuario_id:
+        return jsonify({'success': False, 'message': 'No hay sesión activa'}), 401
+
+    payload = request.get_json(silent=True) or {}
+    nueva_zona = str(payload.get('zona_horaria') or '').strip()
+    valores_permitidos = {'AUTO', '-7', '-6', '-5', '0', '-4', '-3', '-2', '-1', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'}
+
+    if nueva_zona not in valores_permitidos:
+        return jsonify({'success': False, 'message': 'Zona horaria inválida'}), 400
+
+    try:
+        conexion = get_connection()
+        cursor = conexion.cursor()
+        cursor.execute('UPDATE usuarios SET zona_horaria = %s WHERE id = %s', (nueva_zona, usuario_id))
+        conexion.commit()
+        cursor.close()
+        conexion.close()
+    except Exception as ex:
+        print(f'Error al actualizar zona horaria: {ex}')
+        return jsonify({'success': False, 'message': 'No se pudo guardar la zona horaria'}), 500
+
+    session['zona_horaria'] = nueva_zona
+    usuario = get_usuario_sesion(session)
+    if usuario:
+        Log.save_log(usuario, f"Actualizó preferencia de zona horaria a {nueva_zona}", LogType.EDIT)
+
+    return jsonify({'success': True, 'message': 'Zona horaria actualizada correctamente'})
 
 
 @app.template_filter('formato_fecha')

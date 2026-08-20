@@ -13,7 +13,8 @@ def get_usuario_sesion(session):
         username=session.get('username', ''),
         nombre=session.get('nombre', ''),
         password='',
-        rol=(session.get('rol', 'USER') or 'USER')
+        rol=(session.get('rol', 'USER') or 'USER'),
+        zona_horaria=(session.get('zona_horaria') or 'AUTO')
     )
 
 
@@ -33,6 +34,7 @@ def login_usuario(session, data):
     session['username'] = usuario.username
     session['nombre'] = usuario.nombre
     session['rol'] = usuario.rol.upper()
+    session['zona_horaria'] = usuario.zona_horaria if getattr(usuario, 'zona_horaria', None) else 'AUTO'
 
     Log.save_log(usuario, 'Inicio de sesión', LogType.LOGIN)
     return True, {'redirect': '/coleccion'}, 200

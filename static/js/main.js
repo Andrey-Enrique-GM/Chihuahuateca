@@ -5,6 +5,79 @@
 let filtroTipoActual = 'todos';
 let filtroGeneroActual = 'todos';
 
+function obtenerZonaHorariaActual() {
+    const valor = (window.__zonaHorariaActual || 'AUTO');
+    return (valor === null || valor === undefined || valor === '') ? 'AUTO' : String(valor).trim();
+}
+
+function parsearFechaUtc(fechaUTCString) {
+    if (!fechaUTCString) return null;
+
+    const texto = String(fechaUTCString).trim();
+    if (!texto) return null;
+
+    const iso = texto.includes('T') ? texto : texto.replace(' ', 'T');
+    const conZ = iso.endsWith('Z') ? iso : `${iso}Z`;
+    const fecha = new Date(conZ);
+
+    if (Number.isNaN(fecha.getTime())) {
+        return null;
+    }
+
+    return fecha;
+}
+
+function formatearFechaLocal(fechaUTCString, offsetGuardado = obtenerZonaHorariaActual()) {
+    const fechaUtc = parsearFechaUtc(fechaUTCString);
+    if (!fechaUtc) return 'Sin fecha';
+
+    if (offsetGuardado === 'AUTO') {
+        return fechaUtc.toLocaleString('es-MX', {
+            dateStyle: 'medium',
+            timeStyle: 'short'
+        });
+    }
+
+    const desplazamiento = Number(offsetGuardado);
+    if (Number.isNaN(desplazamiento)) {
+        return fechaUtc.toLocaleString('es-MX', {
+            dateStyle: 'medium',
+            timeStyle: 'short'
+        });
+    }
+
+    const fechaAjustada = new Date(fechaUtc.getTime() + (desplazamiento * 60 * 60 * 1000));
+    return fechaAjustada.toLocaleString('es-MX', {
+        dateStyle: 'medium',
+        timeStyle: 'short'
+    });
+}
+
+function actualizarFechasEnPantalla() {
+    const offsetActual = obtenerZonaHorariaActual();
+    document.querySelectorAll('.fecha-utc').forEach((elemento) => {
+        const valor = elemento.dataset.fechaUtc;
+        if (!valor) return;
+        const texto = formatearFechaLocal(valor, offsetActual);
+        elemento.textContent = elemento.textContent.includes('Registrado:') ? `Registrado: ${texto}` : elemento.textContent.includes('Editado:') ? `Editado: ${texto}` : texto;
+    });
+
+    document.querySelectorAll('.log-fecha').forEach((elemento) => {
+        const valor = elemento.dataset.fechaUtc;
+        if (!valor) return;
+        elemento.textContent = `🕒 ${formatearFechaLocal(valor, offsetActual)}`;
+    });
+
+    document.querySelectorAll('.notificacion-tiempo').forEach((elemento) => {
+        const valor = elemento.dataset.fechaUtc || elemento.textContent;
+        if (!valor || valor === 'ahora') return;
+        const fechaOriginal = valor.includes('Hace ') ? null : valor;
+        if (fechaOriginal) {
+            elemento.textContent = formatearFechaLocal(fechaOriginal, offsetActual);
+        }
+    });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const actualizarBotonesSeguir = (usuarioId, siguiendo) => {
         document.querySelectorAll('.btn-seguir, .btn-siguiendo').forEach((button) => {
@@ -53,8 +126,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function formatearTiempo(fecha) {
         if (!fecha) return 'ahora';
 
-        const fechaHora = new Date(fecha.replace(' ', 'T'));
-        const diferenciaMin = Math.max(1, Math.round((Date.now() - fechaHora.getTime()) / 60000));
+        const fechaUtc = parsearFechaUtc(fecha);
+        if (!fechaUtc) return 'ahora';
+
+        const diferenciaMin = Math.max(1, Math.round((Date.now() - fechaUtc.getTime()) / 60000));
 
         if (diferenciaMin < 60) return `Hace ${diferenciaMin} min`;
 
@@ -81,7 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="notificacion-avatar">${avatar}</div>
                     <div>
                         <p class="notificacion-texto">${item.mensaje}</p>
-                        <span class="notificacion-tiempo">${formatearTiempo(item.fecha)}</span>
+                        <span class="notificacion-tiempo" data-fecha-utc="${item.fecha}">${formatearTiempo(item.fecha)}</span>
                     </div>
                 </div>
             `;
@@ -141,13 +216,60 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarNotificaciones();
     setInterval(cargarNotificaciones, 30000);
 
+    const selectZonaHoraria = document.getElementById('select-zona-horaria');
+    const btnGuardarZonaHoraria = document.getElementById('btn-guardar-zona-horaria');
+
+    if (selectZonaHoraria) {
+        selectZonaHoraria.value = obtenerZonaHorariaActual();
+    }
+
+    if (btnGuardarZonaHoraria) {
+        btnGuardarZonaHoraria.addEventListener('click', async () => {
+            const zonaSeleccionada = selectZonaHoraria ? selectZonaHoraria.value : 'AUTO';
+
+            try {
+                const respuesta = await fetch('/api/ajustes/zona-horaria', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ zona_horaria: zonaSeleccionada })
+                });
+                const data = await respuesta.json();
+
+                if (!data.success) {
+                    Swal.fire({ icon: 'error', title: 'No se pudo guardar', text: data.message || 'Hubo un problema al actualizar la zona horaria.' });
+                    return;
+                }
+
+                window.__zonaHorariaActual = zonaSeleccionada;
+                actualizarFechasEnPantalla();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Zona horaria actualizada',
+                    text: data.message || 'Se actualizó correctamente la zona horaria.',
+                    confirmButtonColor: '#2c3e50'
+                });
+            } catch (error) {
+                console.error('Error al guardar zona horaria:', error);
+                Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo conectar con el servidor.' });
+            }
+        });
+    }
+
+    actualizarFechasEnPantalla();
+
     // Modales
     const modalAgregar = document.getElementById('modal-agregar');
     const modalEditar = document.getElementById('modal-editar');
 
     // Botones apertura
-    document.getElementById('btn-abrir-agregar').addEventListener('click', () => abrirModal('modal-agregar'));
-    document.getElementById('btn-abrir-editar').addEventListener('click', () => abrirModal('modal-editar'));
+    const btnAbrirAgregar = document.getElementById('btn-abrir-agregar');
+    const btnAbrirEditar = document.getElementById('btn-abrir-editar');
+    if (btnAbrirAgregar) {
+        btnAbrirAgregar.addEventListener('click', () => abrirModal('modal-agregar'));
+    }
+    if (btnAbrirEditar) {
+        btnAbrirEditar.addEventListener('click', () => abrirModal('modal-editar'));
+    }
 
     document.querySelectorAll('.modal-overlay').forEach(overlay => {
         overlay.addEventListener('click', function (event) {
@@ -168,64 +290,101 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnAplicarFiltros = document.getElementById('btn-aplicar-filtros');
     const btnLimpiarFiltros = document.getElementById('btn-limpiar-filtros');
 
-    buscador.addEventListener('input', filtrarYOrdenarColeccion);
-    selectOrden.addEventListener('change', () => {
-        filtrarYOrdenarColeccion();
-        actualizarIndicadorFiltros();
-    });
-    selectEstrellas.addEventListener('change', () => {
-        filtrarYOrdenarColeccion();
-        actualizarIndicadorFiltros();
-    });
-    selectGenero.addEventListener('change', () => {
-        filtroGeneroActual = selectGenero.value;
-        filtrarYOrdenarColeccion();
-        actualizarIndicadorFiltros();
-    });
+    if (buscador) {
+        buscador.addEventListener('input', filtrarYOrdenarColeccion);
+    }
+    if (selectOrden) {
+        selectOrden.addEventListener('change', () => {
+            filtrarYOrdenarColeccion();
+            actualizarIndicadorFiltros();
+        });
+    }
+    if (selectEstrellas) {
+        selectEstrellas.addEventListener('change', () => {
+            filtrarYOrdenarColeccion();
+            actualizarIndicadorFiltros();
+        });
+    }
+    if (selectGenero) {
+        selectGenero.addEventListener('change', () => {
+            filtroGeneroActual = selectGenero.value;
+            filtrarYOrdenarColeccion();
+            actualizarIndicadorFiltros();
+        });
+    }
 
-    btnFiltros.addEventListener('click', togglePopoverFiltros);
-    btnCerrarFiltros.addEventListener('click', cerrarPopoverFiltros);
-    btnAplicarFiltros.addEventListener('click', () => {
-        filtrarYOrdenarColeccion();
-        actualizarIndicadorFiltros();
-        cerrarPopoverFiltros();
-    });
-    btnLimpiarFiltros.addEventListener('click', () => {
-        selectOrden.value = 'reciente';
-        selectEstrellas.value = 'todas';
-        selectGenero.value = 'todos';
-        filtroGeneroActual = 'todos';
-        filtrarYOrdenarColeccion();
-        actualizarIndicadorFiltros();
-        cerrarPopoverFiltros();
-    });
-
-    document.addEventListener('click', (event) => {
-        const dentroPopover = popoverFiltros.contains(event.target);
-        const clicEnBoton = btnFiltros.contains(event.target);
-        if (!dentroPopover && !clicEnBoton && popoverFiltros.classList.contains('mostrar')) {
+    if (btnFiltros) {
+        btnFiltros.addEventListener('click', togglePopoverFiltros);
+    }
+    if (btnCerrarFiltros) {
+        btnCerrarFiltros.addEventListener('click', cerrarPopoverFiltros);
+    }
+    if (btnAplicarFiltros) {
+        btnAplicarFiltros.addEventListener('click', () => {
+            filtrarYOrdenarColeccion();
+            actualizarIndicadorFiltros();
             cerrarPopoverFiltros();
-        }
-    });
+        });
+    }
+    if (btnLimpiarFiltros) {
+        btnLimpiarFiltros.addEventListener('click', () => {
+            if (selectOrden) selectOrden.value = 'reciente';
+            if (selectEstrellas) selectEstrellas.value = 'todas';
+            if (selectGenero) selectGenero.value = 'todos';
+            filtroGeneroActual = 'todos';
+            filtrarYOrdenarColeccion();
+            actualizarIndicadorFiltros();
+            cerrarPopoverFiltros();
+        });
+    }
 
-    document.getElementById('btn-todos').addEventListener('click', (e) => cambiarFiltroTipo('todos', e.target));
-    document.getElementById('btn-libros').addEventListener('click', (e) => cambiarFiltroTipo('libro', e.target));
-    document.getElementById('btn-peliculas').addEventListener('click', (e) => cambiarFiltroTipo('pelicula', e.target));
-    document.getElementById('btn-series').addEventListener('click', (e) => cambiarFiltroTipo('serie', e.target));
+    if (popoverFiltros && btnFiltros) {
+        document.addEventListener('click', (event) => {
+            const dentroPopover = popoverFiltros.contains(event.target);
+            const clicEnBoton = btnFiltros.contains(event.target);
+            if (!dentroPopover && !clicEnBoton && popoverFiltros.classList.contains('mostrar')) {
+                cerrarPopoverFiltros();
+            }
+        });
+    }
+
+    const btnTodos = document.getElementById('btn-todos');
+    const btnLibros = document.getElementById('btn-libros');
+    const btnPeliculas = document.getElementById('btn-peliculas');
+    const btnSeries = document.getElementById('btn-series');
+
+    if (btnTodos) btnTodos.addEventListener('click', (e) => cambiarFiltroTipo('todos', e.target));
+    if (btnLibros) btnLibros.addEventListener('click', (e) => cambiarFiltroTipo('libro', e.target));
+    if (btnPeliculas) btnPeliculas.addEventListener('click', (e) => cambiarFiltroTipo('pelicula', e.target));
+    if (btnSeries) btnSeries.addEventListener('click', (e) => cambiarFiltroTipo('serie', e.target));
 
     // Formularios y Eventos CRUD
-    document.getElementById('form-agregar').addEventListener('submit', guardarNuevoElemento);
+    const formAgregar = document.getElementById('form-agregar');
+    if (formAgregar) {
+        formAgregar.addEventListener('submit', guardarNuevoElemento);
+    }
     document.getElementById('add-imagen-url')?.addEventListener('input', () => actualizarPreviewImagen('add-imagen-url', 'add-preview-imagen'));
     document.getElementById('btn-buscar-poster-add')?.addEventListener('click', () => buscarDatosExternos('add', 'poster'));
     document.getElementById('btn-buscar-sinopsis-add')?.addEventListener('click', () => buscarDatosExternos('add', 'sinopsis'));
-    document.getElementById('select-editar-elemento').addEventListener('change', cargarDatosParaEditar);
+    const selectEditarElemento = document.getElementById('select-editar-elemento');
+    if (selectEditarElemento) {
+        selectEditarElemento.addEventListener('change', cargarDatosParaEditar);
+    }
     document.getElementById('edit-imagen-url')?.addEventListener('input', () => actualizarPreviewImagen('edit-imagen-url', 'edit-preview-imagen'));
     document.getElementById('btn-buscar-poster-edit')?.addEventListener('click', () => buscarDatosExternos('edit', 'poster'));
     document.getElementById('btn-buscar-sinopsis-edit')?.addEventListener('click', () => buscarDatosExternos('edit', 'sinopsis'));
-    document.getElementById('form-editar').addEventListener('submit', actualizarElemento);
-    document.getElementById('btn-borrar-elemento').addEventListener('click', borrarElemento);
+    const formEditar = document.getElementById('form-editar');
+    if (formEditar) {
+        formEditar.addEventListener('submit', actualizarElemento);
+    }
+    const btnBorrarElemento = document.getElementById('btn-borrar-elemento');
+    if (btnBorrarElemento) {
+        btnBorrarElemento.addEventListener('click', borrarElemento);
+    }
 
-    document.getElementById('grid-coleccion').addEventListener('click', (event) => {
+    const gridColeccion = document.getElementById('grid-coleccion');
+    if (gridColeccion) {
+        gridColeccion.addEventListener('click', (event) => {
         const likeButton = event.target.closest('.btn-like');
         if (likeButton) {
             event.preventDefault();
@@ -296,18 +455,23 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const tagFiltro = event.target.closest('.tag-filtro');
-        if (!tagFiltro) return;
+            const tagFiltro = event.target.closest('.tag-filtro');
+            if (!tagFiltro) return;
 
-        const generoSeleccionado = tagFiltro.getAttribute('data-genero') || 'sin-genero';
-        const selectGenero = document.getElementById('filtro-genero');
-        selectGenero.value = generoSeleccionado || 'sin-genero';
-        filtroGeneroActual = selectGenero.value;
-        filtrarYOrdenarColeccion();
-    });
+            const generoSeleccionado = tagFiltro.getAttribute('data-genero') || 'sin-genero';
+            const selectGenero = document.getElementById('filtro-genero');
+            if (selectGenero) {
+                selectGenero.value = generoSeleccionado || 'sin-genero';
+                filtroGeneroActual = selectGenero.value;
+            }
+            filtrarYOrdenarColeccion();
+        });
+    }
 
     // Ejecutar filtrado inicial para ordenar y actualizar contador al cargar la pagina
-    filtrarYOrdenarColeccion();
+    if (document.getElementById('grid-coleccion')) {
+        filtrarYOrdenarColeccion();
+    }
 });
 
 function mostrarErrorSeguimiento(mensaje) {
@@ -778,71 +942,81 @@ function borrarElemento() {
 }
 
 // Clic sobre la opcion del menu desplegable
-document.getElementById('btn-cambiar-pass').addEventListener('click', function(e) {
-    e.preventDefault();
-    if (typeof abrirModal === "function") {
-        abrirModal('modal-password');
-    } else {
-        document.getElementById('modal-password').classList.add('activo');
-    }
-});
+const btnCambiarPass = document.getElementById('btn-cambiar-pass');
+if (btnCambiarPass) {
+    btnCambiarPass.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (typeof abrirModal === "function") {
+            abrirModal('modal-password');
+        } else {
+            const modalPassword = document.getElementById('modal-password');
+            if (modalPassword) {
+                modalPassword.classList.add('activo');
+            }
+        }
+    });
+}
 
 // Procesar el formulario de cambio de credenciales
-document.getElementById('form-cambiar-password').addEventListener('submit', function(e) {
-    e.preventDefault();
+const formCambiarPassword = document.getElementById('form-cambiar-password');
+if (formCambiarPassword) {
+    formCambiarPassword.addEventListener('submit', function(e) {
+        e.preventDefault();
 
-    const passActual = document.getElementById('pass-actual').value;
-    const passNueva = document.getElementById('pass-nueva').value;
-    const passConfirmar = document.getElementById('pass-confirmar').value;
+        const passActual = document.getElementById('pass-actual').value;
+        const passNueva = document.getElementById('pass-nueva').value;
+        const passConfirmar = document.getElementById('pass-confirmar').value;
 
-    if (passNueva !== passConfirmar) {
-        Swal.fire({
-            icon: 'error',
-            title: '¡Oops!',
-            text: 'La nueva contraseña y su confirmación no coinciden.'
-        });
-        return;
-    }
-
-    fetch('/api/usuario/cambiar-password', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            pass_actual: passActual,
-            pass_nueva: passNueva
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            Swal.fire({
-                icon: 'success',
-                title: '¡Excelente!',
-                text: data.message
-            }).then(() => {
-                document.getElementById('form-cambiar-password').reset();
-                if (typeof cerrarModal === "function") {
-                    cerrarModal('modal-password');
-                } else {
-                    document.getElementById('modal-password').classList.remove('activo');
-                }
-            });
-        } else {
+        if (passNueva !== passConfirmar) {
             Swal.fire({
                 icon: 'error',
-                title: 'Error',
-                text: data.message || 'No se pudo realizar la actualización.'
+                title: '¡Oops!',
+                text: 'La nueva contraseña y su confirmación no coinciden.'
             });
+            return;
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        Swal.fire({
-            icon: 'error',
-            title: 'Error de servidor',
-            text: 'Hubo un problema al conectar con el servidor.'
+
+        fetch('/api/usuario/cambiar-password', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                pass_actual: passActual,
+                pass_nueva: passNueva
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Excelente!',
+                    text: data.message
+                }).then(() => {
+                    document.getElementById('form-cambiar-password').reset();
+                    if (typeof cerrarModal === "function") {
+                        cerrarModal('modal-password');
+                    } else {
+                        document.getElementById('modal-password').classList.remove('activo');
+                    }
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: data.message || 'No se pudo realizar la actualización.'
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de servidor',
+                text: 'Hubo un problema al conectar con el servidor.'
+            });
         });
     });
-});
+}
+
