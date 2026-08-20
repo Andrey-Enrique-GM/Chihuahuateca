@@ -15,6 +15,9 @@
         <a href="{{ url_for('index') }}" class="btn-volver-app">
             <span>←</span> Volver
         </a>
+        <button type="button" class="btn-ajustes-perfil" title="Abrir ajustes" aria-label="Abrir ajustes" onclick="abrirModal('modal-ajustes')">
+            ⚙️
+        </button>
         <div class="header-contenido">
             <h1>👤 Mi Perfil</h1>
             <p>Información de mi cuenta</p>
@@ -156,6 +159,18 @@
 
     <!-- Modal de Información y Créditos -->
     {% include 'modal_info.html' %}
+
+    <div id="modal-ajustes" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-ajustes">
+        <div class="modal-ventana modal-ajustes-ventana">
+            <div class="modal-cabecera">
+                <h2 id="titulo-modal-ajustes">⚙️ Ajustes</h2>
+                <button type="button" class="btn-cerrar-modal" aria-label="Cerrar ajustes" onclick="cerrarModal('modal-ajustes')">&times;</button>
+            </div>
+            <div class="modal-ajustes-cuerpo" aria-label="Contenido de ajustes">
+                <span class="modal-ajustes-patitas" aria-hidden="true">🐾</span>
+            </div>
+        </div>
+    </div>
 
 
     

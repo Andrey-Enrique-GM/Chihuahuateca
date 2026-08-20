@@ -1541,6 +1541,46 @@ body {
     transform: translateX(-3px);
 }
 
+.btn-ajustes-perfil {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    width: 42px;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.15);
+    color: var(--blanco);
+    cursor: pointer;
+    font-size: 1.15rem;
+    backdrop-filter: blur(4px);
+    transition: var(--transicion);
+}
+
+.btn-ajustes-perfil:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+    transform: rotate(18deg);
+}
+
+.modal-ajustes-ventana {
+    max-width: 420px;
+}
+
+.modal-ajustes-cuerpo {
+    min-height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.modal-ajustes-patitas {
+    font-size: 4rem;
+}
+
 /* Layout en grid de 2 columnas */
 .grid-perfil-layout {
     display: grid;
