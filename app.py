@@ -118,6 +118,7 @@ def usuarios_view():
     if 'usuario_id' not in session:
         return redirect(url_for('login_view'))
 
+    # Se obtiene la lista de usuarios, incluyendo su zona horaria
     usuarios = User.get_all(session.get('usuario_id'))
     return render_template('users.html', usuarios=usuarios)
 

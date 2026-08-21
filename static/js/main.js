@@ -243,10 +243,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.__zonaHorariaActual = zonaSeleccionada;
                 actualizarFechasEnPantalla();
                 Swal.fire({
+                    title: '¡Configuración Guardada!',
+                    text: 'Tu preferencia de zona horaria se ha actualizado correctamente.',
                     icon: 'success',
-                    title: 'Zona horaria actualizada',
-                    text: data.message || 'Se actualizó correctamente la zona horaria.',
-                    confirmButtonColor: '#2c3e50'
+                    confirmButtonColor: '#e67e22',
+                    confirmButtonText: 'Aceptar'
+                }).then(() => {
+                    // Cerrar modal o recargar la vista/fechas de la interfaz
+                    cerrarModal('modal-ajustes');
+                    location.reload(); 
                 });
             } catch (error) {
                 console.error('Error al guardar zona horaria:', error);

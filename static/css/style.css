@@ -1654,19 +1654,19 @@ body {
     gap: 0.8rem;
 }
 
-.detalle-item {
+.detalle-item, .info-fila {
     display: flex;
     justify-content: space-between;
     align-items: center;
     font-size: 0.9rem;
 }
 
-.detalle-etiqueta {
+.detalle-etiqueta, .info-fila span {
     color: #7f8c8d;
     font-weight: 500;
 }
 
-.detalle-valor {
+.detalle-valor, .info-fila strong {
     color: var(--color-texto);
     font-weight: bold;
 }

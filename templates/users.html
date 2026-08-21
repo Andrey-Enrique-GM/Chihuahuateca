@@ -37,6 +37,10 @@
                     <div class="ficha-usuario-datos">
                         <h3>{{ cuenta.nombre }}</h3>
                         <p class="ficha-usuario-username">@{{ cuenta.username }}</p>
+                        <div class="info-fila">
+                            <span>Zona Horaria</span>
+                            <strong>🌐 {{ cuenta.zona_horaria if cuenta.zona_horaria else 'AUTO' }}</strong>
+                        </div>
                     </div>
                     <div class="ficha-usuario-meta">
                         <span class="badge-rol {{ cuenta.rol|lower }}">{{ cuenta.rol }}</span>

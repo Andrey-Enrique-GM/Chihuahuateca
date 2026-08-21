@@ -94,7 +94,7 @@ class User:
             cursor = conexion.cursor(DictCursor)
             cursor.execute(
                 """
-                SELECT u.id, u.username, u.nombre, u.rol, u.fecha_registro,
+                SELECT u.id, u.username, u.nombre, u.rol, u.fecha_registro, u.zona_horaria,
                        CASE WHEN s.id IS NULL THEN 0 ELSE 1 END AS usuario_sigue
                 FROM usuarios u
                 LEFT JOIN seguidores s

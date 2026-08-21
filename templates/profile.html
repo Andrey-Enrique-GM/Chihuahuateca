@@ -46,6 +46,10 @@
                     <span class="detalle-etiqueta">ID de Cuenta</span>
                     <span class="detalle-valor">#{{ usuario.id }}</span>
                 </div>
+                <div class="info-fila">
+                    <span>Zona Horaria</span>
+                    <strong>🌐 {{ usuario.zona_horaria if usuario.zona_horaria else 'AUTO' }}</strong>
+                </div>
             </div>
         </aside>
 
@@ -190,7 +194,7 @@
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script>
-        window.__zonaHorariaActual = {{ ((session.get('zona_horaria') if session else None) or (usuario.zona_horaria if usuario else None) or 'AUTO') | tojson }};
+        window.__zonaHorariaActual = "{{ session.get('zona_horaria') or (usuario.zona_horaria if usuario else 'AUTO') or 'AUTO' }}";
     </script>
 
 </body>
