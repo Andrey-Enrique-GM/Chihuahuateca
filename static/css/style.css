@@ -1,7 +1,7 @@
 /* ==========================================================================
    VARIABLES Y CONFIGURACION GENERAL
    ========================================================================== */
-   
+
 :root {
     --bg-principal: #f4f6f9;
     --color-texto: #2c3e50;
@@ -173,7 +173,7 @@ body {
 .header-contenido h1 {
     font-size: 2.5rem;
     margin-bottom: 0.5rem;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .header-contenido p {
@@ -223,7 +223,7 @@ body {
     border-radius: 50%;
     object-fit: cover;
     background-color: var(--blanco);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .user-arrow {
@@ -315,17 +315,17 @@ body {
         background: rgba(0, 0, 0, 0.05);
         margin-bottom: -10px;
     }
-    
+
     .user-profile-trigger {
         background-color: rgba(0, 0, 0, 0.05);
         color: var(--color-texto);
     }
-    
+
     .user-dropdown-menu {
         left: 50%;
         transform: translateX(-50%) translateY(-10px);
     }
-    
+
     .user-menu-container:hover .user-dropdown-menu {
         transform: translateX(-50%) translateY(0);
     }
@@ -652,11 +652,21 @@ body {
     transition: var(--transicion);
 }
 
-.btn-crear { background-color: var(--color-libro); }
-.btn-crear:hover { background-color: #1e8449; }
+.btn-crear {
+    background-color: var(--color-libro);
+}
 
-.btn-modificar { background-color: #7f8c8d; }
-.btn-modificar:hover { background-color: #616a6b; }
+.btn-crear:hover {
+    background-color: #1e8449;
+}
+
+.btn-modificar {
+    background-color: #7f8c8d;
+}
+
+.btn-modificar:hover {
+    background-color: #616a6b;
+}
 
 .popover-filtros {
     display: none;
@@ -736,13 +746,22 @@ body {
     flex-direction: column;
     overflow: hidden;
     transition: var(--transicion);
-    border-top: 5px solid #ccc; /* Borde superior por defecto */
+    border-top: 5px solid #ccc;
+    /* Borde superior por defecto */
 }
 
 /* Diferenciacion visual por tipo */
-.tarjeta-item.libro { border-top-color: var(--color-libro); }
-.tarjeta-item.pelicula { border-top-color: var(--color-pelicula); }
-.tarjeta-item.serie { border-top-color: var(--color-serie); }
+.tarjeta-item.libro {
+    border-top-color: var(--color-libro);
+}
+
+.tarjeta-item.pelicula {
+    border-top-color: var(--color-pelicula);
+}
+
+.tarjeta-item.serie {
+    border-top-color: var(--color-serie);
+}
 
 .tarjeta-item:hover {
     transform: translateY(-5px);
@@ -820,9 +839,18 @@ body {
     color: var(--blanco);
     border-bottom-right-radius: 8px;
 }
-.tarjeta-badge.libro { background-color: var(--color-libro); }
-.tarjeta-badge.pelicula { background-color: var(--color-pelicula); }
-.tarjeta-badge.serie { background-color: var(--color-serie); }
+
+.tarjeta-badge.libro {
+    background-color: var(--color-libro);
+}
+
+.tarjeta-badge.pelicula {
+    background-color: var(--color-pelicula);
+}
+
+.tarjeta-badge.serie {
+    background-color: var(--color-serie);
+}
 
 .tarjeta-cuerpo {
     padding: 1.2rem;
@@ -871,7 +899,12 @@ body {
     color: #f1c40f;
     font-size: 1rem;
 }
-.numero-nota { color: var(--color-texto); font-size: 0.85rem; margin-left: 0.3rem;}
+
+.numero-nota {
+    color: var(--color-texto);
+    font-size: 0.85rem;
+    margin-left: 0.3rem;
+}
 
 .tarjeta-descripcion {
     font-size: 0.95rem;
@@ -886,8 +919,18 @@ body {
     border-radius: 4px;
     margin-top: 0.5rem;
 }
-.tarjeta-opinion strong { font-size: 0.85rem; color: #7f8c8d; }
-.texto-opinion { font-style: italic; font-size: 0.9rem; color: #444; margin: 0.4rem 0 0; }
+
+.tarjeta-opinion strong {
+    font-size: 0.85rem;
+    color: #7f8c8d;
+}
+
+.texto-opinion {
+    font-style: italic;
+    font-size: 0.9rem;
+    color: #444;
+    margin: 0.4rem 0 0;
+}
 
 .tarjeta-like-container {
     display: flex;
@@ -983,6 +1026,7 @@ body {
     font-size: 0.75rem;
     color: #95a5a6;
 }
+
 .txt-editado {
     color: #7d8c8d;
     font-weight: 500;
@@ -1015,9 +1059,9 @@ body {
     align-items: center;
     justify-content: center;
     z-index: 1000;
-    
+
     /* Oculto por defecto */
-    display: none; 
+    display: none;
 }
 
 /* Clase que usara JS para mostrar el modal de forma limpia */
@@ -1030,14 +1074,21 @@ body {
     width: 90%;
     max-width: 500px;
     border-radius: var(--radio-borde);
-    box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
     overflow: hidden;
     animation: aparecer 0.3s ease;
 }
 
 @keyframes aparecer {
-    from { transform: translateY(-30px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+    from {
+        transform: translateY(-30px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
 .modal-cabecera {
@@ -1064,13 +1115,15 @@ body {
     flex-direction: column;
     gap: 1rem;
     max-height: 80vh;
-    overflow-y: auto; /* Permite scroll interno si la pantalla es muy pequeña */
+    overflow-y: auto;
+    /* Permite scroll interno si la pantalla es muy pequeña */
 }
 
 /* Clase para deshabilitar visualmente el formulario de edicion antes de elegir un item */
 .modal-formulario.deshabilitado {
     opacity: 0.4;
-    pointer-events: none; /* Bloquea clics y escritura */
+    pointer-events: none;
+    /* Bloquea clics y escritura */
     user-select: none;
 }
 
@@ -1105,8 +1158,8 @@ body {
     font-size: 0.9rem;
 }
 
-.form-grupo input, 
-.form-grupo select, 
+.form-grupo input,
+.form-grupo select,
 .form-grupo textarea {
     padding: 0.6rem 0.8rem;
     border: 1px solid #ccc;
@@ -1114,8 +1167,8 @@ body {
     font-size: 0.95rem;
 }
 
-.form-grupo input:focus, 
-.form-grupo select:focus, 
+.form-grupo input:focus,
+.form-grupo select:focus,
 .form-grupo textarea:focus {
     border-color: var(--chihuahua-brown);
     outline: none;
@@ -1145,7 +1198,10 @@ body {
     transition: var(--transicion);
     width: 100%;
 }
-.btn-guardar:hover { background-color: #b04300; }
+
+.btn-guardar:hover {
+    background-color: #b04300;
+}
 
 .botones-modal-acciones {
     display: flex;
@@ -1153,7 +1209,9 @@ body {
     margin-top: 0.5rem;
 }
 
-.btn-actualizar { flex: 2; }
+.btn-actualizar {
+    flex: 2;
+}
 
 .btn-eliminar {
     flex: 1;
@@ -1165,7 +1223,10 @@ body {
     cursor: pointer;
     transition: var(--transicion);
 }
-.btn-eliminar:hover { background-color: #962d22; }
+
+.btn-eliminar:hover {
+    background-color: #962d22;
+}
 
 
 
@@ -1231,7 +1292,8 @@ body {
 
 #modal-info .modal-ventana {
     background-color: var(--blanco);
-    max-height: 90vh; /* Evita que se salga de pantallas pequeñas */
+    max-height: 90vh;
+    /* Evita que se salga de pantallas pequeñas */
     display: flex;
     flex-direction: column;
 }
@@ -1329,6 +1391,7 @@ body {
     .link-github-flotante span {
         display: none;
     }
+
     .link-github-flotante {
         padding: 10px;
     }
@@ -1382,7 +1445,7 @@ body {
     justify-content: center;
     font-size: 3.5rem;
     margin-bottom: 1.5rem;
-    box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .titulo-auth-app {
@@ -1473,17 +1536,23 @@ body {
     margin-bottom: 2rem;
 }
 
-.auth-enlace-cambio p { color: #7f8c8d; }
+.auth-enlace-cambio p {
+    color: #7f8c8d;
+}
+
 .auth-enlace-cambio a {
     color: var(--chihuahua-brown);
     text-decoration: none;
     font-weight: bold;
 }
-.auth-enlace-cambio a:hover { text-decoration: underline; }
+
+.auth-enlace-cambio a:hover {
+    text-decoration: underline;
+}
 
 .auth-footer {
     text-align: center;
-    font-size: 0.8  rem;
+    font-size: 0.8 rem;
     color: #95a5a6;
 }
 
@@ -1493,14 +1562,17 @@ body {
         flex-direction: column;
         max-width: 400px;
     }
+
     .panel-presentacion {
         padding: 2rem 1rem;
     }
+
     .logo-circulo {
         width: 90px;
         height: 90px;
         font-size: 2.5rem;
     }
+
     .panel-formulario {
         padding: 2rem 1.5rem;
     }
@@ -1654,19 +1726,22 @@ body {
     gap: 0.8rem;
 }
 
-.detalle-item, .info-fila {
+.detalle-item,
+.info-fila {
     display: flex;
     justify-content: space-between;
     align-items: center;
     font-size: 0.9rem;
 }
 
-.detalle-etiqueta, .info-fila span {
+.detalle-etiqueta,
+.info-fila span {
     color: #7f8c8d;
     font-weight: 500;
 }
 
-.detalle-valor, .info-fila strong {
+.detalle-valor,
+.info-fila strong {
     color: var(--color-texto);
     font-weight: bold;
 }
@@ -1719,6 +1794,7 @@ body {
 .contenedor-logs-scroll::-webkit-scrollbar {
     width: 6px;
 }
+
 .contenedor-logs-scroll::-webkit-scrollbar-thumb {
     background-color: #ddd;
     border-radius: 4px;
@@ -1950,11 +2026,13 @@ body {
     transition: var(--transicion);
 }
 
-.stat-box.stat-likes { border-left: 4px solid #e74c3c; }
+.stat-box.stat-likes {
+    border-left: 4px solid #e74c3c;
+}
 
 .stat-box:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 
 .stat-numero {
@@ -1973,11 +2051,25 @@ body {
 }
 
 /* Acentos de color para metricas especificas */
-.stat-box.stat-total { border-left: 4px solid var(--chihuahua-brown); }
-.stat-box.stat-promedio { border-left: 4px solid #f1c40f; }
-.stat-box.stat-tipo.libro { border-left: 4px solid var(--color-libro); }
-.stat-box.stat-tipo.pelicula { border-left: 4px solid var(--color-pelicula); }
-.stat-box.stat-tipo.serie { border-left: 4px solid var(--color-serie); }
+.stat-box.stat-total {
+    border-left: 4px solid var(--chihuahua-brown);
+}
+
+.stat-box.stat-promedio {
+    border-left: 4px solid #f1c40f;
+}
+
+.stat-box.stat-tipo.libro {
+    border-left: 4px solid var(--color-libro);
+}
+
+.stat-box.stat-tipo.pelicula {
+    border-left: 4px solid var(--color-pelicula);
+}
+
+.stat-box.stat-tipo.serie {
+    border-left: 4px solid var(--color-serie);
+}
 
 /* Adaptacion responsiva para pantallas moviles */
 @media (max-width: 850px) {
@@ -1993,7 +2085,7 @@ body {
    ========================================================================== */
 
 @media (max-width: 768px) {
-    
+
     /* Reduce el espacio del contenedor principal */
     .contenedor-principal {
         padding: 10px;
@@ -2003,15 +2095,16 @@ body {
     /* La barra de controles se vuelve vertical */
     .barra-controles {
         display: flex;
-        flex-direction: column; /* Apila los elementos uno abajo del otro */
+        flex-direction: column;
+        /* Apila los elementos uno abajo del otro */
         gap: 12px;
         padding: 15px;
         margin-bottom: 20px;
     }
 
     /* El buscador y los contenedores ocupan todo el ancho disponible */
-    .buscador-caja, 
-    .filtros-tipo, 
+    .buscador-caja,
+    .filtros-tipo,
     .acciones-crud {
         width: 100%;
         display: flex;
@@ -2019,11 +2112,13 @@ body {
     }
 
     #buscador {
-        width: 100%; /* El buscador se expande completo */
+        width: 100%;
+        /* El buscador se expande completo */
     }
 
     /* Los botones se dividen el espacio equitativamente */
-    .btn-filtro, .btn-accion {
+    .btn-filtro,
+    .btn-accion {
         flex: 1;
         text-align: center;
         padding: 10px 5px;
@@ -2032,7 +2127,8 @@ body {
 
     /* El Grid de tarjetas pasa a ser de 1 sola columna */
     .grid-coleccion {
-        grid-template-columns: 1fr; /* Una tarjeta por fila */
+        grid-template-columns: 1fr;
+        /* Una tarjeta por fila */
         gap: 15px;
     }
 
@@ -2045,7 +2141,63 @@ body {
     .modal-ventana {
         width: 95%;
         max-height: 90vh;
-        overflow-y: auto; /* Si el formulario es largo, permite hacer scroll dentro del modal */
+        overflow-y: auto;
+        /* Si el formulario es largo, permite hacer scroll dentro del modal */
         padding: 20px 15px;
     }
+}
+
+/* Contenedor principal de la imagen/póster */
+.tarjeta-imagen-contenedor {
+    position: relative;
+    width: 100%;
+    height: 240px;
+    /* Ajusta la altura deseada */
+    overflow: hidden;
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 0;
+    background-color: #1a1a1a;
+    /* Fondo para imágenes con transparencia o carga */
+}
+
+/* Imagen del póster llena el 100% del contenedor sin espacios */
+.tarjeta-imagen-contenedor img,
+.tarjeta-imagen {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+}
+
+/* Etiqueta flotante (.tarjeta-badge) colocada sobre el póster */
+.tarjeta-badge {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    z-index: 10 !important;
+    margin: 0 !important;
+    padding: 6px 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: normal;
+    color: #ffffff;
+    border-bottom-right-radius: 8px;
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Colores de las etiquetas por tipo */
+.tarjeta-badge.pelicula {
+    background-color: #2980b9;
+}
+
+.tarjeta-badge.libro {
+    background-color: #27ae60;
+}
+
+.tarjeta-badge.serie {
+    background-color: #8e44ad;
 }
