@@ -2,3 +2,5 @@ pycache/
 __pycache__/
 vchihuahua/
 .env
+**/__pycache__/
+*.pyc
