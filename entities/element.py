@@ -14,35 +14,54 @@ para mantener una separacion clara entre la logica de negocio y la capa de acces
 
 
 
-class Elemento:
-    def __init__(self, id: int, titulo: str, tipo: str, autor_director: str, genero: str, descripcion: str, calificacion: int, opinion: str, usuario_id: int, usuario_nombre: str, fecha_creacion: str, fecha_actualizacion: str, imagen_url: str = '', total_likes: int = 0, le_gusta_usuario: bool = False, usuario_username: str = None, usuario_sigue_creador: bool = False):
+class Element:
+    def __init__(
+        self,
+        id: int,
+        title: str = '',
+        element_type: str = '',
+        author_director: str = '',
+        genre: str = '',
+        description: str = '',
+        rating: int = 0,
+        review: str = '',
+        user_id: int = None,
+        user_name: str = '',
+        created_at: str = '',
+        updated_at: str = '',
+        image_url: str = '',
+        total_likes: int = 0,
+        user_likes: bool = False,
+        user_username: str = None,
+        user_follows_creator: bool = False,
+    ):
         self.id = id
-        self.titulo = titulo
-        self.tipo = tipo
-        self.autor_director = autor_director
-        self.genero = genero
-        self.descripcion = descripcion
-        self.calificacion = calificacion
-        self.opinion = opinion
-        self.usuario_id = usuario_id
-        self.usuario_nombre = usuario_nombre
-        self.usuario_username = usuario_username
-        self.fecha_creacion = fecha_creacion
-        self.fecha_actualizacion = fecha_actualizacion
-        self.imagen_url = imagen_url
-        self.total_likes = total_likes
-        self.le_gusta_usuario = le_gusta_usuario
-        self.usuario_sigue_creador = usuario_sigue_creador
+        self.title = title or ''
+        self.element_type = element_type or ''
+        self.author_director = author_director or ''
+        self.genre = genre or ''
+        self.description = description or ''
+        self.rating = rating or 0
+        self.review = review or ''
+        self.user_id = user_id
+        self.user_name = user_name or ''
+        self.user_username = user_username
+        self.created_at = created_at or ''
+        self.updated_at = updated_at or ''
+        self.image_url = image_url or ''
+        self.total_likes = total_likes or 0
+        self.user_likes = user_likes
+        self.user_follows_creator = user_follows_creator
 
 
     # Metodo estatico para obtener todos los elementos de la coleccion y mapearlos a objetos
     @staticmethod
-    def obtener_todos(usuario_id: int = None) -> list:
-        elementos = []
+    def get_all(user_id: int = None) -> list:
+        elements = []
         try:
-            conexion = get_connection()
-            cursor = conexion.cursor(DictCursor) 
-            if usuario_id:
+            connection = get_connection()
+            cursor = connection.cursor(DictCursor) 
+            if user_id:
                 sql = """
                     SELECT c.id, c.titulo, c.tipo, c.autor_director, c.genero, c.descripcion, c.calificacion, c.opinion, c.imagen_url,
                         DATE_FORMAT(c.fecha_creacion, '%%Y-%%m-%%d %%H:%%i') as fecha_creacion,
@@ -66,7 +85,7 @@ class Elemento:
                     LEFT JOIN seguidores sf ON sf.seguido_id = c.usuario_id AND sf.seguidor_id = %s
                     ORDER BY c.id DESC
                 """
-                cursor.execute(sql, (usuario_id, usuario_id))
+                cursor.execute(sql, (user_id, user_id))
             else:
                 sql = """
                     SELECT c.id, c.titulo, c.tipo, c.autor_director, c.genero, c.descripcion, c.calificacion, c.opinion, c.imagen_url,
@@ -87,33 +106,43 @@ class Elemento:
                 """
                 cursor.execute(sql)
 
-            resultados = cursor.fetchall()
+            results = cursor.fetchall()
 
-            for r in resultados:
-                nuevo_elemento = Elemento(
-                    id=r['id'], titulo=r['titulo'], tipo=r['tipo'],
-                    autor_director=r['autor_director'], genero=r.get('genero', ''), descripcion=r['descripcion'],
-                    calificacion=r['calificacion'], opinion=r['opinion'],
-                    usuario_id=r['usuario_id'], usuario_nombre=r['usuario_nombre'],
-                    fecha_creacion=r['fecha_creacion'], fecha_actualizacion=r['fecha_actualizacion'],
-                    imagen_url=r.get('imagen_url', ''),
-                    total_likes=r.get('total_likes', 0), le_gusta_usuario=bool(r.get('le_gusta_usuario', 0)), usuario_username=r.get('usuario_username'), usuario_sigue_creador=bool(r.get('usuario_sigue_creador', 0))
+            for r in results:
+                new_element = Element(
+                    id=r['id'],
+                    title=r['titulo'],
+                    element_type=r['tipo'],
+                    author_director=r['autor_director'],
+                    genre=r.get('genero', ''),
+                    description=r['descripcion'],
+                    rating=r['calificacion'],
+                    review=r['opinion'],
+                    user_id=r['usuario_id'],
+                    user_name=r['usuario_nombre'],
+                    created_at=r['fecha_creacion'],
+                    updated_at=r['fecha_actualizacion'],
+                    image_url=r.get('imagen_url', ''),
+                    total_likes=r.get('total_likes', 0),
+                    user_likes=bool(r.get('le_gusta_usuario', 0)),
+                    user_username=r.get('usuario_username'),
+                    user_follows_creator=bool(r.get('usuario_sigue_creador', 0))
                 )
-                elementos.append(nuevo_elemento)
+                elements.append(new_element)
 
             cursor.close()
-            conexion.close()
+            connection.close()
         except Exception as ex:
             print(f"Error al obtener la colección: {ex}")
-        return elementos
+        return elements
 
 
     # Metodo estatico para obtener un elemento por su ID
     @staticmethod
-    def obtener_por_id(elemento_id: int):
+    def get_by_id(element_id: int):
         try:
-            conexion = get_connection()
-            cursor = conexion.cursor(DictCursor)
+            connection = get_connection()
+            cursor = connection.cursor(DictCursor)
             sql = """
                 SELECT c.id, c.titulo, c.tipo, c.autor_director, c.genero, c.descripcion, c.calificacion, c.opinion, c.imagen_url,
                    c.fecha_creacion, c.fecha_actualizacion, c.usuario_id, u.nombre as usuario_nombre, u.username as usuario_username
@@ -121,28 +150,28 @@ class Elemento:
                 LEFT JOIN usuarios u ON c.usuario_id = u.id
                 WHERE c.id = %s
             """
-            cursor.execute(sql, (elemento_id,))
+            cursor.execute(sql, (element_id,))
             r = cursor.fetchone()
             
             cursor.close()
-            conexion.close()
+            connection.close()
 
             if r:
-                return Elemento(
+                return Element(
                     id=r['id'],
-                    titulo=r['titulo'],
-                    tipo=r['tipo'],
-                    autor_director=r['autor_director'],
-                    genero=r.get('genero', ''),
-                    descripcion=r['descripcion'],
-                    calificacion=r['calificacion'],
-                    opinion=r['opinion'],
-                    usuario_id=r['usuario_id'],
-                    usuario_nombre=r['usuario_nombre'],
-                    usuario_username=r.get('usuario_username'),
-                    fecha_creacion=str(r['fecha_creacion']),
-                    fecha_actualizacion=str(r['fecha_actualizacion']),
-                    imagen_url=r.get('imagen_url', '')
+                    title=r['titulo'],
+                    element_type=r['tipo'],
+                    author_director=r['autor_director'],
+                    genre=r.get('genero', ''),
+                    description=r['descripcion'],
+                    rating=r['calificacion'],
+                    review=r['opinion'],
+                    user_id=r['usuario_id'],
+                    user_name=r['usuario_nombre'],
+                    user_username=r.get('usuario_username'),
+                    created_at=str(r['fecha_creacion']),
+                    updated_at=str(r['fecha_actualizacion']),
+                    image_url=r.get('imagen_url', '')
                 )
         except Exception as ex:
             print(f"Error al obtener elemento por ID: {ex}")
@@ -151,21 +180,31 @@ class Elemento:
 
     # Metodo estatico para guardar un nuevo elemento en la base de datos
     @staticmethod
-    def save(titulo: str, tipo: str, autor_director: str, genero: str, descripcion: str, calificacion: int, opinion: str, imagen_url: str, usuario_id: int) -> bool:
+    def save(
+        title: str,
+        element_type: str,
+        author_director: str,
+        genre: str,
+        description: str,
+        rating: int,
+        review: str,
+        image_url: str,
+        user_id: int
+    ) -> bool:
         try:
-            conexion = get_connection()
-            cursor = conexion.cursor(DictCursor)
-            ahora = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            connection = get_connection()
+            cursor = connection.cursor(DictCursor)
+            now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             
             sql = """
                 INSERT INTO coleccion (titulo, tipo, autor_director, genero, descripcion, calificacion, opinion, imagen_url, usuario_id, fecha_creacion, fecha_actualizacion) 
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
-            cursor.execute(sql, (titulo, tipo, autor_director, genero, descripcion, calificacion, opinion, imagen_url, usuario_id, ahora, ahora))
-            conexion.commit()
+            cursor.execute(sql, (title, element_type, author_director, genre, description, rating, review, image_url, user_id, now, now))
+            connection.commit()
 
             cursor.close()
-            conexion.close()
+            connection.close()
             return True
         except Exception as ex:
             print(f"Error al guardar en la Chihuahuateca: {ex}")
@@ -174,12 +213,24 @@ class Elemento:
 
     # Metodo estatico para actualizar un elemento existente en la base de datos
     @staticmethod
-    def update(id_elemento: int, titulo: str, tipo: str, autor_director: str, genero: str, descripcion: str, calificacion: int, opinion: str, imagen_url: str, usuario_id: int, user_role: str = 'USER') -> bool:
+    def update(
+        element_id: int,
+        title: str,
+        element_type: str,
+        author_director: str,
+        genre: str,
+        description: str,
+        rating: int,
+        review: str,
+        image_url: str,
+        user_id: int,
+        user_role: str = 'USER'
+    ) -> bool:
         try:
-            conexion = get_connection()
-            cursor = conexion.cursor(DictCursor)
-            ahora = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            rol_normalizado = (user_role or '').strip().upper()
+            connection = get_connection()
+            cursor = connection.cursor(DictCursor)
+            now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            normalized_role = (user_role or '').strip().upper()
             
             sql = """
                 UPDATE coleccion 
@@ -187,12 +238,12 @@ class Elemento:
                     calificacion = %s, opinion = %s, imagen_url = %s, fecha_actualizacion = %s
                 WHERE id = %s AND (usuario_id = %s OR %s = 'ADMIN')
             """
-            cursor.execute(sql, (titulo, tipo, autor_director, genero, descripcion, calificacion, opinion, imagen_url, ahora, id_elemento, usuario_id, rol_normalizado))
-            conexion.commit()
+            cursor.execute(sql, (title, element_type, author_director, genre, description, rating, review, image_url, now, element_id, user_id, normalized_role))
+            connection.commit()
 
             updated_rows = cursor.rowcount
             cursor.close()
-            conexion.close()
+            connection.close()
             return updated_rows > 0
         except Exception as ex:
             print(f"Error al actualizar en la Chihuahuateca: {ex}")
@@ -200,33 +251,33 @@ class Elemento:
 
 
     @staticmethod
-    def toggle_like(usuario_id: int, elemento_id: int):
+    def toggle_like(user_id: int, element_id: int):
         try:
-            conexion = get_connection()
-            cursor = conexion.cursor(DictCursor)
+            connection = get_connection()
+            cursor = connection.cursor(DictCursor)
 
-            cursor.execute("SELECT id FROM coleccion WHERE id = %s", (elemento_id,))
+            cursor.execute("SELECT id FROM coleccion WHERE id = %s", (element_id,))
             if not cursor.fetchone():
                 cursor.close()
-                conexion.close()
+                connection.close()
                 return None
 
-            cursor.execute("SELECT id FROM me_gusta WHERE usuario_id = %s AND elemento_id = %s", (usuario_id, elemento_id))
-            fila_like = cursor.fetchone()
-            if fila_like:
-                cursor.execute("DELETE FROM me_gusta WHERE id = %s", (fila_like['id'],))
+            cursor.execute("SELECT id FROM me_gusta WHERE usuario_id = %s AND elemento_id = %s", (user_id, element_id))
+            like_row = cursor.fetchone()
+            if like_row:
+                cursor.execute("DELETE FROM me_gusta WHERE id = %s", (like_row['id'],))
                 liked = False
             else:
-                ahora = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                cursor.execute("INSERT INTO me_gusta (usuario_id, elemento_id, fecha) VALUES (%s, %s, %s)", (usuario_id, elemento_id, ahora))
+                now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                cursor.execute("INSERT INTO me_gusta (usuario_id, elemento_id, fecha) VALUES (%s, %s, %s)", (user_id, element_id, now))
                 liked = True
 
-            conexion.commit()
-            cursor.execute("SELECT COUNT(*) AS total_likes FROM me_gusta WHERE elemento_id = %s", (elemento_id,))
+            connection.commit()
+            cursor.execute("SELECT COUNT(*) AS total_likes FROM me_gusta WHERE elemento_id = %s", (element_id,))
             total_likes = cursor.fetchone().get('total_likes', 0)
 
             cursor.close()
-            conexion.close()
+            connection.close()
             return {'liked': liked, 'total_likes': total_likes}
         except Exception as ex:
             print(f"Error al alternar like: {ex}")
@@ -235,20 +286,19 @@ class Elemento:
 
     # Metodo estatico para eliminar un elemento de la base de datos por su ID
     @staticmethod
-    def delete(id_elemento: int, usuario_id: int, user_role: str = 'USER') -> bool:
+    def delete(element_id: int, user_id: int, user_role: str = 'USER') -> bool:
         try:
-            conexion = get_connection()
-            cursor = conexion.cursor(DictCursor)
-            rol_normalizado = (user_role or '').strip().upper()
+            connection = get_connection()
+            cursor = connection.cursor(DictCursor)
+            normalized_role = (user_role or '').strip().upper()
             sql = "DELETE FROM coleccion WHERE id = %s AND (usuario_id = %s OR %s = 'ADMIN')"
-            cursor.execute(sql, (id_elemento, usuario_id, rol_normalizado))
-            conexion.commit()
+            cursor.execute(sql, (element_id, user_id, normalized_role))
+            connection.commit()
 
             deleted_rows = cursor.rowcount
             cursor.close()
-            conexion.close()
+            connection.close()
             return deleted_rows > 0
         except Exception as ex:
             print(f"Error al eliminar de la Chihuahuateca: {ex}")
             return False
-        

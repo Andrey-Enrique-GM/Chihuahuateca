@@ -1,98 +1,101 @@
 from entities.log import Log
-from entities.usuario import User
+from entities.user import User
 from enums.log_type import LogType
 
 
-def get_usuario_sesion(session):
-    usuario_id = session.get('usuario_id')
-    if not usuario_id:
+def get_user_session(session):
+    user_id = session.get('user_id') or session.get('usuario_id')
+    if not user_id:
         return None
 
     return User(
-        id=usuario_id,
+        id=user_id,
         username=session.get('username', ''),
-        nombre=session.get('nombre', ''),
+        name=session.get('name') or session.get('nombre', ''),
         password='',
-        rol=(session.get('rol', 'USER') or 'USER'),
-        zona_horaria=(session.get('zona_horaria') or 'AUTO')
+        role=(session.get('role') or session.get('rol', 'USER') or 'USER'),
+        timezone=(session.get('timezone') or session.get('zona_horaria') or 'AUTO')
     )
 
 
-def login_usuario(session, data):
+def login_user(session, data):
     username = (data.get('username') or '').strip()
     password = (data.get('password') or '').strip()
 
     if not username or not password:
         return False, 'Faltan datos', 400
 
-    usuario = User.authenticate(username, password)
-    if not usuario:
+    user = User.authenticate(username, password)
+    if not user:
         return False, 'Usuario o contraseña incorrectos', 401
 
-    session['usuario_id'] = usuario.id
-    session['user_id'] = usuario.id
-    session['username'] = usuario.username
-    session['nombre'] = usuario.nombre
-    session['rol'] = usuario.rol.upper()
-    session['zona_horaria'] = usuario.zona_horaria if getattr(usuario, 'zona_horaria', None) else 'AUTO'
+    session['user_id'] = user.id
+    session['usuario_id'] = user.id
+    session['username'] = user.username
+    session['name'] = user.name
+    session['nombre'] = user.name
+    session['role'] = user.role.upper()
+    session['rol'] = user.role.upper()
+    session['timezone'] = user.timezone if getattr(user, 'timezone', None) else 'AUTO'
+    session['zona_horaria'] = session['timezone']
 
-    Log.save_log(usuario, 'Inicio de sesión', LogType.LOGIN)
+    Log.save_log(user, 'Inicio de sesión', LogType.LOGIN)
     return True, {'redirect': '/coleccion'}, 200
 
 
-def logout_usuario(session):
-    usuario = get_usuario_sesion(session)
-    if usuario:
+def logout_user(session):
+    user = get_user_session(session)
+    if user:
         try:
-            Log.save_log(usuario, 'Cierre de sesión', LogType.LOGOUT)
+            Log.save_log(user, 'Cierre de sesión', LogType.LOGOUT)
         except Exception:
             pass
 
     session.clear()
 
 
-def registrar_usuario(data):
-    nombre = (data.get('name') or '').strip()
+def register_user(data):
+    name = (data.get('name') or '').strip()
     username = (data.get('username') or '').strip()
     password = (data.get('password') or '').strip()
     confirm_password = (data.get('confirm_password') or '').strip()
 
-    if not nombre or not username or not password:
+    if not name or not username or not password:
         return False, 'Todos los campos son obligatorios', 400
 
     if password != confirm_password:
         return False, 'Las contraseñas no coinciden', 400
 
-    exito, mensaje = User.create(nombre, username, password, rol='USER')
-    if exito:
+    success, message = User.create(name=name, username=username, password=password, role='USER')
+    if success:
         return True, '¡Cuenta creada con éxito! Ahora puedes iniciar sesión.', 200
 
-    if mensaje and 'ocupado' in mensaje.lower():
-        return False, mensaje, 409
+    if message and 'ocupado' in message.lower():
+        return False, message, 409
 
-    return False, mensaje or 'Error al crear la cuenta', 500
+    return False, message or 'Error al crear la cuenta', 500
 
 
-def cambiar_password_usuario(session, data):
-    usuario_id = session.get('usuario_id')
-    if not usuario_id:
+def change_user_password(session, data):
+    user_id = session.get('user_id') or session.get('usuario_id')
+    if not user_id:
         return False, 'Sesión no válida o expirada.', 401
 
-    pass_actual = (data.get('pass_actual') or '').strip()
-    pass_nueva = (data.get('pass_nueva') or '').strip()
+    current_password = (data.get('pass_actual') or '').strip()
+    new_password = (data.get('pass_nueva') or '').strip()
 
-    if not pass_actual or not pass_nueva:
+    if not current_password or not new_password:
         return False, 'Todos los campos son obligatorios.', 400
 
-    username_actual = session.get('username')
-    usuario_validado = User.authenticate(username_actual, pass_actual)
-    if not usuario_validado:
+    current_username = session.get('username')
+    validated_user = User.authenticate(current_username, current_password)
+    if not validated_user:
         return False, 'La contraseña actual es incorrecta.', 401
 
-    exito, mensaje = User.update_password(usuario_id, pass_nueva)
-    if exito:
-        usuario = get_usuario_sesion(session)
-        Log.save_log(usuario, 'El usuario cambió su contraseña', LogType.EDIT)
+    success, message = User.update_password(user_id=user_id, new_password=new_password)
+    if success:
+        user = get_user_session(session)
+        Log.save_log(user, 'El usuario cambió su contraseña', LogType.EDIT)
         return True, 'Tu contraseña ha sido actualizada con éxito.', 200
 
-    return False, mensaje or 'Error interno al actualizar la contraseña.', 500
+    return False, message or 'Error interno al actualizar la contraseña.', 500

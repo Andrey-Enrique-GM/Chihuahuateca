@@ -13,7 +13,7 @@ from reportlab.lib.units import cm
 from reportlab.platypus import Image, PageBreak, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 from entities.log import Log
-from entities.usuario import User
+from entities.user import User
 from enums.log_type import LogType
 
 
@@ -46,18 +46,18 @@ def sanitize_pdf_text(text):
     return re.sub(r'\s+', ' ', s).strip()
 
 
-def format_pdf_date(fecha_str):
-    if not fecha_str:
+def format_pdf_date(date_str):
+    if not date_str:
         return ''
     for fmt in ('%Y-%m-%d %H:%M', '%Y-%m-%d %H:%M:%S', '%Y-%m-%d'):
         try:
-            return datetime.strptime(str(fecha_str), fmt).strftime('%d/%m/%Y')
+            return datetime.strptime(str(date_str), fmt).strftime('%d/%m/%Y')
         except ValueError:
             continue
-    return str(fecha_str)[:10]
+    return str(date_str)[:10]
 
 
-def exportar_coleccion_pdf(elementos, session):
+def export_collection_pdf(elements, session):
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
         buffer,
@@ -85,16 +85,16 @@ def exportar_coleccion_pdf(elementos, session):
         canvas.drawRightString(A4[0] - cm, cm / 2, footer)
         canvas.restoreState()
 
-    for el in elementos:
-        tipo_badge = f"[{(el.tipo or '').upper()}]"
-        genero_badge = f"[{sanitize_pdf_text(el.genero or 'Sin género')}]"
-        flowables.append(Paragraph(f'{tipo_badge} - {genero_badge}', style_meta))
+    for el in elements:
+        type_badge = f"[{(el.element_type or '').upper()}]"
+        genre_badge = f"[{sanitize_pdf_text(el.genre or 'Sin género')}]"
+        flowables.append(Paragraph(f'{type_badge} - {genre_badge}', style_meta))
         flowables.append(Spacer(1, 6))
 
-        imagen_url = getattr(el, 'imagen_url', '') or ''
-        if imagen_url:
+        image_url = el.image_url or ''
+        if image_url:
             try:
-                resp = urllib.request.urlopen(imagen_url, timeout=8)
+                resp = urllib.request.urlopen(image_url, timeout=8)
                 img = Image(io.BytesIO(resp.read()))
                 img._restrictSize(12 * cm, 12 * cm)
                 flowables.append(img)
@@ -110,36 +110,36 @@ def exportar_coleccion_pdf(elementos, session):
             flowables.append(tb)
             flowables.append(Spacer(1, 8))
 
-        titulo_seguro = sanitize_pdf_text(getattr(el, 'titulo', 'Sin título'))
-        flowables.append(Paragraph(titulo_seguro or 'Sin título', style_title))
-        autor_seguro = sanitize_pdf_text(getattr(el, 'autor_director', ''))
-        flowables.append(Paragraph(f'<b>Autor / Director / Creador:</b> {autor_seguro}', style_meta))
+        safe_title = sanitize_pdf_text(el.title or 'Sin título')
+        flowables.append(Paragraph(safe_title or 'Sin título', style_title))
+        safe_author = sanitize_pdf_text(el.author_director or '')
+        flowables.append(Paragraph(f'<b>Autor / Director / Creador:</b> {safe_author}', style_meta))
         flowables.append(Spacer(1, 4))
 
-        usuario_pub = sanitize_pdf_text(getattr(el, 'usuario_username', None) or getattr(el, 'usuario_nombre', ''))
-        fecha_cre = format_pdf_date(getattr(el, 'fecha_creacion', ''))
-        fecha_act = format_pdf_date(getattr(el, 'fecha_actualizacion', ''))
-        meta_line = f'Publicado por: @{usuario_pub} | Fecha: {fecha_cre}'
+        pub_user = sanitize_pdf_text(el.user_username or el.user_name or '')
+        created_date = format_pdf_date(el.created_at or '')
+        updated_date = format_pdf_date(el.updated_at or '')
+        meta_line = f'Publicado por: @{pub_user} | Fecha: {created_date}'
         flowables.append(Paragraph(meta_line, style_meta_small))
-        if fecha_act and fecha_act != fecha_cre:
-            flowables.append(Paragraph(f'(Editado el: {fecha_act})', style_meta_small))
+        if updated_date and updated_date != created_date:
+            flowables.append(Paragraph(f'(Editado el: {updated_date})', style_meta_small))
         flowables.append(Spacer(1, 6))
 
         try:
-            calif = int(getattr(el, 'calificacion', 0) or 0)
+            rating_val = int(el.rating or 0)
         except Exception:
-            calif = 0
-        calif = max(0, min(5, calif))
-        stars = ' '.join('★' for _ in range(calif))
-        flowables.append(Paragraph(f'Calificación: {stars} ({calif}/5)', style_meta))
+            rating_val = 0
+        rating_val = max(0, min(5, rating_val))
+        stars = ' '.join('★' for _ in range(rating_val))
+        flowables.append(Paragraph(f'Calificación: {stars} ({rating_val}/5)', style_meta))
         flowables.append(Spacer(1, 8))
 
-        descripcion_text = sanitize_pdf_text(getattr(el, 'descripcion', '') or '')
-        flowables.append(Paragraph(descripcion_text or 'Sin sinopsis disponible', style_normal))
+        description_text = sanitize_pdf_text(el.description or '')
+        flowables.append(Paragraph(description_text or 'Sin sinopsis disponible', style_normal))
         flowables.append(Spacer(1, 8))
 
-        opinion_text = sanitize_pdf_text(getattr(el, 'opinion', '') or '')
-        opinion_box = Table([[Paragraph(opinion_text or 'Sin opinión disponible', style_normal)]], colWidths=[None])
+        review_text = sanitize_pdf_text(el.review or '')
+        opinion_box = Table([[Paragraph(review_text or 'Sin opinión disponible', style_normal)]], colWidths=[None])
         opinion_box.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, -1), HexColor('#f8f9fb')),
             ('BOX', (0, 0), (-1, -1), 0.5, colors.grey),
@@ -158,16 +158,16 @@ def exportar_coleccion_pdf(elementos, session):
     doc.build(flowables, onFirstPage=_header_footer, onLaterPages=_header_footer)
     buffer.seek(0)
 
-    usuario_id = session.get('usuario_id')
-    if usuario_id:
-        usuario = User(
-            id=usuario_id,
+    user_id = session.get('user_id') or session.get('usuario_id')
+    if user_id:
+        user = User(
+            id=user_id,
             username=session.get('username', ''),
-            nombre=session.get('nombre', ''),
+            name=session.get('name') or session.get('nombre', ''),
             password='',
-            rol=(session.get('rol', 'USER') or 'USER')
+            role=(session.get('role') or session.get('rol', 'USER') or 'USER')
         )
-        Log.save_log(usuario, 'Exportó la colección completa a PDF', LogType.PDF_EXPORT)
+        Log.save_log(user, 'Exportó la colección completa a PDF', LogType.PDF_EXPORT)
 
     return send_file(
         buffer,

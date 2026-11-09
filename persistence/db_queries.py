@@ -13,9 +13,9 @@ la lógica de negocio y la capa de acceso a datos.
 
 
 # Metodo para obtener toda la coleccion de elementos, con las fechas formateadas para que se vean limpias en el HTML
-def obtener_toda_la_coleccion():
-    conexion = get_connection() 
-    cursor = conexion.cursor(dictionary=True)
+def get_all_collection():
+    connection = get_connection() 
+    cursor = connection.cursor(dictionary=True)
     
     # Traemos las fechas formateadas para que en el HTML se vean limpias (Ej: 2026-05-23 22:40)
     cursor.execute("""
@@ -25,54 +25,54 @@ def obtener_toda_la_coleccion():
         FROM coleccion 
         ORDER BY id DESC
     """)
-    resultados = cursor.fetchall()
+    results = cursor.fetchall()
     
     cursor.close()
-    conexion.close()  
-    return resultados
+    connection.close()  
+    return results
 
 
 # Metodo para obtener un elemento por su ID
-def obtener_elemento_por_id(elemento_id):
-    conexion = get_connection()
-    cursor = conexion.cursor(dictionary=True)
+def get_element_by_id(element_id):
+    connection = get_connection()
+    cursor = connection.cursor(dictionary=True)
     
-    cursor.execute("SELECT id, titulo, tipo, autor_director, genero, descripcion, calificacion, opinion, fecha_creacion, fecha_actualizacion, usuario_id FROM coleccion WHERE id = %s", (elemento_id,))
-    resultado = cursor.fetchone()
+    cursor.execute("SELECT id, titulo, tipo, autor_director, genero, descripcion, calificacion, opinion, fecha_creacion, fecha_actualizacion, usuario_id FROM coleccion WHERE id = %s", (element_id,))
+    result = cursor.fetchone()
     
     cursor.close()
-    conexion.close()
-    return resultado
+    connection.close()
+    return result
 
 
 # Metodo para insertar un nuevo elemento en la base de datos
-def insertar_elemento(titulo, tipo, autor_director, genero, descripcion, calificacion, opinion):
+def insert_element(title, item_type, author_director, genre, description, rating, review):
     try:
-        conexion = get_connection()
-        cursor = conexion.cursor()
-        ahora = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        connection = get_connection()
+        cursor = connection.cursor()
+        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         
         # Al crear por primera vez, ambas fechas llevan el mismo valor
         query = """
             INSERT INTO coleccion (titulo, tipo, autor_director, genero, descripcion, calificacion, opinion, fecha_creacion, fecha_actualizacion)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
-        cursor.execute(query, (titulo, tipo, autor_director, genero, descripcion, calificacion, opinion, ahora, ahora))
-        conexion.commit()
+        cursor.execute(query, (title, item_type, author_director, genre, description, rating, review, now, now))
+        connection.commit()
         
         cursor.close()
-        conexion.close()
+        connection.close()
         return {"success": True, "message": "¡Guardado con éxito en la Chihuahuateca!"}
     except Exception as e:
         return {"success": False, "message": f"Error: {str(e)}"}
 
 
 # Metodo para actualizar un elemento existente en la base de datos
-def actualizar_elemento(id_elemento, titulo, tipo, autor_director, genero, descripcion, calificacion, opinion):
+def update_element(element_id, title, item_type, author_director, genre, description, rating, review):
     try:
-        conexion = get_connection()
-        cursor = conexion.cursor()
-        ahora = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        connection = get_connection()
+        cursor = connection.cursor()
+        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         
         # Aquí SOLO actualizamos la fecha_actualizacion, la de creación se queda intacta
         query = """
@@ -81,28 +81,27 @@ def actualizar_elemento(id_elemento, titulo, tipo, autor_director, genero, descr
                 calificacion = %s, opinion = %s, fecha_actualizacion = %s
             WHERE id = %s
         """
-        cursor.execute(query, (titulo, tipo, autor_director, genero, descripcion, calificacion, opinion, ahora, id_elemento))
-        conexion.commit()
+        cursor.execute(query, (title, item_type, author_director, genre, description, rating, review, now, element_id))
+        connection.commit()
         
         cursor.close()
-        conexion.close()
+        connection.close()
         return {"success": True, "message": "¡Elemento actualizado correctamente!"}
     except Exception as e:
         return {"success": False, "message": f"Error: {str(e)}"}
 
 
 # Metodo para eliminar un elemento de la base de datos por su ID
-def eliminar_elemento(id_elemento):
+def delete_element(element_id):
     try:
-        conexion = get_connection()
-        cursor = conexion.cursor()
+        connection = get_connection()
+        cursor = connection.cursor()
         
-        cursor.execute("DELETE FROM coleccion WHERE id = %s", (id_elemento,))
-        conexion.commit()
+        cursor.execute("DELETE FROM coleccion WHERE id = %s", (element_id,))
+        connection.commit()
         
         cursor.close()
-        conexion.close()
+        connection.close()
         return {"success": True, "message": "Eliminado de la Chihuahuateca de forma permanente."}
     except Exception as e:
         return {"success": False, "message": f"Error: {str(e)}"}
-    

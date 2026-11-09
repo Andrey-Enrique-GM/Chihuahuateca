@@ -1,8 +1,8 @@
 import pytest
 import app as app_module
-from entities.elemento import Elemento
+from entities.element import Element
 from entities.log import Log
-from entities.usuario import User
+from entities.user import User
 
 
 
@@ -24,18 +24,18 @@ def authenticated_client(client):
 
 
 def test_login_starts_session(client, monkeypatch):
-    usuario = User(
+    user = User(
         id=1,
         username="test-user",
-        nombre="Usuario de prueba",
+        name="Usuario de prueba",
         password="",
-        rol="USER",
-        zona_horaria="AUTO",
+        role="USER",
+        timezone="AUTO",
     )
     monkeypatch.setattr(
         User,
         "authenticate",
-        staticmethod(lambda username, password: usuario),
+        staticmethod(lambda username, password: user),
     )
     monkeypatch.setattr(Log, "save_log", staticmethod(lambda *args: None))
 
@@ -47,8 +47,8 @@ def test_login_starts_session(client, monkeypatch):
     assert response.status_code == 200
     assert response.json["success"] is True
     with client.session_transaction() as session:
-        assert session["usuario_id"] == usuario.id
-        assert session["username"] == usuario.username
+        assert session["usuario_id"] == user.id
+        assert session["username"] == user.username
 
 
 def test_logout_clears_session(client, monkeypatch):
@@ -69,7 +69,7 @@ def test_logout_clears_session(client, monkeypatch):
 def test_create_element(authenticated_client, monkeypatch):
     saved_elements = []
     monkeypatch.setattr(
-        Elemento,
+        Element,
         "save",
         staticmethod(lambda **kwargs: saved_elements.append(kwargs) or True),
     )
@@ -91,14 +91,14 @@ def test_create_element(authenticated_client, monkeypatch):
     assert response.status_code == 200
     assert response.json["success"] is True
     assert len(saved_elements) == 1
-    assert saved_elements[0]["titulo"] == "Libro de prueba"
-    assert saved_elements[0]["usuario_id"] == 1
+    assert saved_elements[0]["title"] == "Libro de prueba"
+    assert saved_elements[0]["user_id"] == 1
 
 
 def test_update_element(authenticated_client, monkeypatch):
     updated_elements = []
     monkeypatch.setattr(
-        Elemento,
+        Element,
         "update",
         staticmethod(lambda **kwargs: updated_elements.append(kwargs) or True),
     )
@@ -121,15 +121,15 @@ def test_update_element(authenticated_client, monkeypatch):
     assert response.status_code == 200
     assert response.json["success"] is True
     assert len(updated_elements) == 1
-    assert updated_elements[0]["id_elemento"] == 42
-    assert updated_elements[0]["titulo"] == "Libro actualizado"
-    assert updated_elements[0]["usuario_id"] == 1
+    assert updated_elements[0]["element_id"] == 42
+    assert updated_elements[0]["title"] == "Libro actualizado"
+    assert updated_elements[0]["user_id"] == 1
 
 
 def test_delete_element(authenticated_client, monkeypatch):
     deleted_elements = []
     monkeypatch.setattr(
-        Elemento,
+        Element,
         "delete",
         staticmethod(lambda **kwargs: deleted_elements.append(kwargs) or True),
     )
@@ -139,4 +139,4 @@ def test_delete_element(authenticated_client, monkeypatch):
 
     assert response.status_code == 200
     assert response.json["success"] is True
-    assert deleted_elements == [{"id_elemento": 42, "usuario_id": 1, "user_role": "USER"}]
+    assert deleted_elements == [{"element_id": 42, "user_id": 1, "user_role": "USER"}]

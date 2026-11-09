@@ -15,7 +15,7 @@
     <div class="user-menu-container">
         <div class="user-profile-trigger">
             <img src="{{ url_for('static', filename='images/users/default.png') }}" alt="Avatar" class="user-avatar">
-            <span class="user-name">{{ session.get('nombre') }}</span>
+            <span class="user-name">{{ session.get('name') or session.get('nombre') }}</span>
             <span class="user-arrow">▼</span>
         </div>
 
@@ -148,34 +148,34 @@
 
 
         <section class="grid-coleccion" id="grid-coleccion">
-            {% for elemento in elementos %}
-            <div class="tarjeta-item {{ elemento.tipo }}" data-tipo="{{ elemento.tipo }}"
-                data-titulo="{{ elemento.titulo.lower() }}" data-autor="{{ elemento.autor_director.lower() }}"
-                data-calificacion="{{ elemento.calificacion }}" data-genero="{{ (elemento.genero or '')|lower }}"
-                data-id="{{ elemento.id }}">
+            {% for element in elements %}
+            <div class="tarjeta-item {{ element.element_type }}" data-tipo="{{ element.element_type }}"
+                data-titulo="{{ element.title.lower() }}" data-autor="{{ element.author_director.lower() }}"
+                data-calificacion="{{ element.rating }}" data-genero="{{ (element.genre or '')|lower }}"
+                data-id="{{ element.id }}">
 
                 <!-- CONTENEDOR DE IMAGEN CON LA ETIQUETA ADENTRO -->
                 <div class="tarjeta-imagen-contenedor">
 
                     <!-- ETIQUETA SOBREPUESTA -->
-                    <div class="tarjeta-badge {{ elemento.tipo }}">
-                        {% if elemento.tipo == 'libro' %}
+                    <div class="tarjeta-badge {{ element.element_type }}">
+                        {% if element.element_type == 'libro' %}
                         📚 LIBRO
-                        {% elif elemento.tipo == 'pelicula' %}
+                        {% elif element.element_type == 'pelicula' %}
                         🎬 PELÍCULA
                         {% else %}
                         📺 SERIE
                         {% endif %}
                     </div>
 
-                    {% if elemento.imagen_url %}
-                    <img src="{{ elemento.imagen_url }}" alt="{{ elemento.titulo }}" class="tarjeta-imagen">
+                    {% if element.image_url %}
+                    <img src="{{ element.image_url }}" alt="{{ element.title }}" class="tarjeta-imagen">
                     {% else %}
-                    <div class="tarjeta-imagen tarjeta-imagen-placeholder {{ elemento.tipo }}">
+                    <div class="tarjeta-imagen tarjeta-imagen-placeholder {{ element.element_type }}">
                         <span class="tarjeta-imagen-text">
-                            {% if elemento.tipo == 'libro' %}
+                            {% if element.element_type == 'libro' %}
                             Portada Libro
-                            {% elif elemento.tipo == 'pelicula' %}
+                            {% elif element.element_type == 'pelicula' %}
                             Póster Película
                             {% else %}
                             Portada Serie
@@ -186,58 +186,58 @@
                 </div>
 
                 <div class="tarjeta-cuerpo">
-                    <h3 class="tarjeta-titulo">{{ elemento.titulo }}</h3>
+                    <h3 class="tarjeta-titulo">{{ element.title }}</h3>
 
                     <p class="tarjeta-creador">
                         <strong>
-                            {% if elemento.tipo == 'libro' %}
+                            {% if element.element_type == 'libro' %}
                             Autor:
-                            {% elif elemento.tipo == 'pelicula' %}
+                            {% elif element.element_type == 'pelicula' %}
                             Director:
                             {% else %}
                             Creador:
                             {% endif %}
                         </strong>
-                        {{ elemento.autor_director }}
+                        {{ element.author_director }}
                     </p>
 
                     <button type="button" class="badge-genero tag-filtro"
-                        data-genero="{{ (elemento.genero or '')|lower }}">
-                        {{ elemento.genero or 'Sin género' }}
+                        data-genero="{{ (element.genre or '')|lower }}">
+                        {{ element.genre or 'Sin género' }}
                     </button>
 
                     <div class="tarjeta-calificacion">
-                        {% for i in range(elemento.calificacion) %}⭐{% endfor %}
-                        <span class="numero-nota">({{ elemento.calificacion }}/5)</span>
+                        {% for i in range(element.rating) %}⭐{% endfor %}
+                        <span class="numero-nota">({{ element.rating }}/5)</span>
                     </div>
 
-                    <p class="tarjeta-descripcion">{{ elemento.descripcion }}</p>
+                    <p class="tarjeta-descripcion">{{ element.description }}</p>
 
                     <div class="tarjeta-opinion">
                         <strong>Opinión:</strong>
-                        <p class="texto-opinion">"{{ elemento.opinion }}"</p>
+                        <p class="texto-opinion">"{{ element.review }}"</p>
                     </div>
 
                     <div class="tarjeta-like-container">
-                        <button type="button" class="btn-like {% if elemento.le_gusta_usuario %}liked{% endif %}"
-                            data-elemento-id="{{ elemento.id }}"
-                            data-liked="{{ 'true' if elemento.le_gusta_usuario else 'false' }}" aria-label="Me gusta">
-                            <span class="icon-like">{% if elemento.le_gusta_usuario %}❤️{% else %}🤍{% endif %}</span>
-                            <span class="like-count">{{ elemento.total_likes }}</span>
+                        <button type="button" class="btn-like {% if element.user_likes %}liked{% endif %}"
+                            data-elemento-id="{{ element.id }}"
+                            data-liked="{{ 'true' if element.user_likes else 'false' }}" aria-label="Me gusta">
+                            <span class="icon-like">{% if element.user_likes %}❤️{% else %}🤍{% endif %}</span>
+                            <span class="like-count">{{ element.total_likes }}</span>
                         </button>
                     </div>
                 </div>
 
                 <div class="tarjeta-fechas">
-                    {% if elemento.usuario_nombre %}
+                    {% if element.user_name %}
                     <div class="fila-autor-social">
-                        <span class="autor-aporte">Subido por: <strong>{{ elemento.usuario_nombre }}</strong></span>
-                        {% if session.get('usuario_id') and session.get('usuario_id') != elemento.usuario_id %}
+                        <span class="autor-aporte">Subido por: <strong>{{ element.user_name }}</strong></span>
+                        {% if session.get('user_id') and session.get('user_id') != element.user_id %}
                         <button type="button"
-                            class="btn-seguir {% if elemento.usuario_sigue_creador %}btn-siguiendo{% endif %}"
-                            data-usuario-id="{{ elemento.usuario_id }}"
-                            data-siguiendo="{{ 'true' if elemento.usuario_sigue_creador else 'false' }}">
-                            {% if elemento.usuario_sigue_creador %}
+                            class="btn-seguir {% if element.user_follows_creator %}btn-siguiendo{% endif %}"
+                            data-usuario-id="{{ element.user_id }}"
+                            data-siguiendo="{{ 'true' if element.user_follows_creator else 'false' }}">
+                            {% if element.user_follows_creator %}
                             ✓ Siguiendo
                             {% else %}
                             + Seguir
@@ -247,11 +247,11 @@
                     </div>
                     {% endif %}
 
-                    <small class="fecha-utc" data-fecha-utc="{{ elemento.fecha_creacion }}">Registrado: {{
-                        elemento.fecha_creacion | formato_fecha }}</small>
-                    {% if elemento.fecha_actualizacion and elemento.fecha_actualizacion != elemento.fecha_creacion %}
+                    <small class="fecha-utc" data-fecha-utc="{{ element.created_at }}">Registrado: {{
+                        element.created_at | formato_fecha }}</small>
+                    {% if element.updated_at and element.updated_at != element.created_at %}
                     <br><small class="txt-editado fecha-utc"
-                        data-fecha-utc="{{ elemento.fecha_actualizacion }}">Editado: {{ elemento.fecha_actualizacion |
+                        data-fecha-utc="{{ element.updated_at }}">Editado: {{ element.updated_at |
                         formato_fecha }}</small>
                     {% endif %}
                 </div>
@@ -372,17 +372,17 @@
                 <label for="select-editar-elemento"><strong>Selecciona el elemento a modificar:</strong></label>
                 <select id="select-editar-elemento">
                     <option value="">-- Elige un libro, película o serie registrado --</option>
-                    {% for elemento in elementos %}
-                    {% if session.get('usuario_id') == elemento.usuario_id %}
-                    <option value="{{ elemento.id }}">
-                        {% if elemento.tipo == 'libro' %}
+                    {% for element in elements %}
+                    {% if (session.get('user_id') or session.get('usuario_id')) == element.user_id %}
+                    <option value="{{ element.id }}">
+                        {% if element.element_type == 'libro' %}
                         [📚]
-                        {% elif elemento.tipo == 'pelicula' %}
+                        {% elif element.element_type == 'pelicula' %}
                         [🎬]
                         {% else %}
                         [📺]
                         {% endif %}
-                        {{ elemento.titulo }}
+                        {{ element.title }}
                     </option>
                     {% endif %}
                     {% endfor %}

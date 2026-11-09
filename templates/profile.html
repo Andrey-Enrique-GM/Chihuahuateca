@@ -34,21 +34,21 @@
                 <img src="{{ url_for('static', filename='images/users/default.png') }}" alt="Avatar" class="avatar-perfil-img">
             </div>
             
-            <h2 class="perfil-nombre-usuario">{{ usuario.nombre }}</h2>
-            <span class="badge-rol {{ usuario.rol.lower() }}">{{ usuario.rol }}</span>
+            <h2 class="perfil-nombre-usuario">{{ user.name }}</h2>
+            <span class="badge-rol {{ user.role.lower() }}">{{ user.role }}</span>
 
             <div class="perfil-detalles-lista">
                 <div class="detalle-item">
                     <span class="detalle-etiqueta">Username</span>
-                    <span class="detalle-valor">@{{ usuario.username }}</span>
+                    <span class="detalle-valor">@{{ user.username }}</span>
                 </div>
                 <div class="detalle-item">
                     <span class="detalle-etiqueta">ID de Cuenta</span>
-                    <span class="detalle-valor">#{{ usuario.id }}</span>
+                    <span class="detalle-valor">#{{ user.id }}</span>
                 </div>
                 <div class="info-fila">
                     <span>Zona Horaria</span>
-                    <strong>🌐 {{ usuario.zona_horaria if usuario.zona_horaria else 'AUTO' }}</strong>
+                    <strong>🌐 {{ user.timezone if user.timezone else 'AUTO' }}</strong>
                 </div>
             </div>
         </aside>
@@ -63,7 +63,7 @@
                 <div class="historial-cabecera">
                     <h3>Mis Estadísticas</h3>
                     <div class="acciones-perfil">
-                        <a href="{{ url_for('usuarios_view') }}" class="btn-primario">🔎 Buscar usuarios</a>
+                        <a href="{{ url_for('users_view') }}" class="btn-primario">🔎 Buscar usuarios</a>
                         <a href="/exportar-pdf" class="btn-primario" target="_blank">📄 Exportar Colección a PDF</a>
                     </div>
                 </div>
@@ -76,36 +76,36 @@
                         </div>
 
                         <div class="stat-box stat-promedio">
-                            <span class="stat-numero">⭐ {{ stats.promedio_nota }}</span>
+                            <span class="stat-numero">⭐ {{ stats.average_rating }}</span>
                             <span class="stat-label">Promedio Nota</span>
                         </div>
 
                         <div class="stat-box stat-likes">
-                            <span class="stat-numero">❤️ {{ stats.likes_recibidos }}</span>
+                            <span class="stat-numero">❤️ {{ stats.likes_received }}</span>
                             <span class="stat-label">Likes recibidos</span>
                         </div>
                     </div>
 
                     <div class="stats-row">
                         <div class="stat-box stat-seguidores">
-                            <span id="seguidores-total" class="stat-numero">{{ stats.seguidores }}</span>
+                            <span id="seguidores-total" class="stat-numero">{{ stats.followers }}</span>
                             <span class="stat-label">Seguidores</span>
                         </div>
 
                         <div class="stat-box stat-siguiendo">
-                            <span id="siguiendo-total" class="stat-numero">{{ stats.siguiendo }}</span>
+                            <span id="siguiendo-total" class="stat-numero">{{ stats.following }}</span>
                             <span class="stat-label">Siguiendo</span>
                         </div>
 
                         <div class="stat-box stat-tipo libro">
-                            <span class="stat-numero">📚 {{ stats.libros }}</span>
+                            <span class="stat-numero">📚 {{ stats.books }}</span>
                             <span class="stat-label">Libros</span>
                         </div>
                     </div>
 
                     <div class="stats-row">
                         <div class="stat-box stat-tipo pelicula">
-                            <span class="stat-numero">🎬 {{ stats.peliculas }}</span>
+                            <span class="stat-numero">🎬 {{ stats.movies }}</span>
                             <span class="stat-label">Películas</span>
                         </div>
 
@@ -129,11 +129,11 @@
                         <div class="log-tarjeta-item">
                             <div class="log-icono">⚡</div>
                             <div class="log-contenido">
-                                <p class="log-accion">{{ log.accion }}</p>
-                                {% if log.detalles %}
-                                    <p class="log-detalles-texto">{{ log.detalles }}</p>
+                                <p class="log-accion">{{ log.action }}</p>
+                                {% if log.details %}
+                                    <p class="log-detalles-texto">{{ log.details }}</p>
                                 {% endif %}
-                                <span class="log-fecha fecha-utc" data-fecha-utc="{{ log.fecha_hora }}">🕒 {{ log.fecha_hora | formato_fecha }}</span>
+                                <span class="log-fecha fecha-utc" data-fecha-utc="{{ log.date_time }}">🕒 {{ log.date_time | formato_fecha }}</span>
                             </div>
                         </div>
                     {% else %}
@@ -194,7 +194,7 @@
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script>
-        window.__zonaHorariaActual = "{{ session.get('zona_horaria') or (usuario.zona_horaria if usuario else 'AUTO') or 'AUTO' }}";
+        window.__zonaHorariaActual = "{{ session.get('timezone') or session.get('zona_horaria') or (user.timezone if user else 'AUTO') or 'AUTO' }}";
     </script>
 
 </body>

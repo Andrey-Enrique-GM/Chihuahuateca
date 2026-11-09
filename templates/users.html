@@ -26,31 +26,31 @@
                 <span class="usuarios-etiqueta">COMUNIDAD</span>
                 <h2>Cuentas registradas</h2>
             </div>
-            <span class="contador-usuarios">{{ usuarios|length }} usuarios</span>
+            <span class="contador-usuarios">{{ users|length }} usuarios</span>
         </div>
 
         <section class="lista-usuarios" aria-label="Lista de usuarios">
-            {% for cuenta in usuarios %}
+            {% for user in users %}
                 <article class="ficha-usuario ficha-escalonada">
-                    <div class="ficha-usuario-id">#{{ cuenta.id }}</div>
-                    <img src="{{ url_for('static', filename='images/users/default.png') }}" alt="Foto de perfil de {{ cuenta.nombre }}" class="ficha-usuario-avatar">
+                    <div class="ficha-usuario-id">#{{ user.id }}</div>
+                    <img src="{{ url_for('static', filename='images/users/default.png') }}" alt="Foto de perfil de {{ user.name }}" class="ficha-usuario-avatar">
                     <div class="ficha-usuario-datos">
-                        <h3>{{ cuenta.nombre }}</h3>
-                        <p class="ficha-usuario-username">@{{ cuenta.username }}</p>
+                        <h3>{{ user.name }}</h3>
+                        <p class="ficha-usuario-username">@{{ user.username }}</p>
                         <div class="info-fila">
                             <span>Zona Horaria</span>
-                            <strong>🌐 {{ cuenta.zona_horaria if cuenta.zona_horaria else 'AUTO' }}</strong>
+                            <strong>🌐 {{ user.timezone if user.timezone else 'AUTO' }}</strong>
                         </div>
                     </div>
                     <div class="ficha-usuario-meta">
-                        <span class="badge-rol {{ cuenta.rol|lower }}">{{ cuenta.rol }}</span>
-                        <span class="ficha-usuario-fecha">Registro: {{ cuenta.fecha_registro|formato_fecha }}</span>
-                        {% if cuenta.id != session.get('usuario_id') %}
+                        <span class="badge-rol {{ user.role|lower }}">{{ user.role }}</span>
+                        <span class="ficha-usuario-fecha">Registro: {{ user.registration_date|formato_fecha }}</span>
+                        {% if user.id != (session.get('user_id') or session.get('usuario_id')) %}
                             <button type="button"
-                                    class="btn-seguir {% if cuenta.usuario_sigue %}btn-siguiendo{% endif %}"
-                                    data-usuario-id="{{ cuenta.id }}"
-                                    data-siguiendo="{{ 'true' if cuenta.usuario_sigue else 'false' }}">
-                                {% if cuenta.usuario_sigue %}
+                                    class="btn-seguir {% if user.is_following %}btn-siguiendo{% endif %}"
+                                    data-usuario-id="{{ user.id }}"
+                                    data-siguiendo="{{ 'true' if user.is_following else 'false' }}">
+                                {% if user.is_following %}
                                     ✓ Siguiendo
                                 {% else %}
                                     + Seguir

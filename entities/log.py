@@ -1,10 +1,6 @@
 from datetime import datetime, timezone
-from zoneinfo import ZoneInfo
-from types import SimpleNamespace
-
 from pymysql.cursors import DictCursor
-
-from entities.usuario import User
+from entities.user import User
 from enums.log_type import LogType
 from persistence.db import get_connection
 
@@ -21,43 +17,46 @@ para mantener una separacion clara entre la logica de negocio y la capa de acces
 
 
 class Log:
-
-    def __init__(self, id: int, fecha: datetime, user: User, descripcion: str, type: LogType):
+    def __init__(self, id: int, timestamp: datetime, user: User, description: str, log_type: LogType, details: str = ''):
         self.id = id
 
         # Asegurar que la fecha tenga informacion de zona horaria UTC si viene sin ella
-        if fecha and fecha.tzinfo is None:
-            self.fecha = fecha.replace(tzinfo=timezone.utc)
+        if timestamp and timestamp.tzinfo is None:
+            self.timestamp = timestamp.replace(tzinfo=timezone.utc)
         else:
-            self.fecha = fecha
+            self.timestamp = timestamp
         
         self.user = user
-        self.descripcion = descripcion
-        self.type = type
+        self.description = description or ''
+        self.log_type = log_type
+        self.details = details or ''
 
 
     # ISO Format para que JavaScript lea la fecha con offset Z (UTC)
     @property
-    def fecha_iso(self):
-        return self.fecha.isoformat() if self.fecha else ''
+    def iso_date(self):
+        return self.timestamp.isoformat() if self.timestamp else ''
+
 
     # Metodo para guardar un nuevo log en la base de datos
     @property
-    def fecha_hora(self):
-        return self.fecha.strftime('%d/%m/%Y %H:%M:%S') if self.fecha else ''
+    def date_time(self):
+        return self.timestamp.strftime('%d/%m/%Y %H:%M:%S') if self.timestamp else ''
+
 
     @property
-    def accion(self):
-        return self.descripcion or ''
+    def action(self):
+        return self.description or ''
+
 
     @staticmethod
-    def save_log(user: User, description: str, type: LogType):
+    def save_log(user: User, description: str, log_type: LogType):
         try:
             connection = get_connection()
             cursor = connection.cursor()
 
             sql = "INSERT INTO `log` (fecha, id_user, descripcion, type) VALUES (%s, %s, %s, %s)"
-            cursor.execute(sql, (datetime.now(timezone.utc), user.id, description, type.value))
+            cursor.execute(sql, (datetime.now(timezone.utc), user.id, description, log_type.value))
             connection.commit()
 
             cursor.close()
@@ -67,9 +66,10 @@ class Log:
             print(f"Error al guardar el log: {e}")
             return False
 
+
     @staticmethod
-    def get_by_user(usuario_id: int):
-        if not usuario_id:
+    def get_by_user(user_id: int):
+        if not user_id:
             return []
 
         try:
@@ -82,7 +82,7 @@ class Log:
                 ORDER BY fecha DESC
                 LIMIT 10
             """
-            cursor.execute(sql, (usuario_id,))
+            cursor.execute(sql, (user_id,))
             rows = cursor.fetchall()
 
             cursor.close()
@@ -91,10 +91,10 @@ class Log:
             return [
                 Log(
                     id=row['id'],
-                    fecha=row['fecha'],
-                    user=User(id=row['id_user'], username='', nombre='', password='', rol='USER'),
-                    descripcion=row['descripcion'],
-                    type=(LogType(row['type']) if isinstance(row.get('type'), int) and row.get('type') in set(item.value for item in LogType) else LogType.EDIT),
+                    timestamp=row['fecha'],
+                    user=User(id=row['id_user'], username='', name='', password='', role='USER'),
+                    description=row['descripcion'],
+                    log_type=(LogType(row['type']) if isinstance(row.get('type'), int) and row.get('type') in set(item.value for item in LogType) else LogType.EDIT),
                 )
                 for row in rows
             ]
